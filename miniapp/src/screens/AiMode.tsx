@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ArrowsClockwise, User } from "@phosphor-icons/react";
 import { ReasoningTranscript } from "../components/ReasoningTranscript";
 import type { HistoryEntry, SuggestionsResponse } from "../lib/api";
 import type { AgentEvent } from "../lib/reasoning";
+import type { PromptIdea } from "../lib/suggestions";
 import { buildPromptFeed } from "../lib/suggestions";
 import { useScrollFade } from "../lib/useScrollFade";
 
@@ -29,6 +30,47 @@ function trackCountLabel(entry: HistoryEntry): string {
   return `${n} треков`;
 }
 
+/**
+ * A starter idea card. The artist's artwork is a full-bleed background layer
+ * (background-size: cover), with a dark gradient + pink-tinted scrim between
+ * it and the prompt text so the copy stays readable on any image. The failing
+ * image probe collapses to the gradient fallback instead of showing a broken
+ * tile; the background itself is never an interactive element, the whole card
+ * is one button that submits the prompt.
+ */
+function PromptIdeaCard({ idea, onPick }: { idea: PromptIdea; onPick: (prompt: string) => void }) {
+  const [failed, setFailed] = useState(false);
+  const showImage = idea.artistImage !== null && !failed;
+  return (
+    <button
+      type="button"
+      className={`prompt-idea-card${idea.featured ? " prompt-idea-card--featured" : ""}`}
+      onClick={() => onPick(idea.prompt)}
+      aria-label={`${idea.prompt}. Например, ${idea.artist}`}
+    >
+      <span
+        className={`prompt-idea-media${showImage ? "" : " prompt-idea-media--fallback"}`}
+        style={showImage ? { backgroundImage: `url(${idea.artistImage})` } : undefined}
+        aria-hidden
+      />
+      {showImage && (
+        <img
+          src={idea.artistImage ?? ""}
+          alt=""
+          className="prompt-idea-media-probe"
+          aria-hidden
+          onError={() => setFailed(true)}
+        />
+      )}
+      <span className="prompt-idea-scrim" aria-hidden />
+      <span className="prompt-idea-copy">
+        <span className="prompt-idea-text">{idea.prompt}</span>
+        {idea.artist && <span className="prompt-idea-artist">{idea.artist}</span>}
+      </span>
+    </button>
+  );
+}
+
 export function AiMode({
   busy,
   events,
@@ -47,7 +89,7 @@ export function AiMode({
   /** True while the user has typed something — the idle rails give way to it. */
   hasDraft: boolean;
   suggestions: SuggestionsResponse;
-  examples: string[];
+  examples: PromptIdea[];
   onRefreshExamples: () => void;
   onPickPrompt: (prompt: string) => void;
   onOpenGeneration: (entry: HistoryEntry) => void;
@@ -112,11 +154,9 @@ export function AiMode({
             Ещё
           </button>
         </div>
-        <div className="prompt-suggestions" aria-live="polite" ref={suggestionsRailRef}>
-          {feed.examples.map((example) => (
-            <button key={example} type="button" className="prompt-suggestion" onClick={() => onPickPrompt(example)}>
-              {example}
-            </button>
+        <div className="prompt-idea-rail" aria-live="polite" ref={suggestionsRailRef}>
+          {feed.examples.map((idea) => (
+            <PromptIdeaCard key={idea.id} idea={idea} onPick={onPickPrompt} />
           ))}
         </div>
       </div>

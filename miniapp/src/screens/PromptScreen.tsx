@@ -196,7 +196,7 @@ export function PromptScreen({
           ref={inputRef}
           className="prompt-pill-input"
           rows={1}
-          placeholder={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
+          placeholder={mode === "ai" ? "Например: «джаз для дождливого утра»" : "Трек, исполнитель или альбом"}
           aria-label={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
           value={prompt}
           onChange={(e) => {

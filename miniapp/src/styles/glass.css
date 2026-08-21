@@ -1395,6 +1395,10 @@ h1 {
    body right) and switches overflow to clip — see the desktop block at the
    end of this file. */
 .prompt-card {
+  /* Scoped hero size: --fs-hero also sizes the admin header, which stays at
+     the :root value (32px). The create-screen headline is one of several
+     elements now, so it runs smaller than the old single-h1 size. */
+  --fs-hero: 28px;
   padding: 16px 14px 14px;
   display: flex;
   flex-direction: column;
@@ -1554,6 +1558,177 @@ h1 {
   outline-offset: 2px;
 }
 
+/* --- "Можно начать так" — image-backed starter cards -----------------------
+   Each card is one button whose background is the mapped artist's artwork
+   (background-size: cover). Text sits on a dark gradient + pink-tinted scrim
+   so it stays readable on any image; a broken or missing image collapses to
+   the gradient fallback. The image is a visual layer, never an interactive
+   element — the whole card submits the prompt. */
+.prompt-idea-rail {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Trailing pad + matching snap mean the last card can scroll clear of the
+     container edge and the fade mask instead of resting half-clipped. */
+  padding: 2px 24px 6px 2px;
+  scroll-padding-inline: 2px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prompt-idea-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.prompt-idea-card {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: min(74vw, 268px);
+  height: 150px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--lg-v2-chip-border);
+  border-radius: var(--radius-surface);
+  background: var(--lg-v2-chip);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  scroll-snap-align: start;
+  box-shadow: var(--glass-shadow-sm);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+:root[data-scheme="light"] .prompt-idea-card {
+  border-color: rgba(13, 13, 16, 0.14);
+}
+
+.prompt-idea-card--featured {
+  width: min(88vw, 320px);
+}
+
+/* The artwork layer: a real background image, cover-cropped and centred. The
+   probe <img> is 1px and invisible — it exists only to hear about a failed
+   load and swap in the fallback background. */
+.prompt-idea-media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.01); /* hide the 1px fringe from rounded+cover rounding */
+  transition: transform 0.35s ease;
+}
+
+.prompt-idea-media--fallback {
+  background:
+    radial-gradient(120% 100% at 85% 0%, color-mix(in srgb, var(--accent) 36%, transparent), transparent 56%),
+    linear-gradient(148deg, color-mix(in srgb, var(--accent) 17%, #232329) 0%, #17171c 62%, #101014 100%);
+}
+
+.prompt-idea-media-probe {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Scrim: darkest behind the text (bottom), lightest at the top, with the pink
+   accent folded into the overlay so artwork and accent never fight. */
+.prompt-idea-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(9, 9, 13, 0.86) 0%, rgba(9, 9, 13, 0.42) 42%, rgba(9, 9, 13, 0.06) 74%),
+    radial-gradient(130% 90% at 100% 0%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 52%);
+}
+
+.prompt-idea-card--featured .prompt-idea-scrim {
+  background:
+    linear-gradient(to top, rgba(9, 9, 13, 0.9) 0%, rgba(9, 9, 13, 0.46) 45%, rgba(9, 9, 13, 0.08) 76%),
+    radial-gradient(140% 110% at 100% 0%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 55%);
+}
+
+.prompt-idea-copy {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 28px 14px 12px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.prompt-idea-card--featured .prompt-idea-copy {
+  padding-inline: 18px;
+}
+
+.prompt-idea-text {
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: 1.32;
+  letter-spacing: var(--ls-label);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.prompt-idea-artist {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (hover: hover) {
+  .prompt-idea-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--lg-v2-chip-border));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+  }
+
+  .prompt-idea-card:hover .prompt-idea-media {
+    transform: scale(1.06);
+  }
+}
+
+.prompt-idea-card:active {
+  transform: scale(0.98);
+}
+
+.prompt-idea-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-idea-media {
+    transition: none;
+  }
+
+  .prompt-idea-card {
+    transition: none;
+  }
+}
+
 .prompt-pill {
   display: flex;
   align-items: center;
@@ -1654,9 +1829,17 @@ h1 {
 }
 
 .prompt-mode-seg-btn.active {
-  color: var(--text-dark);
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: none;
+  color: #fff;
+  /* accent-deep, not accent: white-on-accent lands at ~4.2:1, just under the
+     4.5:1 AA floor; the deep mix clears it (~6:1) in both schemes. */
+  background: var(--accent-deep);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+@media (hover: hover) {
+  .prompt-mode-seg-btn.active:hover {
+    background: var(--accent);
+  }
 }
 
 .prompt-mode-seg-btn:focus-visible {

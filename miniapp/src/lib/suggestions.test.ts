@@ -78,32 +78,44 @@ describe("recent searches", () => {
 });
 
 describe("samplePromptExamples", () => {
-  test("returns the fixed count of distinct examples", () => {
+  test("returns the fixed count of distinct ideas", () => {
     const picked = samplePromptExamples();
     expect(picked).toHaveLength(PROMPT_EXAMPLE_COUNT);
-    expect(new Set(picked).size).toBe(PROMPT_EXAMPLE_COUNT);
+    expect(new Set(picked.map((p) => p.id)).size).toBe(PROMPT_EXAMPLE_COUNT);
   });
 
-  test("avoids repeating what was just shown", () => {
+  test("always leads with the featured signature card", () => {
+    const picked = samplePromptExamples();
+    expect(picked[0]!.featured).toBe(true);
+  });
+
+  test("avoids repeating the non-featured ideas just shown", () => {
     const first = samplePromptExamples();
     const second = samplePromptExamples(first);
-    expect(second.some((e) => first.includes(e))).toBe(false);
+    const firstRest = new Set(first.slice(1).map((p) => p.id));
+    expect(second.slice(1).some((e) => firstRest.has(e.id))).toBe(false);
   });
 
-  test("puts at most two personalized prompts up front", () => {
-    // Deliberately artists that do NOT appear in PROMPT_EXAMPLES, so a generic
-    // example ("Что-нибудь похожее на Radiohead") cannot be mistaken for one.
+  test("puts at most two personalized prompts on the board", () => {
+    // Deliberately artists that do NOT appear in PROMPT_EXAMPLES prompts, so a
+    // generic example ("Что-нибудь похожее на Radiohead") cannot be mistaken
+    // for a personalized one.
     const names = ["Motorama", "Сплин", "Kavinsky", "Nujabes"];
     const artists = names.map((name) => ({ name, artwork: null }));
     const expected = new Set(names.map((name) => `Что-нибудь похожее на ${name}`));
     const picked = samplePromptExamples([], artists);
 
-    expect(expected.has(picked[0]!)).toBe(true);
-    expect(expected.has(picked[1]!)).toBe(true);
-    expect(picked.slice(2).some((p) => expected.has(p))).toBe(false);
+    const personalized = picked.filter((p) => expected.has(p.prompt));
+    expect(personalized).toHaveLength(2);
+    expect(picked.slice(1).filter((p) => expected.has(p.prompt))).toHaveLength(2);
+    // Each personalized card still carries its artist for the image layer.
+    for (const idea of personalized) {
+      expect(idea.artistImage).toBeNull();
+      expect(idea.artist.length).toBeGreaterThan(0);
+    }
   });
 
-  test("still fills the rail when every example was already shown", () => {
+  test("still fills the board when every idea was already shown", () => {
     const picked = samplePromptExamples(PROMPT_EXAMPLES);
     expect(picked).toHaveLength(PROMPT_EXAMPLE_COUNT);
   });
@@ -126,8 +138,10 @@ describe("buildPromptFeed", () => {
     expect(buildPromptFeed(data, []).resume.map((g) => g.id)).toEqual([2]);
   });
 
-  test("a new user gets no resume rail but keeps the examples", () => {
-    const feed = buildPromptFeed(EMPTY_SUGGESTIONS, ["Джаз для дождливого утра"]);
+  test("a new user gets no resume rail but keeps the ideas", () => {
+    const feed = buildPromptFeed(EMPTY_SUGGESTIONS, [
+      { id: "rainy-jazz", prompt: "Джаз для дождливого утра", artist: "Chet Baker", artistImage: null },
+    ]);
     expect(feed.resume).toEqual([]);
     expect(feed.examples).toHaveLength(1);
   });
