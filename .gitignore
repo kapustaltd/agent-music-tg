@@ -1,12 +1,35 @@
 node_modules/
 .env
 .env.local
-data/*.sqlite
-data/*.sqlite-*
+data/
 miniapp/dist/
 dashboard/dist/
 *.log
 .DS_Store
+
+# Build artifacts
+*.tsbuildinfo
+
+# Opencode session/state files (ephemeral, regenerated each run)
+.opencode/opencode-loop/
+deploy/.opencode/
+
+# Local agent tooling configs (personal, not project source)
+.ignore
+.mcp.json
+opencode.json
+.commandcode/taste/
+
+# One-time setup logs and working notes
+install.log
+progress.md
+NOTES.md
+
+# Security scan artifacts
+CLAUDE-SECURITY-*/
+
+# Generated plans
+docs/superpowers/
 
 # Local Claude Code tooling, not project source
 .claude/
@@ -16,4 +39,6 @@ graphify-out/
 
 # Deploy config (infra details, optional)
 deploy/deploy.conf
-data/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+graft/
