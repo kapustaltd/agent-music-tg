@@ -9191,7 +9191,7 @@ div.player-bar-thumbnail::after {
 .app-top-bar,
 .app-shell > .app-top-bar,
 .app-sidebar .app-top-bar {
-  grid-template-columns: minmax(48px, 1fr) minmax(0, max-content) minmax(48px, 1fr);
+  grid-template-columns: minmax(48px, 1fr) auto minmax(48px, 1fr);
   height: 52px;
   min-height: 52px;
   padding: 3px 4px;
@@ -9225,7 +9225,7 @@ div.player-bar-thumbnail::after {
   inset-inline-start: auto;
   top: auto;
   width: max-content;
-  max-width: calc(100% - 8px);
+  max-width: min(260px, calc(100vw - 128px));
   transform: none;
 }
 
