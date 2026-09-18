@@ -66,7 +66,7 @@ function freshDb(isAdmin = false) {
 }
 
 describe("/generate/stream SSE payload shape", () => {
-  test("progress frames carry type: agent_event with the raw AgentEvent", async () => {
+  test("progress frames expose only safe product statuses", async () => {
     const db = freshDb();
     const app = createApiRoutes(db);
     const res = await app.request("/generate/stream", {
@@ -83,21 +83,21 @@ describe("/generate/stream SSE payload shape", () => {
       .filter((l): l is string => Boolean(l))
       .map((l) => JSON.parse(l.slice(5).trim()));
 
-    const eventFrame = frames.find((f) => f.type === "agent_event");
-    expect(eventFrame).toBeDefined();
-    expect(eventFrame.event).toEqual({
-      kind: "tool_call",
-      id: "call-1",
-      name: "searchTrack",
-      args: { artist: "Burial", title: "Archangel" },
+    expect(frames).toContainEqual({
+      type: "agent_progress",
+      progress: { kind: "progress", phase: "searching_tracks" },
     });
-    expect(frames.some((f) => f.type === "agent_event" && f.event?.adminOnly === true)).toBe(false);
+    expect(frames).toContainEqual({
+      type: "agent_progress",
+      progress: { kind: "progress", phase: "found_tracks" },
+    });
+    expect(frames.some((f) => f.type === "agent_event")).toBe(false);
 
     const outcomeFrame = frames.find((f) => f.type === "outcome");
     expect(outcomeFrame?.outcome?.status).toBe("ok");
   });
 
-  test("admin SSE includes provider-native reasoning", async () => {
+  test("admin SSE keeps provider-native reasoning server-side", async () => {
     const db = freshDb(true);
     const app = createApiRoutes(db);
     const res = await app.request("/generate/stream", {
@@ -113,10 +113,7 @@ describe("/generate/stream SSE payload shape", () => {
       .filter((l): l is string => Boolean(l))
       .map((l) => JSON.parse(l.slice(5).trim()));
 
-    expect(frames).toContainEqual({
-      type: "agent_event",
-      event: { kind: "reasoning", delta: "private model thought", adminOnly: true },
-    });
+    expect(frames.some((f) => f.type === "agent_event")).toBe(false);
   });
 
   test("/generate/extend/stream returns generationId and merged tracks", async () => {

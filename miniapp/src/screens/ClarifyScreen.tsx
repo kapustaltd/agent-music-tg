@@ -1,23 +1,21 @@
 import { useState } from "react";
 import { ArrowUp, CaretRight, CircleNotch } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
-import { ReasoningTranscript } from "../components/ReasoningTranscript";
-import type { AgentEvent } from "../lib/reasoning";
+import { GenerationStatus } from "../components/GenerationStatus";
+import type { AgentProgressEvent } from "../lib/api";
 
 export function ClarifyScreen({
   question,
   options,
   onAnswer,
   busy,
-  events,
-  isAdmin,
+  progress,
 }: {
   question: string;
   options: string[];
   onAnswer: (answer: string) => void;
   busy: boolean;
-  events: AgentEvent[];
-  isAdmin?: boolean;
+  progress: AgentProgressEvent[];
 }) {
   const [custom, setCustom] = useState("");
 
@@ -74,9 +72,7 @@ export function ClarifyScreen({
         </button>
       </div>
 
-      {(busy || events.length > 0) && (
-        <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} showCompleted={isAdmin} />
-      )}
+      {busy && <GenerationStatus progress={progress} />}
     </GlassPanel>
   );
 }

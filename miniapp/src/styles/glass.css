@@ -4,7 +4,7 @@
   --glass-border-light: rgba(255, 255, 255, 0.75);
   --glass-border-dark: rgba(255, 255, 255, 0.14);
   --glass-highlight: var(--lg-v2-lens);
-  --accent: #e0367a;
+  --accent: #14b8a6;
   --accent-deep: color-mix(in srgb, var(--accent) 82%, black);
   --accent-bg: color-mix(in srgb, var(--accent) 15%, transparent);
   --danger: #f87171;
@@ -258,7 +258,7 @@ body {
 .app-shell {
   position: relative;
   min-height: 100svh;
-  padding: 12px 14px calc(220px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 14px calc(var(--player-height) + 164px + env(safe-area-inset-bottom, 0px));
   overflow-x: hidden;
   overscroll-behavior-x: none;
   display: flex;
@@ -5760,8 +5760,8 @@ div.player-bar-thumbnail::after {
 /* --- Error toast --------------------------------------------------------
    A compact, overlay toast (NOT a content card) so it never pushes the
    hero/input down or competes with the primary action. Calm dark-grey
-   surface with amber reserved for the icon only; the technical detail is
-   hidden behind a small "Подробнее" text link. */
+   surface with amber reserved for the icon only; technical details stay in
+   diagnostics rather than in the production UI. */
 .error-toast {
   position: fixed;
   top: calc(env(safe-area-inset-top, 0px) + 66px);
@@ -7419,6 +7419,811 @@ div.player-bar-thumbnail::after {
   }
 }
 
+/* ==========================================================================
+   Web workspace system
+   --------------------------------------------------------------------------
+   The rules above are kept for Telegram's narrow WebView history. This final
+   layer is the single desktop contract for the browser version: one rail,
+   one flexible content column, and an optional 300px player rail. Keeping it
+   last prevents screen-specific legacy overrides from changing the shell's
+   geometry from page to page.
+   ========================================================================== */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --control-h-sm: 36px;
+  --control-h-md: 44px;
+  --control-h-lg: 52px;
+  --surface: #1d1d1f;
+  --surface-elevated: #252527;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: var(--text-dark);
+  --text-secondary: var(--text-muted-dark);
+  --player-height: 56px;
+
+  --radius-panel: var(--radius-lg);
+  --radius-input: var(--radius-md);
+  --radius-block: var(--radius-md);
+  --radius-surface: var(--radius-md);
+  --radius-row: var(--radius-md);
+  --radius-control: var(--radius-sm);
+  --radius-chip: var(--radius-sm);
+  --radius-micro: var(--radius-sm);
+}
+
+:root[data-scheme="light"] {
+  --surface: #ffffff;
+  --surface-elevated: #f7f7f9;
+  --border-subtle: rgba(13, 13, 16, 0.08);
+  --text-secondary: var(--text-muted-light);
+}
+
+.app-sidebar {
+  display: contents;
+}
+
+.prompt-submit,
+.glass-button,
+.action-btn,
+.icon-btn {
+  min-height: var(--control-h-md);
+}
+
+.prompt-pill {
+  min-height: var(--control-h-lg);
+}
+
+.generation-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--control-h-md);
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  color: var(--text-primary);
+  font-size: var(--fs-label);
+  font-weight: 600;
+}
+
+.generation-status-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.search-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.search-section-count {
+  color: var(--text-secondary);
+  font-size: var(--fs-micro);
+}
+
+.search-best-match {
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--border-subtle));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.search-best-match .search-section-heading {
+  margin-bottom: 6px;
+}
+
+.search-best-row {
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+
+.search-best-row:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.search-best-rest {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.track-row.is-active {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.error-toast-close,
+.error-toast-action {
+  min-height: var(--control-h-sm);
+}
+
+.error-toast-close {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+}
+
+@media (max-width: 839px) {
+  .error-toast {
+    top: auto;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    animation-name: error-toast-in-bottom;
+  }
+}
+
+@keyframes error-toast-in-bottom {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (min-width: 840px) {
+  .app-shell {
+    width: min(calc(100% - 48px), 1440px);
+    max-width: 1440px;
+    margin-inline: auto;
+    grid-template-columns:
+      [rail-start] 232px
+      [rail-end content-start] minmax(0, 1fr)
+      [content-end];
+    column-gap: 24px;
+    padding: 20px 0 120px;
+    justify-content: stretch;
+  }
+
+  .app-shell > .app-sidebar {
+    grid-column: rail;
+    grid-row: 1 / -1;
+    align-self: start;
+    position: sticky;
+    top: 20px;
+    z-index: 96;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .app-sidebar .app-top-bar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    height: 56px;
+    margin: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .app-top-bar .app-top-search {
+    width: 36px;
+    min-width: 36px;
+  }
+
+  .app-sidebar .app-top-bar .app-top-account {
+    width: 36px;
+    padding: 0;
+  }
+
+  .app-sidebar .app-top-bar .app-top-account-label {
+    display: none;
+  }
+
+  .app-sidebar .dock {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    padding: 0;
+    pointer-events: auto;
+  }
+
+  .app-sidebar .dock-inner {
+    width: 100%;
+    max-width: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .dock-tab {
+    flex: 0 0 auto;
+    min-height: var(--control-h-md);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-label);
+  }
+
+  .app-sidebar .dock-tab.active {
+    background: var(--accent-bg);
+  }
+
+  .app-shell > .screen-stack {
+    grid-column: content;
+    grid-row: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .app-shell > .screen-stack > .screen-enter {
+    min-width: 0;
+  }
+
+  .app-shell > .player-bar {
+    bottom: 24px;
+  }
+
+  .error-toast {
+    top: 24px;
+    left: auto;
+    right: max(24px, calc((100vw - 1440px) / 2 + 24px));
+    width: min(360px, calc(100% - 48px));
+    transform: none;
+    animation: error-toast-in-desktop 180ms ease-out;
+  }
+
+  /* Results use the available content track instead of preserving a 640px
+     mobile reading cap and leaving a blank half-column on wide screens. */
+  .results-panel {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+
+  .results-panel > .results-main {
+    max-width: none;
+  }
+}
+
+@keyframes error-toast-in-desktop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) {
+    --desktop-content-max: none;
+  }
+
+  .prompt-card {
+    width: 100%;
+    min-height: 0;
+    padding: 28px;
+    gap: 24px;
+  }
+
+  .prompt-card > .prompt-compose {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(360px, 1.15fr);
+  }
+
+  .prompt-card > .prompt-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* EOF desktop shell guard: intentionally last in the stylesheet. */
+@media (min-width: 840px) {
+  .app-shell {
+    width: min(calc(100% - 48px), 1440px);
+    max-width: 1440px;
+    margin-inline: auto;
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end];
+    column-gap: 24px;
+    padding: 20px 0 120px;
+  }
+
+  .app-shell > .app-sidebar {
+    grid-column: rail;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: start;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    z-index: 96;
+  }
+
+  .app-sidebar .app-top-bar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    height: 56px;
+    margin: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .app-top-account-label { display: none; }
+
+  .app-sidebar .dock {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    padding: 0;
+    pointer-events: auto;
+  }
+
+  .app-sidebar .dock-inner {
+    width: 100%;
+    max-width: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .dock-tab {
+    flex: 0 0 auto;
+    min-height: var(--control-h-md);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-label);
+  }
+
+  .app-sidebar .dock-tab.active { background: var(--accent-bg); }
+
+  .app-shell > .screen-stack {
+    grid-column: content;
+    grid-row: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .app-shell > .player-bar { bottom: 24px; }
+
+  .error-toast {
+    top: 24px;
+    left: auto;
+    right: max(24px, calc((100vw - 1440px) / 2 + 24px));
+    width: min(360px, calc(100% - 48px));
+    transform: none;
+    animation: error-toast-in-desktop 180ms ease-out;
+  }
+
+  .results-panel {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+
+  .results-panel > .results-main { max-width: none; }
+}
+
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) { --desktop-content-max: none; }
+
+  .prompt-card {
+    width: 100%;
+    min-height: 0;
+    padding: 28px;
+    gap: 24px;
+  }
+
+  .prompt-card > .prompt-compose {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(360px, 1.15fr);
+  }
+
+  .prompt-card > .prompt-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+@media (min-width: 1240px) {
+  .app-shell:has(> .web-now-playing) {
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end now-start] 300px [now-end];
+  }
+
+  .app-shell > .web-now-playing {
+    grid-column: now;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+@media (min-width: 840px) {
+  .player-screen-overlay { padding: 40px; }
+
+  .player-screen {
+    width: min(960px, 100%);
+    max-width: 960px;
+    min-height: 560px;
+    max-height: min(720px, calc(100svh - 80px));
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 48px;
+    row-gap: 18px;
+    padding: 28px 40px;
+  }
+
+  .player-screen-header { grid-column: 1 / -1; grid-row: 1; margin-bottom: 0; }
+  .player-screen-artwork {
+    grid-column: 1;
+    grid-row: 2 / 5;
+    width: min(100%, 460px);
+    max-width: none;
+    align-self: center;
+    justify-self: center;
+  }
+  .player-screen-info {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    text-align: start;
+    margin-bottom: 0;
+  }
+  .player-screen-title { text-align: start; }
+  .player-screen-progress-wrap {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    margin-bottom: 0;
+  }
+  .player-screen-controls {
+    grid-column: 2;
+    grid-row: 4;
+    width: 100%;
+    max-width: none;
+    align-self: start;
+    gap: 16px;
+  }
+  .player-screen-secondary-row,
+  .player-screen-volume { width: 100%; max-width: 460px; }
+}
+
+@keyframes error-toast-in-desktop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Final desktop cascade. All desktop geometry lives here so later additions
+   cannot reintroduce page-specific shell widths or the mobile player shape. */
+@media (min-width: 840px) {
+  .app-shell {
+    width: min(calc(100% - 48px), 1440px);
+    max-width: 1440px;
+    margin-inline: auto;
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end];
+    column-gap: 24px;
+    padding: 20px 0 120px;
+    justify-content: stretch;
+  }
+
+  .app-shell > .app-sidebar {
+    grid-column: rail;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 20px;
+    z-index: 96;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: start;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .app-sidebar .app-top-bar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    height: 56px;
+    margin: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .app-top-account-label,
+  .app-sidebar .app-top-bar .app-top-account-label {
+    display: none;
+  }
+
+  .app-sidebar .app-top-bar .app-top-account {
+    width: 36px;
+    padding: 0;
+  }
+
+  .app-sidebar .dock {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    padding: 0;
+    pointer-events: auto;
+  }
+
+  .app-sidebar .dock-inner {
+    width: 100%;
+    max-width: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .dock-tab {
+    flex: 0 0 auto;
+    min-height: var(--control-h-md);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-label);
+  }
+
+  .app-sidebar .dock-tab.active {
+    background: var(--accent-bg);
+  }
+
+  .app-shell > .screen-stack {
+    grid-column: content;
+    grid-row: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .app-shell > .player-bar {
+    bottom: 24px;
+  }
+
+  .error-toast {
+    top: 24px;
+    left: auto;
+    right: max(24px, calc((100vw - 1440px) / 2 + 24px));
+    width: min(360px, calc(100% - 48px));
+    transform: none;
+    animation: error-toast-in-desktop 180ms ease-out;
+  }
+
+  .results-panel {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+
+  .results-panel > .results-main {
+    max-width: none;
+  }
+}
+
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) {
+    --desktop-content-max: none;
+  }
+
+  .prompt-card {
+    width: 100%;
+    min-height: 0;
+    padding: 28px;
+    gap: 24px;
+  }
+
+  .prompt-card > .prompt-compose {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(360px, 1.15fr);
+  }
+
+  .prompt-card > .prompt-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+@media (min-width: 1240px) {
+  .app-shell:has(> .web-now-playing) {
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end now-start] 300px [now-end];
+  }
+
+  .app-shell > .web-now-playing {
+    grid-column: now;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+@media (min-width: 840px) {
+  .player-screen-overlay {
+    padding: 40px;
+  }
+
+  .player-screen {
+    width: min(960px, 100%);
+    max-width: 960px;
+    min-height: 560px;
+    max-height: min(720px, calc(100svh - 80px));
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 48px;
+    row-gap: 18px;
+    padding: 28px 40px;
+  }
+
+  .player-screen-header { grid-column: 1 / -1; grid-row: 1; margin-bottom: 0; }
+  .player-screen-artwork {
+    grid-column: 1;
+    grid-row: 2 / 5;
+    width: min(100%, 460px);
+    max-width: none;
+    align-self: center;
+    justify-self: center;
+  }
+  .player-screen-info {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    text-align: start;
+    margin-bottom: 0;
+  }
+  .player-screen-title { text-align: start; }
+  .player-screen-progress-wrap {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    margin-bottom: 0;
+  }
+  .player-screen-controls {
+    grid-column: 2;
+    grid-row: 4;
+    width: 100%;
+    max-width: none;
+    align-self: start;
+    gap: 16px;
+  }
+  .player-screen-secondary-row,
+  .player-screen-volume { width: 100%; max-width: 460px; }
+}
+
+@keyframes error-toast-in-desktop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 1240px) {
+  .app-shell:has(> .web-now-playing) {
+    grid-template-columns:
+      [rail-start] 232px
+      [rail-end content-start] minmax(0, 1fr)
+      [content-end now-start] 300px
+      [now-end];
+  }
+
+  .app-shell > .web-now-playing {
+    grid-column: now;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+/* Desktop full player: artwork and controls share the card instead of a
+   narrow mobile column stretched across a browser viewport. */
+@media (min-width: 840px) {
+  .player-screen-overlay {
+    padding: 40px;
+  }
+
+  .player-screen {
+    width: min(960px, 100%);
+    max-width: 960px;
+    min-height: 560px;
+    max-height: min(720px, calc(100svh - 80px));
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 48px;
+    row-gap: 18px;
+    padding: 28px 40px;
+    overflow-y: auto;
+  }
+
+  .player-screen-header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    margin-bottom: 0;
+  }
+
+  .player-screen-artwork {
+    grid-column: 1;
+    grid-row: 2 / 5;
+    width: min(100%, 460px);
+    max-width: none;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .player-screen-info {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    text-align: start;
+    margin-bottom: 0;
+  }
+
+  .player-screen-title {
+    text-align: start;
+  }
+
+  .player-screen-progress-wrap {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    margin-bottom: 0;
+  }
+
+  .player-screen-controls {
+    grid-column: 2;
+    grid-row: 4;
+    width: 100%;
+    max-width: none;
+    align-self: start;
+    gap: 16px;
+  }
+
+  .player-screen-controls-row {
+    gap: 34px;
+  }
+
+  .player-screen-secondary-row,
+  .player-screen-volume {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .player-screen-artist-link {
+    text-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generation-status .spin {
+    animation: none;
+  }
+}
+
 /* Desktop now-playing rail -------------------------------------------------
    The compact player remains the mobile/Telegram control. A browser with
    enough width gets a real secondary column, like a music workspace, but it
@@ -7811,4 +8616,190 @@ div.player-bar-thumbnail::after {
   .prompt-card > .prompt-body .prompt-starters .prompt-suggestions {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* Actual stylesheet tail: the browser shell must win over all historical
+   desktop experiments above this point. */
+@media (min-width: 840px) {
+  .app-shell {
+    width: min(calc(100% - 48px), 1440px);
+    max-width: 1440px;
+    margin-inline: auto;
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end];
+    column-gap: 24px;
+    padding: 20px 0 120px;
+  }
+
+  .app-shell > .app-sidebar {
+    grid-column: rail;
+    grid-row: 1 / -1;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: start;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    z-index: 96;
+  }
+
+  .app-sidebar .app-top-bar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    height: 56px;
+    margin: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .app-top-account-label { display: none; }
+
+  .app-sidebar .dock {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    padding: 0;
+    pointer-events: auto;
+  }
+
+  .app-sidebar .dock-inner {
+    width: 100%;
+    max-width: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    border-radius: var(--radius-lg);
+  }
+
+  .app-sidebar .dock-tab {
+    flex: 0 0 auto;
+    min-height: var(--control-h-md);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--fs-label);
+  }
+
+  .app-sidebar .dock-tab.active { background: var(--accent-bg); }
+
+  .app-shell > .screen-stack {
+    grid-column: content;
+    grid-row: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .app-shell > .player-bar { bottom: 24px; }
+
+  .error-toast {
+    top: 24px;
+    left: auto;
+    right: max(24px, calc((100vw - 1440px) / 2 + 24px));
+    width: min(360px, calc(100% - 48px));
+    transform: none;
+    animation: error-toast-in-desktop 180ms ease-out;
+  }
+
+  .results-panel {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 24px;
+  }
+
+  .results-panel > .results-main { max-width: none; }
+}
+
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) { --desktop-content-max: none; }
+
+  .prompt-card {
+    width: 100%;
+    min-height: 0;
+    padding: 28px;
+    gap: 24px;
+  }
+
+  .prompt-card > .prompt-compose {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(360px, 1.15fr);
+  }
+
+  .prompt-card > .prompt-body {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+@media (min-width: 1240px) {
+  .app-shell:has(> .web-now-playing) {
+    grid-template-columns: [rail-start] 232px [rail-end content-start] minmax(0, 1fr) [content-end now-start] 300px [now-end];
+  }
+
+  .app-shell > .web-now-playing {
+    grid-column: now;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+@media (min-width: 840px) {
+  .player-screen-overlay { padding: 40px; }
+
+  .player-screen {
+    width: min(960px, 100%);
+    max-width: 960px;
+    min-height: 560px;
+    max-height: min(720px, calc(100svh - 80px));
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+    grid-template-rows: auto 1fr auto auto;
+    column-gap: 48px;
+    row-gap: 18px;
+    padding: 28px 40px;
+  }
+
+  .player-screen-header { grid-column: 1 / -1; grid-row: 1; margin-bottom: 0; }
+  .player-screen-artwork {
+    grid-column: 1;
+    grid-row: 2 / 5;
+    width: min(100%, 460px);
+    max-width: none;
+    align-self: center;
+    justify-self: center;
+  }
+  .player-screen-info {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    text-align: start;
+    margin-bottom: 0;
+  }
+  .player-screen-title { text-align: start; }
+  .player-screen-progress-wrap {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    margin-bottom: 0;
+  }
+  .player-screen-controls {
+    grid-column: 2;
+    grid-row: 4;
+    width: 100%;
+    max-width: none;
+    align-self: start;
+    gap: 16px;
+  }
+  .player-screen-secondary-row,
+  .player-screen-volume { width: 100%; max-width: 460px; }
+}
+
+@keyframes error-toast-in-desktop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

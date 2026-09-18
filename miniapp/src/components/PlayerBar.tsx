@@ -38,6 +38,7 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
         type="button"
         className="player-bar-open"
         aria-label="Открыть плеер"
+        title="Открыть плеер"
         onClick={() => onOpen?.()}
       >
         {track.artwork ? (
@@ -56,6 +57,7 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
         type="button"
         className={`player-bar-btn player-bar-like-btn${liked ? " active" : ""}`}
         aria-label={liked ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+        title={liked ? "Убрать из моей музыки" : "Добавить в мою музыку"}
         aria-pressed={liked}
         disabled={liking}
         onClick={toggleLike}
@@ -66,6 +68,7 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
         type="button"
         className="player-bar-btn"
         aria-label={status === "playing" ? `Пауза: ${track.title}` : `Слушать: ${track.title}`}
+        title={status === "playing" ? "Пауза" : "Воспроизвести"}
         onClick={() => player.toggle(track)}
       >
         {playIcon}
@@ -74,6 +77,7 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
         type="button"
         className="player-bar-btn"
         aria-label="Следующий трек"
+        title="Следующий трек"
         disabled={!hasNext}
         onClick={() => player.nextTrack()}
       >

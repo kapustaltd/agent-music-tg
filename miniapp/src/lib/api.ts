@@ -1,5 +1,16 @@
 import { getInitData, getInlineAuthToken } from "./telegram";
-import type { AgentEvent } from "./reasoning";
+
+export type AgentProgressPhase =
+  | "searching_tracks"
+  | "searching_artist"
+  | "found_tracks"
+  | "found_artist"
+  | "building_playlist"
+  | "adding_tracks"
+  | "clarifying";
+
+/** Safe, product-level progress sent by the generation SSE endpoint. */
+export type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase };
 
 /**
  * Builds the Error for a failed response. Prefers the server's `error` field,
@@ -453,11 +464,13 @@ export function streamUrl(uri: string, meta?: { title?: string; artist?: string;
 export type TrackVerificationStatus = "pending" | "checking" | "verified" | "unavailable";
 
 /**
- * Reads a text/event-stream response body and dispatches each frame. Agent
- * events call onEvent; the terminal "outcome" frame resolves the promise.
+ * Reads a text/event-stream response body and dispatches safe progress frames.
+ * Legacy `agent_event` frames are ignored intentionally: private reasoning and
+ * raw tool payloads must never become a UI data source. The terminal
+ * "outcome" frame resolves the promise.
  * Uses fetch (not EventSource) so the initData header can ride along.
  */
-async function requestSSE<T>(path: string, body: unknown, onEvent: (e: AgentEvent) => void): Promise<T> {
+async function requestSSE<T>(path: string, body: unknown, onEvent: (e: AgentProgressEvent) => void): Promise<T> {
   const res = await fetch(path, {
     method: "POST",
     headers: {
@@ -480,8 +493,12 @@ async function requestSSE<T>(path: string, body: unknown, onEvent: (e: AgentEven
     for (const frame of frames) {
       const line = frame.split("\n").find((l) => l.startsWith("data:"));
       if (!line) continue;
-      const parsed = JSON.parse(line.slice(5).trim()) as { type: string; event?: AgentEvent; outcome?: T };
-      if (parsed.type === "agent_event" && parsed.event) onEvent(parsed.event);
+      const parsed = JSON.parse(line.slice(5).trim()) as {
+        type: string;
+        progress?: AgentProgressEvent;
+        outcome?: T;
+      };
+      if (parsed.type === "agent_progress" && parsed.progress?.kind === "progress") onEvent(parsed.progress);
       else if (parsed.type === "outcome") return parsed.outcome as T;
     }
   }
@@ -513,11 +530,11 @@ export const api = {
     request<GenerateOutcome>("/api/generate", { method: "POST", body: JSON.stringify({ prompt }) }),
   generateResume: (answer: string) =>
     request<GenerateOutcome>("/api/generate/resume", { method: "POST", body: JSON.stringify({ answer }) }),
-  generateStream: (prompt: string, onEvent: (e: AgentEvent) => void) =>
+  generateStream: (prompt: string, onEvent: (e: AgentProgressEvent) => void) =>
     requestSSE<GenerateOutcome>("/api/generate/stream", { prompt }, onEvent),
-  generateResumeStream: (answer: string, onEvent: (e: AgentEvent) => void) =>
+  generateResumeStream: (answer: string, onEvent: (e: AgentProgressEvent) => void) =>
     requestSSE<GenerateOutcome>("/api/generate/resume/stream", { answer }, onEvent),
-  extendStream: (generationId: number, prompt: string, onEvent: (e: AgentEvent) => void) =>
+  extendStream: (generationId: number, prompt: string, onEvent: (e: AgentProgressEvent) => void) =>
     requestSSE<GenerateOutcome>("/api/generate/extend/stream", { generationId, prompt }, onEvent),
   adminSettings: () => request<AdminSettings>("/api/admin/settings"),
   setActiveProvider: (id: string) =>

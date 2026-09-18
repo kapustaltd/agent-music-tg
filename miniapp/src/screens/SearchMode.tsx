@@ -207,6 +207,60 @@ export function SearchMode({
     if (current) player.toggle(current, queue);
   }
 
+  function renderTrackRow(track: Track, index: number, className?: string) {
+    const rowClassName = [className, player.track?.uri === track.uri ? "is-active" : ""].filter(Boolean).join(" ");
+    return (
+      <TrackRow
+        key={track.uri}
+        className={rowClassName}
+        style={{ ["--i" as string]: index }}
+        onClick={() =>
+          player.toggle(
+            { uri: track.uri, title: track.title, artist: track.artist, artwork: track.artwork },
+            tracks.map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork })),
+          )
+        }
+        artwork={track.artwork}
+        title={track.title}
+        meta={track.artist}
+        metaClassName="search-row-meta"
+        trailing={
+          <>
+            {trackDownloads[track.uri]?.kind === "sent" && (
+              <CheckCircle size={16} weight="fill" style={{ color: "var(--accent)" }} />
+            )}
+            {trackDownloads[track.uri]?.kind === "sending" && (
+              <CircleNotch size={16} className="spin" style={{ color: "var(--text-muted)" }} />
+            )}
+            <SaveTrackButton track={track} />
+            <TrackOverflowMenu
+              actions={[
+                {
+                  key: "download",
+                  label: trackDownloads[track.uri]?.kind === "sent" ? "Отправлено в чат" : "Скачать",
+                  icon:
+                    trackDownloads[track.uri]?.kind === "sent" ? (
+                      <CheckCircle size={18} weight="fill" />
+                    ) : (
+                      <DownloadSimple size={18} />
+                    ),
+                  disabled: trackDownloads[track.uri]?.kind === "sending",
+                  onClick: () => void handleTrackDownload(track),
+                },
+                {
+                  key: "add-to-playlist",
+                  label: "Добавить в плейлист",
+                  icon: <ListPlus size={18} weight="bold" />,
+                  onClick: () => requestAddToPlaylist(track),
+                },
+              ]}
+            />
+          </>
+        }
+      />
+    );
+  }
+
   // --- Empty state ---------------------------------------------------------
 
   const feed = buildSearchFeed(suggestions, recent);
@@ -318,6 +372,27 @@ export function SearchMode({
             <li>название альбома</li>
           </ul>
         </div>
+      )}
+
+      {tracks.length > 0 && (
+        <section className="search-section search-best-match">
+          <div className="search-section-heading">
+            <h2 className="search-section-title">Лучшее совпадение</h2>
+            <span className="search-section-count">Трек</span>
+          </div>
+          {renderTrackRow(tracks[0]!, 0, "search-best-row")}
+          {tracks.length > 1 && (
+            <div className="search-best-rest">
+              <div className="search-section-heading">
+                <h2 className="search-section-title">Треки</h2>
+                <span className="search-section-count">{tracks.length - 1}</span>
+              </div>
+              <div className="stack reveal-stagger">
+                {tracks.slice(1).map((track, i) => renderTrackRow(track, i + 1))}
+              </div>
+            </div>
+          )}
+        </section>
       )}
 
       {artists.length > 0 && (
@@ -460,62 +535,6 @@ export function SearchMode({
         </section>
       )}
 
-      {tracks.length > 0 && (
-        <section className="search-section">
-          <h2 className="search-section-title">Треки</h2>
-          <div className="stack reveal-stagger">
-            {tracks.map((track, i) => (
-              <TrackRow
-                key={track.uri}
-                style={{ ["--i" as string]: i }}
-                onClick={() =>
-                  player.toggle(
-                    { uri: track.uri, title: track.title, artist: track.artist, artwork: track.artwork },
-                    tracks.map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork })),
-                  )
-                }
-                artwork={track.artwork}
-                title={track.title}
-                meta={track.artist}
-                metaClassName="search-row-meta"
-                trailing={
-                  <>
-                    {trackDownloads[track.uri]?.kind === "sent" && (
-                      <CheckCircle size={16} weight="fill" style={{ color: "var(--accent)" }} />
-                    )}
-                    {trackDownloads[track.uri]?.kind === "sending" && (
-                      <CircleNotch size={16} className="spin" style={{ color: "var(--text-muted)" }} />
-                    )}
-                    <SaveTrackButton track={track} />
-                    <TrackOverflowMenu
-                      actions={[
-                        {
-                          key: "download",
-                          label: trackDownloads[track.uri]?.kind === "sent" ? "Отправлено в чат" : "Скачать",
-                          icon:
-                            trackDownloads[track.uri]?.kind === "sent" ? (
-                              <CheckCircle size={18} weight="fill" />
-                            ) : (
-                              <DownloadSimple size={18} />
-                            ),
-                          disabled: trackDownloads[track.uri]?.kind === "sending",
-                          onClick: () => void handleTrackDownload(track),
-                        },
-                        {
-                          key: "add-to-playlist",
-                          label: "Добавить в плейлист",
-                          icon: <ListPlus size={18} weight="bold" />,
-                          onClick: () => requestAddToPlaylist(track),
-                        },
-                      ]}
-                    />
-                  </>
-                }
-              />
-            ))}
-          </div>
-        </section>
-      )}
     </>
   );
 }

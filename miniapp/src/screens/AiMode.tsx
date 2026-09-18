@@ -1,8 +1,7 @@
 import { useRef } from "react";
 import { ArrowsClockwise, User } from "@phosphor-icons/react";
-import { ReasoningTranscript } from "../components/ReasoningTranscript";
-import type { HistoryEntry, SuggestionsResponse } from "../lib/api";
-import type { AgentEvent } from "../lib/reasoning";
+import { GenerationStatus } from "../components/GenerationStatus";
+import type { AgentProgressEvent, HistoryEntry, SuggestionsResponse } from "../lib/api";
 import { buildPromptFeed } from "../lib/suggestions";
 import { useScrollFade } from "../lib/useScrollFade";
 
@@ -31,8 +30,7 @@ function trackCountLabel(entry: HistoryEntry): string {
 
 export function AiMode({
   busy,
-  events,
-  isAdmin,
+  progress,
   suggestions,
   examples,
   onRefreshExamples,
@@ -41,8 +39,7 @@ export function AiMode({
   onOpenArtist,
 }: {
   busy: boolean;
-  events: AgentEvent[];
-  isAdmin?: boolean;
+  progress: AgentProgressEvent[];
   suggestions: SuggestionsResponse;
   examples: string[];
   onRefreshExamples: () => void;
@@ -57,8 +54,8 @@ export function AiMode({
   useScrollFade(suggestionsRailRef);
   useScrollFade(artistRailRef);
 
-  if (busy || events.length > 0) {
-    return <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} showCompleted={isAdmin} />;
+  if (busy) {
+    return <GenerationStatus progress={progress} />;
   }
 
   const feed = buildPromptFeed(suggestions, examples);

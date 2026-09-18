@@ -26,7 +26,7 @@ function grantLabel(o: Offer): string {
     : `${n} ${pluralRu(n, ["генерация", "генерации", "генераций"])}`;
 }
 
-export default function BuyScreen({ reason, isAdmin = false }: { reason?: string; isAdmin?: boolean }) {
+export default function BuyScreen({ reason }: { reason?: string }) {
   const [offers, setOffers] = useState<Offer[] | null>(null);
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [trial, setTrial] = useState<TrialStatus | null>(null);
@@ -151,7 +151,7 @@ export default function BuyScreen({ reason, isAdmin = false }: { reason?: string
     }
   }
 
-  if (error && !offers) return <ErrorBanner message={error} onClose={() => setError(null)} onRetry={refresh} isAdmin={isAdmin} />;
+  if (error && !offers) return <ErrorBanner message={error} onClose={() => setError(null)} onRetry={refresh} />;
 
   return (
     <div className="stack">
@@ -196,7 +196,7 @@ export default function BuyScreen({ reason, isAdmin = false }: { reason?: string
       )}
 
       <GlassPanel className="reveal">
-        {error && <ErrorBanner message={error} onClose={() => setError(null)} isAdmin={isAdmin} />}
+        {error && <ErrorBanner message={error} onClose={() => setError(null)} />}
         {offers === null ? (
           <TrackSkeleton rows={3} />
         ) : visible.length === 0 ? (
@@ -255,7 +255,6 @@ export default function BuyScreen({ reason, isAdmin = false }: { reason?: string
                     onOtherOption={() => clearOfferError(o.id)}
                     onSupport={supportContact ? () => openSupport(supportContact) : undefined}
                     supportContact={supportContact}
-                    isAdmin={isAdmin}
                   />
                 )}
               </div>

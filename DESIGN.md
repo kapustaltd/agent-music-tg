@@ -2,8 +2,8 @@
 name: agent-music-tg Mini App
 description: Quiet Liquid Glass UI for a Telegram Mini App that turns moods into playlists
 colors:
-  accent-rose: "#e0367a"
-  accent-rose-deep: "#b9265f"
+  accent-teal: "#14b8a6"
+  accent-teal-deep: "#0f8f82"
   night-bg: "#050508"
   glass-text: "#f2f3f5"
   glass-muted: "#f2f3f59e"
@@ -38,7 +38,7 @@ spacing:
   lg: "16px"
 components:
   button-primary:
-    backgroundColor: "{colors.accent-rose}"
+    backgroundColor: "{colors.accent-teal}"
     textColor: "#ffffff"
     rounded: "{rounded.pill}"
   button-glass:
@@ -63,18 +63,18 @@ The system explicitly rejects the Spotify-clone look (green-on-black, browsing-f
 
 **Key Characteristics:**
 - Near-black base (`#050508`) with dual light scheme (`#EEEEF3`), driven by Telegram theme.
-- One accent — Accent Rose — reserved for primary actions and active state.
+- One accent — Accent Teal — reserved for primary actions and active state.
 - Glass panels with structural blur (22–24px) and specular top-edge insets.
 - System fonts for UI; Golos Text only for display headings.
 - Short, state-conveying motion (0.18s ease; 0.35s morph for layout shifts).
 
 ## 2. Colors
 
-Restrained strategy: two neutral schemes plus a single rose voice.
+Restrained strategy: two neutral schemes plus a single teal voice.
 
 ### Primary
-- **Accent Rose** (#e0367a): primary buttons, active nav state, selection indicators, focus tint. Interactive-only — rose on a surface means "you can act here".
-- **Deep Rose** (#b9265f): pressed/hover depth of the primary action.
+- **Accent Teal** (#14b8a6): primary buttons, active nav state, selection indicators, focus tint. Interactive-only — teal on a surface means "you can act here".
+- **Deep Teal** (#0f8f82): pressed/hover depth of the primary action.
 
 ### Neutral
 - **Night** (#050508): dark-scheme app background.
@@ -98,7 +98,7 @@ A small status layer that exists **only** to carry meaning the accent cannot: a 
 Never hard-code a status color. A literal red in a rule is drift from `--danger`, not a new shade — the two diverged once already (#ef4444 vs the token's #f87171) and nobody could see why.
 
 ### Named Rules
-**The Signal Rule.** Accent Rose appears only on interactive or active elements — never as ambient decoration, background wash, or gradient text.
+**The Signal Rule.** Accent Teal appears only on interactive or active elements — never as ambient decoration, background wash, or gradient text.
 **The One Room Rule.** All *surfaces* derive from the scheme's base plus white/black alpha. No third hue family enters the neutral stack. The semantic layer above is the sole exception, and it colors icons, text, and thin fills — never a surface.
 
 ## 3. Typography
@@ -141,7 +141,7 @@ Refined and restrained: controls are pills and soft panels that respond by sinki
 
 ### Buttons
 - **Shape:** full pill (999px).
-- **Primary:** Accent Rose fill, white text; deepens to #b9265f on press.
+- **Primary:** Accent Teal fill, white text; deepens to #0f8f82 on press.
 - **Glass:** panel fill + hairline border + specular inset; text color of scheme.
 - **Focus:** visible `:focus-visible` box-shadow ring; **Active:** `--glass-shadow-active` sink.
 - **Disabled:** reduced opacity, no shadow response.
@@ -185,7 +185,7 @@ Focus rings are the one place where the radius follows the element it wraps rath
 Every control in the dock, the player bar, and the full player is at least 44×44, per PRODUCT.md. Where the icon should read smaller, the button keeps the 44px box and the icon is centered inside it; adjacent buttons cancel the container's flex gap with a negative margin rather than shrinking.
 
 ### Navigation (bottom dock)
-- **Style:** floating glass dock (58px), pill indicator morphs between tabs (0.35s spring-ish cubic-bezier), active tab in Accent Rose, labels 13px.
+- **Style:** floating glass dock (58px), active tab in Accent Teal, labels 13px.
 
 ### Player Bar (signature)
 Floating mini-player above the dock: artwork thumbnail, title/artist stack, transport controls; lg-tier shadow; syncs with the full-screen player.
@@ -193,7 +193,7 @@ Floating mini-player above the dock: artwork thumbnail, title/artist stack, tran
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** reserve Accent Rose (#e0367a) for interactive/active elements (The Signal Rule).
+- **Do** reserve Accent Teal (#14b8a6) for interactive/active elements (The Signal Rule).
 - **Do** ship opaque fallbacks for every glass surface (`prefers-reduced-transparency`, missing `backdrop-filter`).
 - **Do** honor `prefers-reduced-motion` on every transition — crossfade or instant.
 - **Do** keep body text ≥4.5:1 against the *effective* glass background in both schemes.
@@ -203,5 +203,5 @@ Floating mini-player above the dock: artwork thumbnail, title/artist stack, tran
 - **Don't** imitate Spotify — no green-on-black identity, no browsing-first layouts.
 - **Don't** regress to a cheap Telegram bot UI — no unstyled lists, no emoji-as-design.
 - **Don't** add glass-on-glass nesting (a glass card inside a glass panel) — one glass layer per depth tier.
-- **Don't** use accent rose as ambient decoration, gradient text, or background wash.
+- **Don't** use accent teal as ambient decoration, gradient text, or background wash.
 - **Don't** exceed three depth tiers on a screen.

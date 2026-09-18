@@ -1,8 +1,8 @@
 export const ACCENT_PRESETS = [
+  { id: "teal", label: "Бирюзовый", value: "#14b8a6" },
   { id: "pink", label: "Розовый", value: "#e0367a" },
   { id: "violet", label: "Фиолетовый", value: "#8b5cf6" },
   { id: "blue", label: "Синий", value: "#3b82f6" },
-  { id: "teal", label: "Бирюзовый", value: "#14b8a6" },
   { id: "green", label: "Зелёный", value: "#22c55e" },
   { id: "amber", label: "Янтарный", value: "#d97706" },
   { id: "red", label: "Красный", value: "#ef4444" },

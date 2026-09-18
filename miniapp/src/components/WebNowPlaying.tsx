@@ -37,12 +37,12 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
     <aside className="web-now-playing" aria-label="Сейчас играет">
       <div className="web-now-playing-header">
         <span className="web-now-playing-label">Сейчас играет</span>
-        <button type="button" className="web-now-playing-queue" aria-label="Открыть очередь" onClick={onOpen}>
+        <button type="button" className="web-now-playing-queue" aria-label="Открыть очередь" title="Открыть очередь" onClick={onOpen}>
           <Queue size={17} weight="bold" />
         </button>
       </div>
 
-      <button type="button" className="web-now-playing-artwork" aria-label="Открыть плеер" onClick={onOpen}>
+      <button type="button" className="web-now-playing-artwork" aria-label="Открыть плеер" title="Открыть плеер" onClick={onOpen}>
         {track.artwork ? (
           <img src={artworkUrl(track.artwork, ARTWORK_FULL)} alt="" decoding="async" />
         ) : (

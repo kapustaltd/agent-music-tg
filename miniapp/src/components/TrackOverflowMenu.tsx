@@ -103,6 +103,7 @@ export function TrackOverflowMenu({ actions, ariaLabel = "Действия с т
         ref={triggerRef}
         className="icon-btn"
         aria-label={ariaLabel}
+        title="Ещё"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={(e) => {

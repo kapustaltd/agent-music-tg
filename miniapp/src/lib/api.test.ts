@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { api, PlaylistLimitReachedError, streamUrl } from "./api";
-import type { AgentEvent } from "./reasoning";
+import type { AgentProgressEvent } from "./api";
 
 const INIT_DATA = "user=%7B%22id%22%3A1%7D&hash=abc";
 
@@ -165,17 +165,18 @@ describe("createPlaylist", () => {
 });
 
 describe("generateStream (SSE)", () => {
-  test("dispatches agent events and resolves with the outcome frame", async () => {
+  test("dispatches safe progress and resolves with the outcome frame", async () => {
     const outcome = { status: "ok", playlist: { name: "P", tracks: [] }, generationId: 3 };
     respond = () =>
       sse([
         { type: "agent_event", event: { kind: "reasoning", delta: "думаю" } },
         { type: "agent_event", event: { kind: "tool_call", id: "t1", name: "searchTrack", args: {} } },
+        { type: "agent_progress", progress: { kind: "progress", phase: "searching_tracks" } },
         { type: "outcome", outcome },
       ]);
-    const seen: AgentEvent[] = [];
+    const seen: AgentProgressEvent[] = [];
     const result = await api.generateStream("грустный вечер", (e) => seen.push(e));
-    expect(seen).toHaveLength(2);
+    expect(seen).toEqual([{ kind: "progress", phase: "searching_tracks" }]);
     expect(result).toEqual(outcome as never);
     expect(calls[0]!.url).toBe("/api/generate/stream");
     expect(JSON.parse(calls[0]!.init.body as string)).toEqual({ prompt: "грустный вечер" });
@@ -197,9 +198,9 @@ describe("generateStream (SSE)", () => {
           },
         }),
       );
-    const seen: AgentEvent[] = [];
+    const seen: AgentProgressEvent[] = [];
     const result = await api.generateStream("p", (e) => seen.push(e));
-    expect(seen).toEqual([{ kind: "reasoning", delta: "частями" }]);
+    expect(seen).toEqual([]);
     expect(result).toEqual({ status: "needs_purchase" });
   });
 

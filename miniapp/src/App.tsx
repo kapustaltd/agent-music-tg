@@ -11,8 +11,16 @@ import { GlassPanel } from "./components/GlassPanel";
 import { ScreenTransition } from "./components/ScreenTransition";
 import { ErrorBanner } from "./components/ErrorBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { api, type MeResponse, type FinalizedPlaylist, type ShopConfig, type HistoryEntry, SubscriptionRequiredError, type SubscriptionChannel } from "./lib/api";
-import { reduceEvents, type AgentEvent } from "./lib/reasoning";
+import {
+  api,
+  type AgentProgressEvent,
+  type MeResponse,
+  type FinalizedPlaylist,
+  type ShopConfig,
+  type HistoryEntry,
+  SubscriptionRequiredError,
+  type SubscriptionChannel,
+} from "./lib/api";
 import { getTelegramWebApp, getInitData, callIfSupported } from "./lib/telegram";
 import { parseShareToken } from "./lib/share";
 import { useKeyboardInset } from "./lib/keyboard";
@@ -91,7 +99,7 @@ function AppInner() {
   // card above the player and block it with no way back in.
   const [artistTarget, setArtistTarget] = useState<{ id?: string; name?: string; fromPlayer?: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [events, setEvents] = useState<AgentEvent[]>([]);
+  const [events, setEvents] = useState<AgentProgressEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [accent, setAccent] = useState<string>(() => initialAccent());
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
@@ -202,7 +210,7 @@ function AppInner() {
     setError(null);
     setEvents([]);
     try {
-      const outcome = await api.generateStream(prompt, (e) => setEvents((prev) => reduceEvents(prev, e)));
+      const outcome = await api.generateStream(prompt, (e) => setEvents((prev) => [...prev, e]));
       applyOutcome(outcome);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -217,7 +225,7 @@ function AppInner() {
     setError(null);
     setEvents([]);
     try {
-      const outcome = await api.generateResumeStream(answer, (e) => setEvents((prev) => reduceEvents(prev, e)));
+      const outcome = await api.generateResumeStream(answer, (e) => setEvents((prev) => [...prev, e]));
       if (outcome.status === "error") {
         openPlainSearchAfterClarifyError(answer);
         return;
@@ -311,8 +319,7 @@ function AppInner() {
           <PromptScreen
             onSubmit={handleSubmit}
             busy={busy}
-            events={events}
-            isAdmin={isAdmin}
+            progress={events}
             onOpenArtist={(target) => setArtistTarget(target)}
             onOpenGeneration={(entry) => openGeneration(entry, entry.saved ?? false)}
             initialMode={screen.initialMode}
@@ -326,8 +333,7 @@ function AppInner() {
             options={screen.options}
             onAnswer={handleClarifyAnswer}
             busy={busy}
-            events={events}
-            isAdmin={isAdmin}
+            progress={events}
           />
         );
       case "results":
@@ -347,7 +353,7 @@ function AppInner() {
           />
         );
       case "buy":
-        return <BuyScreen reason={screen.reason} isAdmin={isAdmin} />;
+        return <BuyScreen reason={screen.reason} />;
       case "playlists":
         return (
           <PlaylistsScreen
@@ -425,7 +431,8 @@ function AppInner() {
   return (
     <ErrorBoundary onReset={handleReset}>
     <main className="app-shell">
-      <header className="app-top-bar">
+      <aside className="app-sidebar" aria-label="Навигация приложения">
+        <header className="app-top-bar">
           <button
             type="button"
             className="app-top-search"
@@ -453,10 +460,27 @@ function AppInner() {
             <span className="app-top-account-label">Профиль</span>
           </button>
         </span>
-      </header>
+        </header>
+
+        <BottomNav
+          tab={tab}
+          isAdmin={isAdmin}
+          onTab={(t) => {
+            navigate(
+                t === "shop"
+                ? { kind: "buy" }
+                : t === "create"
+                  ? lastCreateScreen
+                  : t === "playlists"
+                    ? { kind: "playlists" }
+                    : { kind: "admin" },
+            );
+          }}
+        />
+      </aside>
 
       {error && (
-        <ErrorBanner message={error} onClose={() => setError(null)} onRetry={retryLast} isAdmin={isAdmin} />
+        <ErrorBanner message={error} onClose={() => setError(null)} onRetry={retryLast} />
       )}
 
       <ScreenTransition kind={screen.kind}>
@@ -465,21 +489,6 @@ function AppInner() {
 
       <WebNowPlaying onOpen={() => setShowPlayer(true)} />
       <PlayerBar onOpen={() => setShowPlayer(true)} />
-      <BottomNav
-        tab={tab}
-        isAdmin={isAdmin}
-        onTab={(t) => {
-          navigate(
-              t === "shop"
-              ? { kind: "buy" }
-              : t === "create"
-                ? lastCreateScreen
-                : t === "playlists"
-                  ? { kind: "playlists" }
-                  : { kind: "admin" },
-          );
-        }}
-      />
     </main>
       {showPlayer && (
         <PlayerScreen onClose={() => setShowPlayer(false)} onOpenArtist={(name) => setArtistTarget({ name, fromPlayer: true })} />

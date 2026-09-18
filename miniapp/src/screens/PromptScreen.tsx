@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
-import type { AgentEvent } from "../lib/reasoning";
+import type { AgentProgressEvent } from "../lib/api";
 import { useTextScramble } from "../lib/useTextScramble";
 import { EMPTY_SUGGESTIONS, samplePromptExamples } from "../lib/suggestions";
 import { AiMode } from "./AiMode";
@@ -30,8 +30,7 @@ const HERO_PHRASES: HeroPhrase[] = [
 export function PromptScreen({
   onSubmit,
   busy,
-  events,
-  isAdmin,
+  progress,
   onOpenArtist,
   onOpenGeneration,
   initialMode,
@@ -39,8 +38,7 @@ export function PromptScreen({
 }: {
   onSubmit: (prompt: string) => void;
   busy: boolean;
-  events: AgentEvent[];
-  isAdmin?: boolean;
+  progress: AgentProgressEvent[];
   onOpenArtist: (target: { id?: string; name?: string }) => void;
   onOpenGeneration: (entry: HistoryEntry) => void;
   initialMode?: Mode;
@@ -239,8 +237,7 @@ export function PromptScreen({
         {mode === "ai" ? (
           <AiMode
             busy={busy}
-            events={events}
-            isAdmin={isAdmin}
+            progress={progress}
             suggestions={suggestions}
             examples={promptExamples}
             onRefreshExamples={refreshPromptExamples}

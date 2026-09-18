@@ -1,14 +1,13 @@
 /** Maps raw technical error strings to a short, human-readable message.
- *  The original (technical) text is preserved as `detail` for an optional
- *  developer-facing "Подробнее" disclosure — it must never reach the user
- *  as the primary message. */
+ *  The original text is kept as diagnostics for logging/tests only and is
+ *  never rendered in the production UI. */
 
 export interface FriendlyError {
   /** Short heading shown above the body (optional). */
   title?: string;
   /** Short, non-technical message shown to the user. */
   message: string;
-  /** Raw technical text, shown only inside the collapsible details. */
+  /** Raw technical text for diagnostics; never shown to end users. */
   detail?: string;
 }
 

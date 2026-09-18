@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { WarningCircle, X, Lifebuoy } from "@phosphor-icons/react";
 import { humanizeError } from "../lib/errorText";
 
@@ -8,7 +7,6 @@ export function InlineNotice({
   onOtherOption,
   onSupport,
   supportContact,
-  isAdmin = false,
 }: {
   /** Raw error string (will be humanized). */
   message: string;
@@ -19,10 +17,8 @@ export function InlineNotice({
   onSupport?: () => void;
   /** Contact string for support; when empty the support action is hidden. */
   supportContact?: string;
-  isAdmin?: boolean;
 }) {
   const friendly = humanizeError(message);
-  const [showDetail, setShowDetail] = useState(false);
 
   return (
     <div className="inline-notice" role="alert">
@@ -48,17 +44,6 @@ export function InlineNotice({
               )}
             </div>
           )}
-          {isAdmin && friendly.detail && (
-            <button
-              type="button"
-              className="inline-notice-more"
-              aria-expanded={showDetail}
-              onClick={() => setShowDetail((v) => !v)}
-            >
-              {showDetail ? "Скрыть" : "Подробнее"}
-            </button>
-          )}
-          {showDetail && isAdmin && friendly.detail && <pre className="inline-notice-detail">{friendly.detail}</pre>}
         </div>
       </div>
     </div>

@@ -11,13 +11,77 @@ import { recordDailyEvent, recordEvent } from "../analytics/store";
 type ClarifyOutcome = Extract<GenerationOutcome, { status: "clarify" }>;
 type GenerationFlow = "generate" | "resume" | "extend";
 
-function writeAgentEvent(
-  stream: SSEStreamingApi,
-  event: AgentEvent,
-  isAdmin: boolean,
-): void {
-  if (event.kind === "reasoning" && event.adminOnly && !isAdmin) return;
-  stream.writeSSE({ data: JSON.stringify({ type: "agent_event", event }) }).catch(() => {});
+type AgentProgressPhase =
+  | "searching_tracks"
+  | "searching_artist"
+  | "found_tracks"
+  | "found_artist"
+  | "building_playlist"
+  | "adding_tracks"
+  | "clarifying";
+
+type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase };
+
+function progressForToolCall(name: string): AgentProgressPhase {
+  switch (name) {
+    case "searchArtist":
+      return "searching_artist";
+    case "getArtistTopTracks":
+      return "searching_tracks";
+    case "finalize_playlist":
+      return "building_playlist";
+    case "add_to_playlist":
+      return "adding_tracks";
+    case "clarify":
+      return "clarifying";
+    case "searchTrack":
+    case "searchTracks":
+    default:
+      return "searching_tracks";
+  }
+}
+
+function progressForToolResult(name: string): AgentProgressPhase {
+  switch (name) {
+    case "searchArtist":
+      return "found_artist";
+    case "getArtistTopTracks":
+    case "searchTrack":
+    case "searchTracks":
+      return "found_tracks";
+    case "finalize_playlist":
+      return "building_playlist";
+    case "add_to_playlist":
+      return "adding_tracks";
+    case "clarify":
+      return "clarifying";
+    default:
+      return "building_playlist";
+  }
+}
+
+/**
+ * The agent loop emits private model text and raw tool payloads for server
+ * diagnostics. The Mini App gets only a tiny, product-level progress event;
+ * the raw event is deliberately never serialized into the client stream.
+ */
+function createProgressWriter(stream: SSEStreamingApi): (event: AgentEvent) => void {
+  const calls = new Map<string, string>();
+  const write = (event: AgentProgressEvent) => {
+    stream.writeSSE({ data: JSON.stringify({ type: "agent_progress", progress: event }) }).catch(() => {});
+  };
+
+  return (event) => {
+    if (event.kind === "tool_call") {
+      calls.set(event.id, event.name);
+      write({ kind: "progress", phase: progressForToolCall(event.name) });
+    } else if (event.kind === "tool_result") {
+      const name = calls.get(event.id);
+      if (name && event.ok) write({ kind: "progress", phase: progressForToolResult(name) });
+      calls.delete(event.id);
+    }
+    // reasoning, args, ids and result payloads stay server-side.
+  };
 }
 
 function recordGenerationOutcome(db: AppDb, chatId: number, flow: GenerationFlow, outcome: GenerationOutcome): void {
@@ -78,8 +142,9 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     const prompt = body.prompt.trim();
     recordEvent(db, chatId, "generation_started", { flow: "generate" });
     return streamSSE(c, async (stream) => {
+      const onProgress = createProgressWriter(stream);
       const outcome = await startGeneration(db, chatId, prompt, (e) => {
-        writeAgentEvent(stream, e, c.get("isAdmin"));
+        onProgress(e);
       });
       recordGenerationOutcome(db, chatId, "generate", outcome);
       if (outcome.status === "clarify") {
@@ -126,8 +191,9 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     const answer = body.answer.trim();
     recordEvent(db, chatId, "generation_started", { flow: "resume" });
     return streamSSE(c, async (stream) => {
+      const onProgress = createProgressWriter(stream);
       const outcome = await resumeGeneration(db, chatId, pending.originalPrompt, pending.messages, answer, pending.round, (e) => {
-        writeAgentEvent(stream, e, c.get("isAdmin"));
+        onProgress(e);
       });
       recordGenerationOutcome(db, chatId, "resume", outcome);
       if (outcome.status === "clarify") {
@@ -181,8 +247,9 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     const prompt = body.prompt.trim();
     recordEvent(db, chatId, "generation_started", { flow: "extend" });
     return streamSSE(c, async (stream) => {
+      const onProgress = createProgressWriter(stream);
       const outcome = await extendGeneration(db, chatId, generationId, prompt, (e) => {
-        writeAgentEvent(stream, e, c.get("isAdmin"));
+        onProgress(e);
       });
       recordGenerationOutcome(db, chatId, "extend", outcome);
       if (outcome.status === "clarify") {
