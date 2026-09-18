@@ -778,7 +778,7 @@ export default function PlaylistsScreen({ onOpenHistory }: { onOpenHistory: (ent
         )}
 
         {tracks !== null && tracks.length > 0 && (
-          <div className="stack reveal-stagger">
+          <div className="stack reveal-stagger saved-track-list">
             {tracks.map((track, i) => (
               <TrackRow
                 key={track.uri}

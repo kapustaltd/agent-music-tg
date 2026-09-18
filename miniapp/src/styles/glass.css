@@ -1102,6 +1102,12 @@ textarea.glass-input {
   border-bottom: none;
 }
 
+/* Saved tracks read as one continuous list inside «Избранное», without the
+   extra card-like divider on every song. */
+.saved-track-list .track-row {
+  border-bottom: none;
+}
+
 /* The row's clickable artwork+title+meta block. A real <button> rather than
    folding the whole row (including `trailing`'s own buttons) into one
    role="button" — a button can't validly nest other buttons. */
