@@ -55,7 +55,11 @@ export function createOpencodeProvider(apiKey: string, baseUrl = DEFAULT_BASE_UR
       const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/messages`, {
         method: "POST",
         headers: {
-          authorization: `Bearer ${apiKey}`,
+          // OpenCode Zen's Anthropic-compatible Messages endpoint expects the
+          // Anthropic header, while its OpenAI-compatible endpoint uses Bearer
+          // auth through openaiCompatChat above.
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
           "content-type": "application/json",
         },
         body: JSON.stringify({
