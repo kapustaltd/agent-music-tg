@@ -54,7 +54,7 @@ const DEFAULT_VOLUME = 0.7;
 /** Max extra play attempts when a track fails to start (total = 1 + MAX_RETRIES). */
 const MAX_RETRIES = 2;
 /** Delay between retry attempts (ms). */
-const RETRY_DELAY_MS = 800;
+const RETRY_DELAY_MS = 100;
 
 const FALLBACK_ARTWORK_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
@@ -190,6 +190,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const prevVolumeRef = useRef(DEFAULT_VOLUME);
   const apiRef = useRef<PlayerApi>(null!);
   const retryTimerRef = useRef<number | null>(null);
+  /** Monotonically invalidates errors/rejections from an older source. */
+  const playbackAttemptRef = useRef(0);
   const attemptRef = useRef(0);
   const failureHandledRef = useRef(false);
   const onAudioErrorRef = useRef<(() => void) | null>(null);
@@ -233,14 +235,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   function ensureAudio(): HTMLAudioElement {
     if (audioRef.current) return audioRef.current;
     const audio = new Audio();
-    audio.preload = "none";
+    // The source is assigned from the click handler, so allowing the element
+    // to buffer immediately avoids an extra preload turn before play().
+    audio.preload = "auto";
     audio.volume = state.volume;
     audio.addEventListener("playing", () => {
+      if (audioRef.current !== audio) return;
       feedbackTrackerRef.current?.markPlaying();
       setState((s) => ({ ...s, status: "playing" }));
     });
-    audio.addEventListener("pause", () => setState((s) => (s.status === "error" ? s : { ...s, status: "paused" })));
+    audio.addEventListener("pause", () => {
+      if (audioRef.current !== audio) return;
+      setState((s) => (s.status === "error" ? s : { ...s, status: "paused" }));
+    });
     audio.addEventListener("ended", () => {
+      if (audioRef.current !== audio) return;
       feedbackTrackerRef.current?.markEnded();
       const { queue, queueIndex } = apiRef.current;
       if (queueIndex >= 0 && queueIndex < queue.length - 1) {
@@ -249,23 +258,43 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, status: "paused", progress: 0, currentTime: 0 }));
       }
     });
-    audio.addEventListener("error", () => onAudioErrorRef.current?.());
+    audio.addEventListener("error", () => {
+      // Replacing the media element isolates an old network error from the
+      // newly selected track. The identity check also covers an abort/error
+      // event delivered after the old element was detached.
+      if (audioRef.current === audio) onAudioErrorRef.current?.();
+    });
     audio.addEventListener("timeupdate", () => {
+      if (audioRef.current !== audio) return;
       const fraction = audio.duration > 0 ? audio.currentTime / audio.duration : 0;
       feedbackTrackerRef.current?.updateProgress(audio.currentTime, audio.duration);
       setState((s) => ({ ...s, progress: fraction, currentTime: audio.currentTime, duration: audio.duration }));
     });
     audio.addEventListener("loadedmetadata", () => {
+      if (audioRef.current !== audio) return;
       setState((s) => ({ ...s, duration: audio.duration }));
     });
     audio.addEventListener("durationchange", () => {
+      if (audioRef.current !== audio) return;
       setState((s) => ({ ...s, duration: audio.duration }));
     });
     audioRef.current = audio;
     return audio;
   }
 
+  function replaceAudio(): HTMLAudioElement {
+    const previous = audioRef.current;
+    if (previous) {
+      previous.pause();
+      previous.removeAttribute("src");
+      previous.load();
+    }
+    audioRef.current = null;
+    return ensureAudio();
+  }
+
   function cancelRetry() {
+    playbackAttemptRef.current += 1;
     if (retryTimerRef.current !== null) {
       clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
@@ -274,10 +303,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     onAudioErrorRef.current = null;
   }
 
-  function handlePlayFailure(track: PlayerTrackInfo, queue: PlayerTrackInfo[] | undefined) {
+  function handlePlayFailure(
+    track: PlayerTrackInfo,
+    queue: PlayerTrackInfo[] | undefined,
+    playbackAttempt: number,
+    source: string,
+  ) {
+    const audio = audioRef.current;
+    // A single HTMLAudioElement emits an error when its old src is aborted by
+    // a new one. Do not let that stale event retry the newly selected track.
+    if (!audio || playbackAttemptRef.current !== playbackAttempt || audio.src !== source) return;
     if (failureHandledRef.current) return;
     failureHandledRef.current = true;
-    if (attemptRef.current < MAX_RETRIES && apiRef.current.track?.uri === track.uri) {
+    if (attemptRef.current < MAX_RETRIES) {
       const next = attemptRef.current + 1;
       attemptRef.current = next;
       retryTimerRef.current = window.setTimeout(() => playTrack(track, queue, next), RETRY_DELAY_MS);
@@ -289,7 +327,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   function playTrack(track: PlayerTrackInfo, queue?: PlayerTrackInfo[], attempt = 0) {
     cancelRetry();
     feedbackTrackerRef.current?.switchTo(track);
-    const audio = ensureAudio();
+    const audio = replaceAudio();
     attemptRef.current = attempt;
     failureHandledRef.current = false;
     const nextQueue = queue ?? state.queue;
@@ -307,8 +345,20 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     // Title/artist ride along so the server can silently substitute the same
     // song from another platform if this source turns out to be unplayable.
     audio.src = streamUrl(track.uri, track) + (attempt > 0 ? `&_=${attempt}` : "");
-    onAudioErrorRef.current = () => handlePlayFailure(track, queue);
-    void audio.play().catch(() => handlePlayFailure(track, queue));
+    const source = audio.src;
+    const playbackAttempt = ++playbackAttemptRef.current;
+    onAudioErrorRef.current = () => handlePlayFailure(track, queue, playbackAttempt, source);
+    void audio.play().catch(() => handlePlayFailure(track, queue, playbackAttempt, source));
+  }
+
+  function resumeTrack(track: PlayerTrackInfo, queue?: PlayerTrackInfo[]) {
+    const audio = ensureAudio();
+    const source = audio.src;
+    const playbackAttempt = ++playbackAttemptRef.current;
+    attemptRef.current = 0;
+    failureHandledRef.current = false;
+    onAudioErrorRef.current = () => handlePlayFailure(track, queue, playbackAttempt, source);
+    void audio.play().catch(() => handlePlayFailure(track, queue, playbackAttempt, source));
   }
 
   function setVolume(v: number) {
@@ -360,10 +410,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
           } else if (state.status === "error") {
             playTrack(track, queue, 0);
           } else {
-            attemptRef.current = 0;
-            failureHandledRef.current = false;
-            onAudioErrorRef.current = () => handlePlayFailure(track, queue);
-            void audio.play().catch(() => handlePlayFailure(track, queue));
+            resumeTrack(track, queue);
           }
           return;
         }

@@ -1,4 +1,4 @@
-import { PROGRESSIVE_AUDIO_FORMAT, sourceUrlForUri } from "./extractor";
+import { PROGRESSIVE_AUDIO_FORMAT, sourceUrlForUri, YTDLP_COMMON_ARGS } from "./extractor";
 import { streamResolveSemaphore } from "./ytdlp-limits";
 
 export interface ResolvedStream {
@@ -93,9 +93,7 @@ export class YtDlpStreamResolver implements StreamResolver {
     const proc = Bun.spawn(
       [
         this.binary,
-        "--no-playlist",
-        "--quiet",
-        "--js-runtimes", "node",
+        ...YTDLP_COMMON_ARGS,
         "-f", STREAM_AUDIO_FORMAT,
         "--no-download",
         "--dump-single-json",

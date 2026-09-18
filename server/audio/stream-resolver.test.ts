@@ -51,6 +51,8 @@ printf '%s' '{"requested_downloads":[{"url":"https://media.example/audio.mp3","p
   const args = await readFile(argsFile, "utf8");
   expect(args).toContain("bestaudio[ext=m4a][protocol^=http][protocol!*=m3u8]");
   expect(args).toContain("bestaudio[protocol^=http][protocol!*=m3u8]");
+  expect(args).toContain("--cache-dir");
+  expect(args).toContain("--socket-timeout 10");
 });
 
 /** A fake yt-dlp that answers with `url` and tallies how often it was spawned. */

@@ -80,12 +80,13 @@ const FORMAT_UNAVAILABLE_MARKER = "Requested format is not available";
  * across invocations. The systemd units don't set `User=`, so `$HOME` isn't
  * guaranteed present — without an explicit --cache-dir, yt-dlp can fall back
  * to a guessed location and end up re-solving the YouTube player on every
- * single call instead of reusing what it already worked out.
+ * single call instead of reusing what it already worked out. The same cache
+ * is shared by extraction and streaming.
  */
-const YTDLP_CACHE_DIR = join(process.cwd(), "data", ".yt-dlp-cache");
+export const YTDLP_CACHE_DIR = join(process.cwd(), "data", ".yt-dlp-cache");
 
 /** Flags common to every yt-dlp invocation in this module. */
-const COMMON_ARGS = [
+export const YTDLP_COMMON_ARGS = [
   "--no-playlist",
   "--quiet",
   "--no-warnings",
@@ -136,7 +137,7 @@ async function runWithTimeout(
 async function runProbe(uri: string): Promise<ProbeResult> {
   const url = sourceUrlForUri(uri);
   const proc = Bun.spawn(
-    ["yt-dlp", ...COMMON_ARGS, "-f", "bestaudio/best", "--dump-json", url],
+    ["yt-dlp", ...YTDLP_COMMON_ARGS, "-f", "bestaudio/best", "--dump-json", url],
     { stdout: "pipe", stderr: "pipe" },
   );
   const { stdout, stderr, code } = await runWithTimeout(proc, PROBE_TIMEOUT_MS);
@@ -215,7 +216,7 @@ async function runExtractOnce(url: string, outputTemplate: string, format: strin
   const proc = Bun.spawn(
     [
       "yt-dlp",
-      ...COMMON_ARGS,
+      ...YTDLP_COMMON_ARGS,
       "--concurrent-fragments", "4",
       "-f", format,
       ...(transcode ? ["-x", "--audio-format", "mp3", "--audio-quality", "192K"] : []),
