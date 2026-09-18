@@ -15,4 +15,4 @@
 
 - [x] 3.1 Прогнать изменённые server и Mini App тесты.
 - [x] 3.2 Прогнать `bun run typecheck` и `bun run build:miniapp`.
-- [ ] 3.3 Проверить test instance через `deploy/deploy-test.sh`.
+- [x] 3.3 Проверить test instance через `deploy/deploy-test.sh`.
