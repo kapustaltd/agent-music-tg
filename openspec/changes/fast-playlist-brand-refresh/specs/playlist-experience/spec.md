@@ -24,6 +24,17 @@
 - **THEN** отображается точечная дуга вместо прежней иконки `@`
 - **AND** знак не меняет размеры шапки при переключении темы.
 
+## Requirement: No automatic fullscreen
+
+Mini App SHALL сохранять обычный expanded viewport Telegram, но SHALL NOT
+вызывать `requestFullscreen()` при инициализации без явного действия пользователя.
+
+### Scenario: Open Mini App
+
+- **WHEN** пользователь открывает Mini App
+- **THEN** приложение вызывает обычный `expand()` для заполнения доступного окна
+- **AND** приложение не переводит Telegram WebView в fullscreen автоматически.
+
 ## Requirement: Bounded playlist generation
 
 Обычный запуск генерации SHALL завершать агентский цикл не позднее четырёх

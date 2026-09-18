@@ -138,16 +138,11 @@ function AppInner() {
   useEffect(() => {
     const webApp = getTelegramWebApp();
     webApp?.ready();
-    // expand() is the baseline (fills the viewport under the TG header); on
-    // Bot API 8.0+ clients requestFullscreen() goes further (draws over the
-    // status bar too), and disableVerticalSwipes() stops a stray swipe-down
-    // from collapsing/closing the app mid-use. Both exist on every client's
-    // WebApp object but *throw* on clients below their required Bot API
-    // version rather than no-op — callIfSupported swallows that (see
-    // lib/telegram.ts); a naive `?.()` only guards absence, not support, and
-    // an uncaught throw here unmounts the whole app.
+    // Keep the regular expanded Mini App viewport, but do not request
+    // fullscreen automatically: entering fullscreen should remain a user
+    // choice in Telegram. disableVerticalSwipes() still prevents an accidental
+    // swipe-down from collapsing/closing the app mid-use.
     webApp?.expand();
-    callIfSupported(() => webApp?.requestFullscreen?.());
     callIfSupported(() => webApp?.disableVerticalSwipes?.());
     applyAccent(accent);
     api.me().then(setMe).catch((err) => {
