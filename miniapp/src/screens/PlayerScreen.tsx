@@ -383,18 +383,17 @@ export function PlayerScreen({
             </button>
           </div>
           {/* Reactions and lyrics sit below transport. Keep the lyrics pill
-              centred between the two equal-width reaction controls, matching
-              the familiar player layout used in the web version. */}
+              centred between the two equal-width reaction controls; dislike
+              leads on the left and like closes the row on the right. */}
           <div className="player-screen-secondary-row">
             <button
               type="button"
-              className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
-              aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
-              aria-pressed={!!track && isSaved(track.uri)}
-              disabled={!track || isPending(track.uri)}
-              onClick={toggleLike}
+              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
+              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              disabled={!track || reacting}
+              onClick={() => void toggleDislike()}
             >
-              <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
+              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
             </button>
             <button
               type="button"
@@ -407,12 +406,13 @@ export function PlayerScreen({
             </button>
             <button
               type="button"
-              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
-              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-              disabled={!track || reacting}
-              onClick={() => void toggleDislike()}
+              className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
+              aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+              aria-pressed={!!track && isSaved(track.uri)}
+              disabled={!track || isPending(track.uri)}
+              onClick={toggleLike}
             >
-              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
+              <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
             </button>
           </div>
           <VolumeControl
