@@ -9512,3 +9512,76 @@ div.player-bar-thumbnail::after {
     height: 104px;
   }
 }
+
+/* Generated playlist on phones: give the title the full content width and
+   keep every action inside the viewport. The primary download action is
+   icon-only here; its title/aria-label still exposes the full action. */
+@media (max-width: 839px) {
+  .results-playlist-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .results-playlist-cover {
+    justify-self: center;
+    flex-basis: 96px;
+    width: 96px;
+    height: 96px;
+  }
+
+  .results-playlist-header-copy {
+    width: 100%;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .results-playlist-header .playlist-name-title {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    font-size: clamp(26px, 8vw, 34px);
+  }
+
+  .results-playlist-header .playlist-name-edit-btn {
+    vertical-align: middle;
+  }
+
+  .playlist-name-input {
+    text-align: center;
+    font-size: clamp(26px, 8vw, 34px);
+  }
+
+  .results-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(3, 44px);
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .results-action,
+  .results-action--icon,
+  .results-action--primary {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .results-action--new {
+    width: 100%;
+    min-width: 0;
+    margin-inline-end: 0;
+    justify-content: flex-start;
+    padding-inline: 14px;
+  }
+
+  .results-action--primary span {
+    display: none;
+  }
+}
