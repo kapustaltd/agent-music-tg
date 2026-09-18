@@ -411,7 +411,7 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
       )}
 
       {playlists !== null && playlists.length > 0 && (
-        <div className="stack reveal-stagger mt-12 playlist-list">
+        <div className="stack reveal-stagger mt-12">
           {playlists.map((p, i) => (
             <button key={p.id} type="button" className="track-row search-artist-row" style={{ ["--i" as string]: i }} onClick={() => onOpen(p.id)}>
               <PlaylistCover playlistId={p.id} />
@@ -771,7 +771,7 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
         )}
 
         {tracks !== null && tracks.length > 0 && (
-          <div className="stack reveal-stagger saved-track-list">
+          <div className="stack reveal-stagger">
             {tracks.map((track, i) => (
               <TrackRow
                 key={track.uri}

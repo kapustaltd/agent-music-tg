@@ -1100,13 +1100,6 @@ textarea.glass-input {
   border-bottom: none;
 }
 
-/* Saved tracks read as one continuous list inside «Избранное», without the
-   extra card-like divider on every song. */
-.saved-track-list .track-row {
-  border-bottom: none;
-}
-
-.playlist-list .track-row,
 .playlist-track-list .track-row {
   border-bottom: none;
 }
