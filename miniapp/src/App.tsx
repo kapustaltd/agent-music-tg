@@ -456,7 +456,7 @@ function AppInner() {
       <header className="app-top-bar">
         <span className="app-top-brand" title="music agent">
           <span className="app-top-logo" aria-hidden>
-            <BrandMark size={18} />
+            <BrandMark size={21} />
           </span>
           {shopConfig?.headerTitle || "agent music"}
         </span>

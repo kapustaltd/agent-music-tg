@@ -2,7 +2,7 @@ import type { SSEStreamingApi } from "hono/streaming";
 import { trialActive } from "../access/entitlements";
 import type { User } from "../access/users-store";
 
-export const DEFAULT_PROVIDER = "opencode";
+export const DEFAULT_PROVIDER = "cheapvibecode";
 export const DEFAULT_BACKEND = "youtube-music";
 
 /** Additive `/me` trial shape; older clients ignore it. */

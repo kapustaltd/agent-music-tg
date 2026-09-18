@@ -33,7 +33,7 @@ export function getProviderDefaults(id: ProviderId): ProviderDefaults {
     case "openai":
       return { model: "gpt-5-mini", baseUrl: null, apiKeyConfigured: !!env.openaiApiKey };
     case "cheapvibecode":
-      return { model: "gpt-5", baseUrl: "https://cheapvibecode.ru/v1", apiKeyConfigured: !!env.cheapvibecodeApiKey };
+      return { model: env.cheapvibecodeModel, baseUrl: env.cheapvibecodeBaseUrl, apiKeyConfigured: !!env.cheapvibecodeApiKey };
     case "opencode":
       return { model: env.opencodeModel, baseUrl: env.opencodeBaseUrl, apiKeyConfigured: !!env.opencodeApiKey };
     case "ollama":
@@ -55,7 +55,11 @@ export function createProvider(id: ProviderId, overrides?: ProviderOverrides): A
       return createOpenAIProvider(env.openaiApiKey, model ?? undefined, baseUrl ?? undefined);
     case "cheapvibecode":
       if (!env.cheapvibecodeApiKey) throw new MissingCredentialError(id, "CHEAPVIBECODE_API_KEY");
-      return createCheapVibeCodeProvider(env.cheapvibecodeApiKey, model ?? undefined, baseUrl ?? undefined);
+      return createCheapVibeCodeProvider(
+        env.cheapvibecodeApiKey,
+        model ?? env.cheapvibecodeModel,
+        baseUrl ?? env.cheapvibecodeBaseUrl,
+      );
     case "opencode":
       if (!env.opencodeApiKey) throw new MissingCredentialError(id, "OPENCODE_API_KEY");
       return createOpencodeProvider(env.opencodeApiKey, baseUrl ?? env.opencodeBaseUrl, model ?? env.opencodeModel);

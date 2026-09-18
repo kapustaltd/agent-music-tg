@@ -43,6 +43,8 @@ export const env = {
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
   openaiApiKey: process.env.OPENAI_API_KEY ?? "",
   cheapvibecodeApiKey: process.env.CHEAPVIBECODE_API_KEY ?? "",
+  cheapvibecodeBaseUrl: (process.env.CHEAPVIBECODE_BASE_URL ?? "https://ru.cheapvibecode.ru/v1").replace(/\/+$/, ""),
+  cheapvibecodeModel: process.env.CHEAPVIBECODE_MODEL ?? "deepseek-v4-flash",
   opencodeApiKey: process.env.OPENCODE_API_KEY ?? "",
   opencodeBaseUrl: process.env.OPENCODE_BASE_URL ?? "https://opencode.ai/zen/v1",
   opencodeModel: process.env.OPENCODE_MODEL ?? "claude-sonnet-5",

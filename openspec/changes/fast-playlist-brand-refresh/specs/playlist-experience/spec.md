@@ -41,3 +41,22 @@
 - **WHEN** агент не финализирует плейлист
 - **THEN** он не может бесконечно добавлять LLM-запросы сверх нового лимита
 - **AND** существующий error/fallback path возвращает контролируемый результат.
+
+## Requirement: Reliable CheapVibeCode generation
+
+Для активного CheapVibeCode по умолчанию SHALL использоваться модель
+`deepseek-v4-flash` и endpoint `https://ru.cheapvibecode.ru/v1`. Старый
+сохранённый override `https://cheapvibecode.ru/v1` SHALL автоматически
+нормализоваться на рекомендованный endpoint.
+
+### Scenario: Existing CheapVibeCode configuration
+
+- **WHEN** активен CheapVibeCode без нового явного override
+- **THEN** запрос отправляется на RU endpoint с `deepseek-v4-flash`
+- **AND** старый основной домен не задерживает запуск до fallback.
+
+### Scenario: Provider timeout
+
+- **WHEN** upstream LLM не отвечает
+- **THEN** агентский вызов завершается не позднее 45 секунд
+- **AND** Mini App получает контролируемую ошибку с возможностью повторить.
