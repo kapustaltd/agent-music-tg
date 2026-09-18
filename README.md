@@ -41,14 +41,25 @@ Configure these GitHub Actions values once:
 - environment `test` secret `DEPLOY_KNOWN_HOSTS` — the pinned SSH host key;
 - environment `test` secret `TEST_BOT_TOKEN` — the token used when the test
   `.env` is bootstrapped on the VPS.
+- environment `production` secret `DEPLOY_SSH_KEY` — a separate private key
+  for production promotion;
+- environment `production` secret `DEPLOY_KNOWN_HOSTS` — the pinned
+  production SSH host key;
+- environment `production` variable `DEPLOY_HOST` — the production SSH
+  target. The environment has a required reviewer gate.
 
 The test workflow deploys to `/opt/agent-music-tg-test`, listens on port `8788`,
 and serves the Mini App at `https://miniapp-dev.xdshka.party`. Production is
-still promoted explicitly after the test bot has been checked:
+never deployed by a normal push. To promote the same `main` commit manually,
+open **Actions → CI/CD → Run workflow**, keep `ref=main`, enable
+`deploy_production`, and start the workflow. It will verify the commit, deploy
+the test instance, then pause at the protected `production` environment for
+approval before running the production deploy:
 
 ```bash
 ./deploy/deploy-test.sh             # test instance
-./deploy/deploy.sh                  # standard deploy
+./deploy/deploy-prod.sh             # production promotion after test review
+./deploy/deploy.sh                  # standard local production deploy
 ./deploy/deploy.sh --dry-run        # dry-run (pre-flight only, no changes)
 ./deploy/deploy.sh --no-typecheck   # skip tsc type check
 ./deploy/deploy.sh --dirty          # allow from dirty tree or non-main branch
