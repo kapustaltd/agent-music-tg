@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "@phosphor-icons/react";
+import { ArrowUp, CircleNotch, MagnifyingGlass, MusicNotes, Sparkle } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentEvent } from "../lib/reasoning";
@@ -13,6 +13,55 @@ const MAX_INPUT_HEIGHT = 96;
 type Mode = "ai" | "search";
 
 type HeroPhrase = { before: string; accent: string; after: string };
+
+function DesktopPromptContext() {
+  const paths = [
+    { icon: Sparkle, label: "Настроение", value: "AI соберёт плейлист под момент" },
+    { icon: MagnifyingGlass, label: "Поиск", value: "Трек, альбом или исполнитель" },
+    { icon: MusicNotes, label: "Моя музыка", value: "Сохранить, слушать и скачать" },
+  ] as const;
+
+  return (
+    <aside className="prompt-context" aria-label="Возможности Agent Music">
+      <div className="prompt-context-head">
+        <span className="prompt-context-eyebrow">AGENT MUSIC / 01</span>
+        <span className="prompt-context-live"><span aria-hidden="true" /> live</span>
+      </div>
+
+      <div className="prompt-context-art" aria-hidden="true">
+        <span className="prompt-context-orbit prompt-context-orbit--one" />
+        <span className="prompt-context-orbit prompt-context-orbit--two" />
+        <span className="prompt-context-orbit prompt-context-orbit--three" />
+        <span className="prompt-context-core"><MusicNotes size={26} weight="fill" /></span>
+        <span className="prompt-context-wave prompt-context-wave--one" />
+        <span className="prompt-context-wave prompt-context-wave--two" />
+      </div>
+
+      <div className="prompt-context-copy">
+        <p className="prompt-context-kicker">Музыка под твой момент</p>
+        <h2>Один запрос — готовый маршрут.</h2>
+        <p>Опиши, что происходит сейчас. Агент найдёт нужный вайб и превратит его в плейлист.</p>
+      </div>
+
+      <div className="prompt-context-paths">
+        {paths.map(({ icon: Icon, label, value }) => (
+          <div className="prompt-context-path" key={label}>
+            <span className="prompt-context-path-icon"><Icon size={16} weight="bold" /></span>
+            <span>
+              <strong>{label}</strong>
+              <small>{value}</small>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="prompt-context-foot">
+        <span>Без OAuth</span>
+        <span>YouTube Music · SoundCloud</span>
+      </div>
+    </aside>
+  );
+}
 
 const HERO_PHRASES: HeroPhrase[] = [
   { before: "Что ", accent: "слушаем", after: "?" },
@@ -146,82 +195,84 @@ export function PromptScreen({
 
   return (
     <GlassPanel className="reveal prompt-card">
-      <div className="prompt-hero">
-        {mode === "search" && <p className="prompt-hero-kicker">Поиск по каталогу</p>}
-        {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
-            page structure — wrapping it in <h1> made the page's one heading
-            announce a control instruction instead of readable text. */}
-        <button
-          type="button"
-          className="prompt-hero-action"
-          aria-label={`Сменить фразу. Сейчас: ${heroFull}`}
-          onClick={handleHeroClick}
-        >
-          {heroDisplay.slice(0, heroPhrase.before.length)}
-          <span className="prompt-hero-accent">
-            {heroDisplay.slice(heroPhrase.before.length, heroPhrase.before.length + heroPhrase.accent.length)}
-          </span>
-          {heroDisplay.slice(heroPhrase.before.length + heroPhrase.accent.length)}
-        </button>
-      </div>
-
-      <div className="prompt-modes" role="group" aria-label="Режим">
-        {MODES.map((m) => {
-          const Icon = m.icon;
-          return (
-            <button
-              key={m.id}
-              type="button"
-              className={`prompt-mode-seg-btn${mode === m.id ? " active" : ""}`}
-              aria-pressed={mode === m.id}
-              onClick={() => {
-                if (m.id === "ai" && !prompt.trim()) refreshPromptExamples();
-                setMode(m.id);
-              }}
-            >
-              <Icon size={15} weight={mode === m.id ? "fill" : "regular"} />
-              <span>{m.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className={`prompt-pill${mode === "search" ? " prompt-pill--search" : ""}`}>
-        {mode === "search" && (
-          <span className="prompt-pill-icon" aria-hidden>
-            <MagnifyingGlass size={18} weight="bold" />
-          </span>
-        )}
-        <textarea
-          ref={inputRef}
-          className="prompt-pill-input"
-          rows={1}
-          placeholder={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
-          aria-label={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
-          value={prompt}
-          onChange={(e) => {
-            setPrompt(e.target.value);
-            autoGrow();
-          }}
-          onKeyDown={(e) => {
-            if (mode === "ai" && e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          disabled={busy}
-        />
-        {mode === "ai" && (
+      <div className="prompt-compose">
+        <div className="prompt-hero">
+          {mode === "search" && <p className="prompt-hero-kicker">Поиск по каталогу</p>}
+          {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
+              page structure — wrapping it in <h1> made the page's one heading
+              announce a control instruction instead of readable text. */}
           <button
             type="button"
-            className="prompt-submit"
-            aria-label="Собрать плейлист"
-            disabled={!canSubmit}
-            onClick={submit}
+            className="prompt-hero-action"
+            aria-label={`Сменить фразу. Сейчас: ${heroFull}`}
+            onClick={handleHeroClick}
           >
-            {busy ? <CircleNotch size={18} weight="bold" className="spin" /> : <ArrowUp size={18} weight="bold" />}
+            {heroDisplay.slice(0, heroPhrase.before.length)}
+            <span className="prompt-hero-accent">
+              {heroDisplay.slice(heroPhrase.before.length, heroPhrase.before.length + heroPhrase.accent.length)}
+            </span>
+            {heroDisplay.slice(heroPhrase.before.length + heroPhrase.accent.length)}
           </button>
-        )}
+        </div>
+
+        <div className="prompt-modes" role="group" aria-label="Режим">
+          {MODES.map((m) => {
+            const Icon = m.icon;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                className={`prompt-mode-seg-btn${mode === m.id ? " active" : ""}`}
+                aria-pressed={mode === m.id}
+                onClick={() => {
+                  if (m.id === "ai" && !prompt.trim()) refreshPromptExamples();
+                  setMode(m.id);
+                }}
+              >
+                <Icon size={15} weight={mode === m.id ? "fill" : "regular"} />
+                <span>{m.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className={`prompt-pill${mode === "search" ? " prompt-pill--search" : ""}`}>
+          {mode === "search" && (
+            <span className="prompt-pill-icon" aria-hidden>
+              <MagnifyingGlass size={18} weight="bold" />
+            </span>
+          )}
+          <textarea
+            ref={inputRef}
+            className="prompt-pill-input"
+            rows={1}
+            placeholder={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
+            aria-label={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
+            value={prompt}
+            onChange={(e) => {
+              setPrompt(e.target.value);
+              autoGrow();
+            }}
+            onKeyDown={(e) => {
+              if (mode === "ai" && e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            disabled={busy}
+          />
+          {mode === "ai" && (
+            <button
+              type="button"
+              className="prompt-submit"
+              aria-label="Собрать плейлист"
+              disabled={!canSubmit}
+              onClick={submit}
+            >
+              {busy ? <CircleNotch size={18} weight="bold" className="spin" /> : <ArrowUp size={18} weight="bold" />}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Wraps the mode body (both return fragments) so the desktop 2-column
@@ -249,6 +300,8 @@ export function PromptScreen({
           />
         )}
       </div>
+
+      <DesktopPromptContext />
     </GlassPanel>
   );
 }

@@ -80,6 +80,13 @@ export function BottomNav({
             </button>
           );
         })}
+        <div className="dock-note" aria-label="Источники музыки">
+          <span className="dock-note-icon" aria-hidden="true"><MusicNotes size={15} weight="fill" /></span>
+          <span>
+            <strong>Музыка без аккаунтов</strong>
+            <small>YouTube Music · SoundCloud</small>
+          </span>
+        </div>
       </div>
     </nav>
   );

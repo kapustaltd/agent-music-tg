@@ -80,7 +80,7 @@
   --desktop-gap: 28px;               /* rail <-> content gutter */
   --desktop-gutter: 32px;            /* shell side padding */
   --desktop-content-max: 720px;      /* readable cap, every screen */
-  --desktop-content-max-wide: 1040px; /* prompt screen only, >= 1100px (it sub-splits) */
+  --desktop-content-max-wide: 1220px; /* web composer workspace, >= 1000px */
   --desktop-rail-header-h: 56px;     /* enforced height of .app-top-bar */
   --desktop-sticky-top: 20px;
   --desktop-offset: calc(var(--desktop-rail-w) + var(--desktop-gap));
@@ -7288,5 +7288,454 @@ div.player-bar-thumbnail::after {
   from {
     opacity: 0;
     transform: translateY(-4px);
+  }
+}
+
+/* ============================================================================
+   Web workspace finish
+   ----------------------------------------------------------------------------
+   Telegram is intentionally compact. A plain browser has a much wider and
+   taller canvas, so the create screen gets a real workspace treatment there:
+   the composer, useful starter prompts and the product's actual capabilities
+   occupy the frame instead of floating as a short mobile card in dead space.
+   ============================================================================ */
+.prompt-context,
+.dock-note {
+  display: none;
+}
+
+.prompt-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 840px) {
+  body {
+    background:
+      radial-gradient(70% 80% at 76% 12%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%),
+      radial-gradient(45% 50% at 22% 92%, rgba(74, 56, 146, 0.12), transparent 72%),
+      var(--lg-v2-bg);
+  }
+
+  :root[data-scheme="light"] body {
+    background:
+      radial-gradient(70% 80% at 76% 12%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 68%),
+      radial-gradient(45% 50% at 22% 92%, rgba(74, 56, 146, 0.07), transparent 72%),
+      var(--lg-v2-bg);
+  }
+
+  .app-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.55;
+    background:
+      linear-gradient(90deg, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.035) 50%, transparent calc(50% + 0.5px)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 28%);
+  }
+
+  :root[data-scheme="light"] .app-shell::before {
+    opacity: 0.3;
+    background:
+      linear-gradient(90deg, transparent 0, transparent calc(50% - 0.5px), rgba(13, 13, 16, 0.035) 50%, transparent calc(50% + 0.5px)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 28%);
+  }
+
+  .app-shell > .screen-stack {
+    min-height: calc(100svh - 40px);
+  }
+
+  .app-shell > .screen-stack > .screen-enter,
+  .app-shell > .screen-stack > .screen-exit {
+    min-height: inherit;
+  }
+
+  .app-shell > .dock .dock-inner {
+    min-height: clamp(280px, calc(100svh - 150px), 620px);
+  }
+
+  .app-shell > .dock .dock-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: auto 6px 4px;
+    padding: 16px 6px 6px;
+    border-top: 1px solid var(--lg-v2-panel-border);
+    color: var(--text-muted-dark);
+  }
+
+  :root[data-scheme="light"] .app-shell > .dock .dock-note {
+    color: var(--text-muted-light);
+  }
+
+  .dock-note-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: var(--radius-micro);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .dock-note > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .dock-note strong,
+  .dock-note small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dock-note strong {
+    color: var(--text-dark);
+    font-size: var(--fs-micro);
+    font-weight: 700;
+  }
+
+  :root[data-scheme="light"] .dock-note strong {
+    color: var(--text-light);
+  }
+
+  .dock-note small {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+}
+
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) {
+    --desktop-content-max: min(var(--desktop-content-max-wide), calc(100vw - 380px));
+  }
+
+  .app-shell:has(.prompt-card) > .screen-stack > .screen-enter,
+  .app-shell:has(.prompt-card) > .screen-stack > .screen-enter > .prompt-card {
+    height: 100%;
+  }
+
+  .prompt-card {
+    min-height: clamp(620px, calc(100svh - 40px), 900px);
+    grid-template-columns: minmax(280px, 0.8fr) minmax(300px, 1fr);
+    grid-template-rows: 1fr;
+    column-gap: 24px;
+    padding: 28px;
+  }
+
+  .prompt-card > .prompt-compose {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    min-width: 0;
+    min-height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+    padding: 4px 0;
+  }
+
+  .prompt-card > .prompt-compose .prompt-hero {
+    padding: 0;
+  }
+
+  .prompt-card > .prompt-compose .prompt-modes {
+    align-self: flex-start;
+  }
+
+  .prompt-card > .prompt-compose .prompt-pill {
+    margin-top: auto;
+  }
+
+  .prompt-card > .prompt-body {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 0;
+    height: 100%;
+    padding: 20px;
+    overflow: auto;
+    border: 1px solid var(--lg-v2-panel-border);
+    border-radius: var(--radius-panel);
+    background: color-mix(in srgb, var(--lg-v2-chip) 58%, transparent);
+  }
+
+  :root[data-scheme="light"] .prompt-card > .prompt-body {
+    background: rgba(13, 13, 16, 0.025);
+  }
+
+  .prompt-card > .prompt-body .prompt-starters {
+    min-height: 100%;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 10px;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestion {
+    min-height: 66px;
+    padding: 12px 14px;
+    text-align: left;
+    white-space: normal;
+    line-height: 1.35;
+  }
+}
+
+@media (min-width: 1240px) {
+  .prompt-card {
+    grid-template-columns: minmax(310px, 0.8fr) minmax(380px, 1.05fr) minmax(250px, 0.7fr);
+    column-gap: 18px;
+    padding: 30px;
+  }
+
+  .prompt-card > .prompt-body {
+    grid-column: 2;
+  }
+
+  .prompt-card > .prompt-context {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    min-width: 0;
+    min-height: 100%;
+    flex-direction: column;
+    padding: 4px 2px;
+  }
+
+  .prompt-context-head,
+  .prompt-context-live,
+  .prompt-context-foot {
+    display: flex;
+    align-items: center;
+  }
+
+  .prompt-context-head {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .prompt-context-eyebrow,
+  .prompt-context-live,
+  .prompt-context-foot {
+    color: var(--text-muted-dark);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :root[data-scheme="light"] .prompt-context-eyebrow,
+  :root[data-scheme="light"] .prompt-context-live,
+  :root[data-scheme="light"] .prompt-context-foot {
+    color: var(--text-muted-light);
+  }
+
+  .prompt-context-live {
+    gap: 5px;
+    color: var(--success);
+  }
+
+  .prompt-context-live span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 4px var(--success-bg);
+  }
+
+  .prompt-context-art {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 250px;
+    margin: 28px 0 18px;
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    background:
+      radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 25%),
+      linear-gradient(145deg, color-mix(in srgb, var(--accent) 12%, var(--lg-v2-panel)), var(--lg-v2-bg));
+    border: 1px solid var(--lg-v2-panel-border);
+  }
+
+  .prompt-context-art::before,
+  .prompt-context-art::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  }
+
+  .prompt-context-art::before {
+    width: 170px;
+    height: 170px;
+    opacity: 0.4;
+  }
+
+  .prompt-context-art::after {
+    width: 270px;
+    height: 270px;
+    opacity: 0.18;
+  }
+
+  .prompt-context-orbit {
+    position: absolute;
+    display: block;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    transform: rotate(-24deg);
+  }
+
+  .prompt-context-orbit--one { width: 210px; height: 84px; }
+  .prompt-context-orbit--two { width: 250px; height: 112px; transform: rotate(46deg); opacity: 0.55; }
+  .prompt-context-orbit--three { width: 292px; height: 138px; transform: rotate(88deg); opacity: 0.35; }
+
+  .prompt-context-core {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    color: #fff;
+    background: linear-gradient(145deg, var(--accent), color-mix(in srgb, var(--accent) 45%, #301d5d));
+    box-shadow: 0 20px 40px color-mix(in srgb, var(--accent) 42%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+    transform: rotate(-8deg);
+  }
+
+  .prompt-context-wave {
+    position: absolute;
+    z-index: 1;
+    width: 44%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 80%, white), transparent);
+    opacity: 0.65;
+  }
+
+  .prompt-context-wave--one { top: 32%; transform: rotate(18deg); }
+  .prompt-context-wave--two { bottom: 30%; transform: rotate(-22deg); opacity: 0.4; }
+
+  .prompt-context-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .prompt-context-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-size: var(--fs-micro);
+    font-weight: 700;
+  }
+
+  .prompt-context-copy h2 {
+    margin: 0;
+    color: var(--text-dark);
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 1.06;
+    letter-spacing: var(--ls-display);
+  }
+
+  :root[data-scheme="light"] .prompt-context-copy h2 {
+    color: var(--text-light);
+  }
+
+  .prompt-context-copy > p:last-child {
+    color: var(--text-muted-dark);
+    font-size: var(--fs-label);
+    line-height: 1.45;
+  }
+
+  :root[data-scheme="light"] .prompt-context-copy > p:last-child {
+    color: var(--text-muted-light);
+  }
+
+  .prompt-context-paths {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .prompt-context-path {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--lg-v2-panel-border);
+    border-radius: var(--radius-surface);
+    background: var(--lg-v2-chip);
+  }
+
+  .prompt-context-path-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: var(--radius-micro);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .prompt-context-path > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .prompt-context-path strong,
+  .prompt-context-path small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .prompt-context-path strong {
+    color: var(--text-dark);
+    font-size: var(--fs-micro);
+    font-weight: 700;
+  }
+
+  :root[data-scheme="light"] .prompt-context-path strong {
+    color: var(--text-light);
+  }
+
+  .prompt-context-path small {
+    color: var(--text-muted-dark);
+    font-size: 11px;
+  }
+
+  :root[data-scheme="light"] .prompt-context-path small {
+    color: var(--text-muted-light);
+  }
+
+  .prompt-context-foot {
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid var(--lg-v2-panel-border);
+  }
+
+  .prompt-context-foot span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
   }
 }
