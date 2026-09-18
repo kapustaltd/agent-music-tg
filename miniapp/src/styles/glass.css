@@ -9642,6 +9642,11 @@ div.player-bar-thumbnail::after {
     padding-bottom: calc(var(--mini-player-height) + 104px + env(safe-area-inset-bottom, 0px));
   }
 
+  .prompt-modes {
+    align-self: stretch;
+    width: 100%;
+  }
+
   .prompt-starters .prompt-suggestions {
     padding-inline-end: 24px;
   }
