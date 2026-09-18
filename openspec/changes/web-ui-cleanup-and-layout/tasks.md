@@ -7,4 +7,4 @@
 - [x] 2.2 Убрать ambient/context gradients и зациклевывающуюся декоративную transition-слойку.
 - [x] 3.1 Убрать декоративный prompt-context и собрать web create surface вокруг реального музыкального контента.
 - [x] 3.2 Добавить web now-playing rail при наличии активного трека; mobile/Telegram оставить компактными.
-- [ ] 4.1 Прогнать typecheck, tests, Mini App build и ручную проверку responsive states.
+- [x] 4.1 Прогнать typecheck, tests, Mini App build и ручную проверку responsive states.

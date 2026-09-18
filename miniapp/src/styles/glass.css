@@ -3415,67 +3415,9 @@ a.icon-btn {
   flex-shrink: 0;
 }
 
-/* Compact generation counter — badge, not a primary CTA button. */
-.wallet-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: var(--radius-btn);
-  border: 1px solid var(--lg-v2-chip-border);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted-dark);
-  font-size: var(--fs-micro);
-  font-weight: 600;
-  font-family: inherit;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  transition: opacity 0.12s ease, background 0.12s ease;
-}
-
-.wallet-badge:active {
-  opacity: 0.8;
-}
-
-.wallet-badge svg {
-  color: var(--text-muted-dark);
-  flex-shrink: 0;
-  opacity: 0.8;
-}
-
-.wallet-count {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-dark);
-}
-
-.wallet-badge .wallet-count {
-  color: var(--text-dark);
-  font-size: var(--fs-micro);
-}
-
-:root[data-scheme="light"] .wallet-badge {
-  background: rgba(13, 13, 16, 0.05);
-  color: var(--text-muted-light);
-}
-
-:root[data-scheme="light"] .wallet-badge .wallet-count {
-  color: var(--text-light);
-}
-
 .wallet-label {
   color: var(--text-muted);
   font-weight: 600;
-}
-
-.wallet-trial {
-  margin-left: 1px;
-  padding-left: 6px;
-  border-left: 1px solid var(--lg-v2-chip-border);
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: var(--fs-micro);
 }
 
 /* Desktop (>= 840px) turns this into a sticky vertical nav in the rail
@@ -6702,11 +6644,6 @@ div.player-bar-thumbnail::after {
   .app-shell > .app-top-bar .app-top-account {
     width: 32px;
     padding: 0;
-  }
-
-  .app-shell > .app-top-bar .wallet-badge {
-    gap: 3px;
-    padding-inline: 7px;
   }
 
   /* shopConfig.headerTitle (App.tsx) is operator-configurable and can run long. */
