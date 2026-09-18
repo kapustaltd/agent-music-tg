@@ -37,6 +37,15 @@ const MAX_CACHE_ENTRIES = 2_000;
  * http format" fallback instead of failing resolution outright.
  */
 const STREAM_AUDIO_FORMAT = `${PROGRESSIVE_AUDIO_FORMAT}/bestaudio[protocol^=http][protocol!*=m3u8]`;
+/**
+ * YouTube's default web client can hand back an audio-only URL that the CDN
+ * rejects with 403 from the VPS. Android exposes the same public video through
+ * a working progressive endpoint, including format 18 when no audio-only
+ * format is available.
+ */
+const STREAM_YOUTUBE_FORMAT =
+  `${STREAM_AUDIO_FORMAT}/best[ext=mp4][height<=360][protocol^=http][protocol!*=m3u8]/` +
+  "best[protocol^=http][protocol!*=m3u8]";
 
 interface CachedStream {
   value: ResolvedStream;
@@ -94,7 +103,8 @@ export class YtDlpStreamResolver implements StreamResolver {
       [
         this.binary,
         ...YTDLP_COMMON_ARGS,
-        "-f", STREAM_AUDIO_FORMAT,
+        ...(uri.startsWith("ytm:") ? ["--extractor-args", "youtube:player_client=android"] : []),
+        "-f", uri.startsWith("ytm:") ? STREAM_YOUTUBE_FORMAT : STREAM_AUDIO_FORMAT,
         "--no-download",
         "--dump-single-json",
         sourceUrlForUri(uri),

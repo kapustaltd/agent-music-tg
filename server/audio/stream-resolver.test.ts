@@ -53,6 +53,11 @@ printf '%s' '{"requested_downloads":[{"url":"https://media.example/audio.mp3","p
   expect(args).toContain("bestaudio[protocol^=http][protocol!*=m3u8]");
   expect(args).toContain("--cache-dir");
   expect(args).toContain("--socket-timeout 10");
+
+  await resolver.resolve("ytm:abc");
+  const ytmArgs = await readFile(argsFile, "utf8");
+  expect(ytmArgs).toContain("--extractor-args youtube:player_client=android");
+  expect(ytmArgs).toContain("best[ext=mp4][height<=360][protocol^=http][protocol!*=m3u8]");
 });
 
 /** A fake yt-dlp that answers with `url` and tallies how often it was spawned. */
