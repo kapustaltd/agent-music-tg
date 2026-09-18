@@ -20,6 +20,11 @@ export interface AgentResult {
   toolCalls?: ToolCall[];
 }
 
+/** Optional live hooks used by the SSE Mini App progress view. */
+export interface AgentGenerateOptions {
+  onReasoning?: (delta: string) => void;
+}
+
 /** One turn in the multi-turn conversation the loop builds up, append-only. */
 export type AgentMessage =
   | { role: "user"; content: string }
@@ -28,7 +33,12 @@ export type AgentMessage =
 
 export interface AgentProvider {
   id: string;
-  generateMessages(system: string, messages: AgentMessage[], tools: ToolSpec[]): Promise<AgentResult>;
+  generateMessages(
+    system: string,
+    messages: AgentMessage[],
+    tools: ToolSpec[],
+    options?: AgentGenerateOptions,
+  ): Promise<AgentResult>;
 }
 
 /**

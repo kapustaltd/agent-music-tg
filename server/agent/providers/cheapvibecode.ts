@@ -1,4 +1,4 @@
-import type { AgentProvider } from "../types";
+import type { AgentGenerateOptions, AgentProvider } from "../types";
 import { openaiCompatChat } from "../openai-compat";
 
 const PRIMARY_BASE_URL = "https://ru.cheapvibecode.ru/v1";
@@ -23,12 +23,18 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
   const primary = normalizeBaseUrl(baseUrl);
   return {
     id: "cheapvibecode",
-    generateMessages: async (system, messages, tools) => {
+    generateMessages: async (system, messages, tools, options?: AgentGenerateOptions) => {
       try {
-        return await openaiCompatChat({ baseUrl: primary, apiKey, model, timeoutMs: 40_000 }, system, messages, tools);
+        return await openaiCompatChat({ baseUrl: primary, apiKey, model, timeoutMs: 40_000 }, system, messages, tools, options);
       } catch (err) {
         if (primary !== PRIMARY_BASE_URL || !shouldTryFallback(err)) throw err;
-        return openaiCompatChat({ baseUrl: FALLBACK_BASE_URL, apiKey, model, timeoutMs: 40_000 }, system, messages, tools);
+        return openaiCompatChat(
+          { baseUrl: FALLBACK_BASE_URL, apiKey, model, timeoutMs: 40_000 },
+          system,
+          messages,
+          tools,
+          options,
+        );
       }
     },
   };

@@ -1,4 +1,4 @@
-import type { AgentProvider } from "../types";
+import type { AgentGenerateOptions, AgentProvider } from "../types";
 import { openaiCompatChat } from "../openai-compat";
 
 export function createOpenAIProvider(apiKey: string, model = "gpt-5-mini", baseUrl?: string): AgentProvider {
@@ -6,7 +6,7 @@ export function createOpenAIProvider(apiKey: string, model = "gpt-5-mini", baseU
   const supportsMinimalReasoning = model === "gpt-5" || model.startsWith("gpt-5-mini");
   return {
     id: "openai",
-    generateMessages: (system, messages, tools) =>
+    generateMessages: (system, messages, tools, options?: AgentGenerateOptions) =>
       openaiCompatChat(
         {
           baseUrl: baseUrl ?? officialBaseUrl,
@@ -19,6 +19,7 @@ export function createOpenAIProvider(apiKey: string, model = "gpt-5-mini", baseU
         system,
         messages,
         tools,
+        options,
       ),
   };
 }

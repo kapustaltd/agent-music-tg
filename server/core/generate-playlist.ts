@@ -265,8 +265,18 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
   }
 
   for (let i = 0; i < maxIterations; i++) {
+    let streamedReasoning = false;
+    const providerOptions = opts.onEvent
+      ? {
+          onReasoning: (delta: string) => {
+            if (!delta) return;
+            streamedReasoning = true;
+            opts.onEvent?.({ kind: "reasoning", delta, adminOnly: true });
+          },
+        }
+      : undefined;
     const raced = await withTimeout(
-      opts.provider.generateMessages(opts.systemPrompt ?? PLAYLIST_SYSTEM_PROMPT, messages, MUSIC_AGENT_TOOLS),
+      opts.provider.generateMessages(opts.systemPrompt ?? PLAYLIST_SYSTEM_PROMPT, messages, MUSIC_AGENT_TOOLS, providerOptions),
       LLM_CALL_TIMEOUT_MS,
       LLM_TIMEOUT_SENTINEL as unknown as Awaited<ReturnType<AgentProvider["generateMessages"]>>,
     );
@@ -274,7 +284,7 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
       throw new Error(`LLM call timed out after ${LLM_CALL_TIMEOUT_MS / 1000}s`);
     }
     const result = raced;
-    if (result.reasoning?.trim()) {
+    if (!streamedReasoning && result.reasoning?.trim()) {
       opts.onEvent?.({ kind: "reasoning", delta: result.reasoning.trim(), adminOnly: true });
     }
     const calls = result.toolCalls ?? [];

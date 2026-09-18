@@ -1,4 +1,12 @@
-import { parseJsonResponse, type AgentMessage, type AgentProvider, type AgentResult, type ToolCall, type ToolSpec } from "../types";
+import {
+  parseJsonResponse,
+  type AgentGenerateOptions,
+  type AgentMessage,
+  type AgentProvider,
+  type AgentResult,
+  type ToolCall,
+  type ToolSpec,
+} from "../types";
 import { toolsForAnthropic } from "../tools";
 import { markHistoryCacheBreakpoints, toAnthropicMessages, type AnthropicContentBlock } from "../anthropic-messages";
 import { openaiCompatChat } from "../openai-compat";
@@ -24,7 +32,8 @@ export function createOpencodeProvider(apiKey: string, baseUrl = DEFAULT_BASE_UR
   if (!ANTHROPIC_FAMILY_MODEL.test(model)) {
     return {
       id: "opencode",
-      generateMessages: (system, messages, tools) => openaiCompatChat({ baseUrl, apiKey, model }, system, messages, tools),
+      generateMessages: (system, messages, tools, options?: AgentGenerateOptions) =>
+        openaiCompatChat({ baseUrl, apiKey, model }, system, messages, tools, options),
     };
   }
 
