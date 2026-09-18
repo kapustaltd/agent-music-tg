@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, CircleNotch, MagnifyingGlass, MusicNotes, Sparkle } from "@phosphor-icons/react";
+import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentEvent } from "../lib/reasoning";
@@ -13,55 +13,6 @@ const MAX_INPUT_HEIGHT = 96;
 type Mode = "ai" | "search";
 
 type HeroPhrase = { before: string; accent: string; after: string };
-
-function DesktopPromptContext() {
-  const paths = [
-    { icon: Sparkle, label: "Настроение", value: "AI соберёт плейлист под момент" },
-    { icon: MagnifyingGlass, label: "Поиск", value: "Трек, альбом или исполнитель" },
-    { icon: MusicNotes, label: "Моя музыка", value: "Сохранить, слушать и скачать" },
-  ] as const;
-
-  return (
-    <aside className="prompt-context" aria-label="Возможности Agent Music">
-      <div className="prompt-context-head">
-        <span className="prompt-context-eyebrow">AGENT MUSIC / 01</span>
-        <span className="prompt-context-live"><span aria-hidden="true" /> live</span>
-      </div>
-
-      <div className="prompt-context-art" aria-hidden="true">
-        <span className="prompt-context-orbit prompt-context-orbit--one" />
-        <span className="prompt-context-orbit prompt-context-orbit--two" />
-        <span className="prompt-context-orbit prompt-context-orbit--three" />
-        <span className="prompt-context-core"><MusicNotes size={26} weight="fill" /></span>
-        <span className="prompt-context-wave prompt-context-wave--one" />
-        <span className="prompt-context-wave prompt-context-wave--two" />
-      </div>
-
-      <div className="prompt-context-copy">
-        <p className="prompt-context-kicker">Музыка под твой момент</p>
-        <h2>Один запрос — готовый маршрут.</h2>
-        <p>Опиши, что происходит сейчас. Агент найдёт нужный вайб и превратит его в плейлист.</p>
-      </div>
-
-      <div className="prompt-context-paths">
-        {paths.map(({ icon: Icon, label, value }) => (
-          <div className="prompt-context-path" key={label}>
-            <span className="prompt-context-path-icon"><Icon size={16} weight="bold" /></span>
-            <span>
-              <strong>{label}</strong>
-              <small>{value}</small>
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="prompt-context-foot">
-        <span>Без OAuth</span>
-        <span>YouTube Music · SoundCloud</span>
-      </div>
-    </aside>
-  );
-}
 
 const HERO_PHRASES: HeroPhrase[] = [
   { before: "Что ", accent: "слушаем", after: "?" },
@@ -307,7 +258,6 @@ export function PromptScreen({
         )}
       </div>
 
-      <DesktopPromptContext />
     </GlassPanel>
   );
 }
