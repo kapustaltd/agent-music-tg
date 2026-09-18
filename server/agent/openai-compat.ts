@@ -45,6 +45,8 @@ export interface OpenAICompatConfig {
   timeoutMs?: number;
   /** OpenAI reasoning budget. Omitted for third-party compatible APIs. */
   reasoningEffort?: "minimal" | "low" | "medium" | "high";
+  /** Maximum completion size for gateways that require an explicit budget. */
+  maxTokens?: number;
 }
 
 interface OpenAIMessagePayload {
@@ -217,6 +219,7 @@ export async function openaiCompatChat(
       messages: toOpenAIMessages(system, messages),
       tools: tools.length > 0 ? toolsForOpenAIChat(tools) : undefined,
       reasoning_effort: config.reasoningEffort,
+      max_tokens: config.maxTokens,
       stream: streaming ? true : undefined,
     }),
     signal: AbortSignal.timeout(config.timeoutMs ?? 120_000),

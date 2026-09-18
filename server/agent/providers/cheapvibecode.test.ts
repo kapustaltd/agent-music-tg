@@ -70,6 +70,7 @@ describe("CheapVibeCode provider defaults", () => {
     ).resolves.toMatchObject({ text: "ok", reasoning: "Выбираю треки" });
 
     expect(requestBodies.map((body) => body.model)).toEqual(["deepseek-v4-flash", "gpt-5.6-luna"]);
+    expect(requestBodies.map((body) => body.max_tokens)).toEqual([4096, 4096]);
     expect(requestBodies[1]?.stream).toBeUndefined();
     expect(reasoningDeltas).toEqual([]);
   });

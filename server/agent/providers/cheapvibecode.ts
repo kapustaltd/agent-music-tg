@@ -8,6 +8,7 @@ const FALLBACK_MODEL = "gpt-5.6-luna";
 // A hung model must not consume the whole agent timeout before the provider
 // can try another CheapVibeCode model or endpoint.
 const CALL_TIMEOUT_MS = 12_000;
+const MAX_TOKENS = 4_096;
 
 function normalizeBaseUrl(baseUrl: string | undefined): string {
   const value = (baseUrl ?? PRIMARY_BASE_URL).replace(/\/+$/, "");
@@ -29,7 +30,13 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
     id: "cheapvibecode",
     generateMessages: async (system, messages, tools, options?: AgentGenerateOptions) => {
       try {
-        return await openaiCompatChat({ baseUrl: primary, apiKey, model, timeoutMs: CALL_TIMEOUT_MS }, system, messages, tools, options);
+        return await openaiCompatChat(
+          { baseUrl: primary, apiKey, model, timeoutMs: CALL_TIMEOUT_MS, maxTokens: MAX_TOKENS },
+          system,
+          messages,
+          tools,
+          options,
+        );
       } catch (err) {
         if (!shouldTryFallback(err)) throw err;
 
@@ -39,7 +46,7 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
         if (primary === PRIMARY_BASE_URL && model !== FALLBACK_MODEL) {
           try {
             return await openaiCompatChat(
-              { baseUrl: primary, apiKey, model: FALLBACK_MODEL, timeoutMs: CALL_TIMEOUT_MS },
+              { baseUrl: primary, apiKey, model: FALLBACK_MODEL, timeoutMs: CALL_TIMEOUT_MS, maxTokens: MAX_TOKENS },
               system,
               messages,
               tools,
@@ -55,7 +62,13 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
 
         if (primary !== PRIMARY_BASE_URL) throw err;
         return openaiCompatChat(
-          { baseUrl: FALLBACK_BASE_URL, apiKey, model: model === FALLBACK_MODEL ? model : FALLBACK_MODEL, timeoutMs: CALL_TIMEOUT_MS },
+          {
+            baseUrl: FALLBACK_BASE_URL,
+            apiKey,
+            model: model === FALLBACK_MODEL ? model : FALLBACK_MODEL,
+            timeoutMs: CALL_TIMEOUT_MS,
+            maxTokens: MAX_TOKENS,
+          },
           system,
           messages,
           tools,
