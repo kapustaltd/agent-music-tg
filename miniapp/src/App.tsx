@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
-import { Wallet, Sun, Moon } from "@phosphor-icons/react";
+import { MagnifyingGlass, Moon, Sun, UserCircle, Wallet } from "@phosphor-icons/react";
 import { PromptScreen } from "./screens/PromptScreen";
 import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";
@@ -449,13 +449,32 @@ function AppInner() {
     <ErrorBoundary onReset={handleReset}>
     <main className="app-shell">
       <header className="app-top-bar">
+        <button
+          type="button"
+          className="app-top-search"
+          aria-label="Открыть поиск"
+          onClick={() => navigate({ kind: "prompt", initialMode: "search" }, "back")}
+        >
+          <MagnifyingGlass size={16} weight="bold" aria-hidden="true" />
+          <span>Поиск</span>
+        </button>
+
         <span className="app-top-brand" title="music agent">
           <span className="app-top-logo" aria-hidden>
             <BrandMark size={21} />
           </span>
-          {shopConfig?.headerTitle || "agent music"}
+          <span className="app-top-brand-title">{shopConfig?.headerTitle || "agent music"}</span>
         </span>
         <span className="app-top-actions">
+          <button
+            type="button"
+            className="app-top-account"
+            aria-label="Открыть профиль"
+            onClick={() => navigate({ kind: "profile" })}
+          >
+            <UserCircle size={17} weight="bold" aria-hidden="true" />
+            <span className="app-top-account-label">Профиль</span>
+          </button>
           {tab !== "profile" && (
             <button
               type="button"

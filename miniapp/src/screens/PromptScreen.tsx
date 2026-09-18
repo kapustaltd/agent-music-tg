@@ -103,6 +103,12 @@ export function PromptScreen({
   const [promptExamples, setPromptExamples] = useState(() => samplePromptExamples());
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // The header can navigate to the existing prompt screen without remounting
+  // it. Keep the visible mode in sync with that navigation target.
+  useEffect(() => {
+    if (initialMode) setMode(initialMode);
+  }, [initialMode]);
+
   // One SQLite-backed call, so it is cheap enough to fetch on mount and lets
   // both modes fill their empty state without a spinner.
   useEffect(() => {
