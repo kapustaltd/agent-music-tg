@@ -19,6 +19,7 @@ import { useKeyboardInset } from "./lib/keyboard";
 import { PlayerProvider, usePlayer } from "./lib/player";
 import { MyMusicProvider } from "./lib/my-music";
 import { PlayerBar } from "./components/PlayerBar";
+import { WebNowPlaying } from "./components/WebNowPlaying";
 import { BottomNav } from "./components/BottomNav";
 import { PlayerScreen } from "./screens/PlayerScreen";
 import { SharedPlaylistScreen } from "./screens/SharedPlaylistScreen";
@@ -462,6 +463,7 @@ function AppInner() {
         {renderScreen()}
       </ScreenTransition>
 
+      <WebNowPlaying onOpen={() => setShowPlayer(true)} />
       <PlayerBar onOpen={() => setShowPlayer(true)} />
       <BottomNav
         tab={tab}

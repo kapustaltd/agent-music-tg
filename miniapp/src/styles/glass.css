@@ -7398,8 +7398,7 @@ div.player-bar-thumbnail::after {
     min-height: calc(100svh - 40px);
   }
 
-  .app-shell > .screen-stack > .screen-enter,
-  .app-shell > .screen-stack > .screen-exit {
+  .app-shell > .screen-stack > .screen-enter {
     min-height: inherit;
   }
 
@@ -7480,5 +7479,399 @@ div.player-bar-thumbnail::after {
     text-align: left;
     white-space: normal;
     line-height: 1.35;
+  }
+}
+
+/* Desktop now-playing rail -------------------------------------------------
+   The compact player remains the mobile/Telegram control. A browser with
+   enough width gets a real secondary column, like a music workspace, but it
+   only appears when the user actually has an active track. */
+.web-now-playing {
+  display: none;
+}
+
+@media (min-width: 1240px) {
+  .app-shell:has(> .web-now-playing) {
+    grid-template-columns:
+      [rail-start] var(--desktop-rail-w)
+      [rail-end content-start] minmax(0, var(--desktop-content-max))
+      [content-end now-start] minmax(240px, 280px)
+      [now-end];
+  }
+
+  .app-shell:has(> .web-now-playing) > .screen-stack {
+    grid-column: content;
+  }
+
+  .app-shell:has(> .web-now-playing) > .player-bar {
+    right: calc(var(--desktop-gutter) + 280px + var(--desktop-gap));
+    width: min(560px, calc(100% - var(--desktop-offset) - var(--desktop-gutter) - 280px - var(--desktop-gap)));
+  }
+
+  .app-shell > .web-now-playing {
+    grid-column: now;
+    grid-row: 1 / -1;
+    align-self: start;
+    display: flex;
+    min-width: 0;
+    min-height: min(720px, calc(100svh - var(--desktop-sticky-top) - 120px));
+    position: sticky;
+    top: var(--desktop-sticky-top);
+    flex-direction: column;
+    gap: 18px;
+    padding: 18px;
+    overflow: hidden;
+    border: 1px solid var(--lg-v2-panel-border);
+    border-radius: var(--radius-panel);
+    background: var(--lg-v2-panel);
+    box-shadow: var(--lg-v2-shadow-md);
+  }
+
+  :root[data-scheme="light"] .app-shell > .web-now-playing {
+    background: var(--lg-v2-panel);
+  }
+
+  .web-now-playing-header,
+  .web-now-playing-title-row,
+  .web-now-playing-time,
+  .web-now-playing-controls {
+    display: flex;
+    align-items: center;
+  }
+
+  .web-now-playing-header,
+  .web-now-playing-title-row {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .web-now-playing-label,
+  .web-now-playing-section-title {
+    color: var(--text-dark);
+    font-size: var(--fs-label);
+    font-weight: 700;
+  }
+
+  :root[data-scheme="light"] .web-now-playing-label,
+  :root[data-scheme="light"] .web-now-playing-section-title {
+    color: var(--text-light);
+  }
+
+  .web-now-playing-queue,
+  .web-now-playing-like,
+  .web-now-playing-next {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: var(--text-muted-dark);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  :root[data-scheme="light"] .web-now-playing-queue,
+  :root[data-scheme="light"] .web-now-playing-like,
+  :root[data-scheme="light"] .web-now-playing-next {
+    color: var(--text-muted-light);
+  }
+
+  .web-now-playing-queue:hover,
+  .web-now-playing-like:hover,
+  .web-now-playing-next:hover:not(:disabled) {
+    color: var(--text-dark);
+    background: var(--lg-v2-chip);
+  }
+
+  :root[data-scheme="light"] .web-now-playing-queue:hover,
+  :root[data-scheme="light"] .web-now-playing-like:hover,
+  :root[data-scheme="light"] .web-now-playing-next:hover:not(:disabled) {
+    color: var(--text-light);
+  }
+
+  .web-now-playing-like.active {
+    color: var(--accent);
+  }
+
+  .web-now-playing-queue:focus-visible,
+  .web-now-playing-like:focus-visible,
+  .web-now-playing-next:focus-visible,
+  .web-now-playing-play:focus-visible,
+  .web-now-playing-artwork:focus-visible,
+  .web-now-playing-queue-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .web-now-playing-artwork {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-surface);
+    color: var(--accent);
+    background: var(--lg-v2-chip);
+    cursor: pointer;
+  }
+
+  .web-now-playing-artwork img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .web-now-playing-artwork > span {
+    font-size: 42px;
+    line-height: 1;
+  }
+
+  .web-now-playing-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .web-now-playing-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .web-now-playing-copy strong,
+  .web-now-playing-copy span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .web-now-playing-copy strong {
+    color: var(--text-dark);
+    font-size: var(--fs-body);
+  }
+
+  .web-now-playing-copy span {
+    color: var(--text-muted-dark);
+    font-size: var(--fs-label);
+  }
+
+  :root[data-scheme="light"] .web-now-playing-copy strong {
+    color: var(--text-light);
+  }
+
+  :root[data-scheme="light"] .web-now-playing-copy span {
+    color: var(--text-muted-light);
+  }
+
+  .web-now-playing-progress {
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--lg-v2-track);
+  }
+
+  .web-now-playing-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+  }
+
+  .web-now-playing-time {
+    justify-content: space-between;
+    color: var(--text-muted-dark);
+    font-size: var(--fs-micro);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :root[data-scheme="light"] .web-now-playing-time {
+    color: var(--text-muted-light);
+  }
+
+  .web-now-playing-controls {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .web-now-playing-play {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .web-now-playing-next:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .web-now-playing-up-next {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--lg-v2-panel-border);
+  }
+
+  .web-now-playing-queue-list {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 4px;
+    overflow: auto;
+  }
+
+  .web-now-playing-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 7px;
+    border: 0;
+    border-radius: var(--radius-micro);
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .web-now-playing-queue-item:hover {
+    background: var(--lg-v2-chip);
+  }
+
+  .web-now-playing-queue-item img,
+  .web-now-playing-queue-fallback {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: var(--radius-micro);
+    object-fit: cover;
+    color: var(--accent);
+    background: var(--lg-v2-chip);
+  }
+
+  .web-now-playing-queue-item > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .web-now-playing-queue-item strong,
+  .web-now-playing-queue-item small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .web-now-playing-queue-item strong {
+    color: var(--text-dark);
+    font-size: var(--fs-micro);
+  }
+
+  .web-now-playing-queue-item small,
+  .web-now-playing-empty {
+    color: var(--text-muted-dark);
+    font-size: var(--fs-micro);
+  }
+
+  :root[data-scheme="light"] .web-now-playing-queue-item strong {
+    color: var(--text-light);
+  }
+
+  :root[data-scheme="light"] .web-now-playing-queue-item small,
+  :root[data-scheme="light"] .web-now-playing-empty {
+    color: var(--text-muted-light);
+  }
+
+  .web-now-playing-empty {
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+/* The create surface is content-led on the web: the composer gets a clear
+   top row and the actual recommendation feed owns the width below it. This
+   avoids reserving a tall, empty column beside a short input form. */
+@media (min-width: 1000px) {
+  .app-shell:has(.prompt-card) > .screen-stack,
+  .app-shell:has(.prompt-card) > .screen-stack > .screen-enter,
+  .app-shell:has(.prompt-card) > .screen-stack > .screen-enter > .prompt-card {
+    min-height: 0;
+    height: auto;
+  }
+
+  .app-shell:has(.prompt-card) > .screen-stack {
+    align-self: start;
+  }
+
+  .prompt-card {
+    display: flex;
+    min-height: clamp(540px, calc(100svh - 160px), 720px);
+    flex-direction: column;
+    gap: 24px;
+    padding: 28px;
+  }
+
+  .prompt-card > .prompt-compose {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+    grid-template-rows: auto auto;
+    gap: 16px 24px;
+    padding: 0;
+  }
+
+  .prompt-card > .prompt-compose .prompt-hero {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .prompt-card > .prompt-compose .prompt-modes {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .prompt-card > .prompt-compose .prompt-pill {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-self: end;
+    margin-top: 0;
+  }
+
+  .prompt-card > .prompt-body {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    padding: 20px;
+    overflow: visible;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters {
+    min-height: 0;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
