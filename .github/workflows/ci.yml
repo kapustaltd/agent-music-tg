@@ -34,12 +34,12 @@ jobs:
       - name: Type-check server
         run: bun run typecheck
 
-      - name: Run server tests
-        run: bun test
-
       - name: Install Mini App dependencies
         working-directory: miniapp
         run: bun install --frozen-lockfile
+
+      - name: Run tests
+        run: bun test
 
       - name: Build Mini App
         run: bun run build:miniapp
