@@ -3,9 +3,11 @@ import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, Pen
 import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
+import { SaveTrackButton } from "../components/SaveTrackButton";
 import { requestAddToPlaylist } from "../components/AddToPlaylistButton";
 import { usePlayer } from "../lib/player";
 import { api, type FinalizedPlaylist, type Track, type TrackVerificationStatus } from "../lib/api";
+import { useMyMusic } from "../lib/my-music";
 import { shareUrlToChat } from "../lib/share";
 
 type DownloadState = { kind: "idle" } | { kind: "sending" } | { kind: "sent" } | { kind: "error"; message: string };
@@ -36,13 +38,9 @@ export function ResultsScreen({
   const [nameDraft, setNameDraft] = useState(playlist.name);
   const [renameBusy, setRenameBusy] = useState(false);
   const [verification, setVerification] = useState<Record<string, TrackVerificationStatus>>({});
-  const [savedTracks, setSavedTracks] = useState<Record<string, boolean>>({});
+  const { isSaved, toggleSaved } = useMyMusic();
   const polling = useRef(false);
   const done = useRef(false);
-
-  useEffect(() => {
-    api.myMusic().then(({ tracks }) => setSavedTracks(Object.fromEntries(tracks.map((t) => [t.uri, true])))).catch(() => {});
-  }, []);
 
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
@@ -132,19 +130,18 @@ export function ResultsScreen({
     }
   }
 
-  /** Merged action (screen-refinement D7): downloads the track to chat AND saves it to Favorites in one tap. */
+  /** Merged action (screen-refinement D7): downloads the track to chat AND saves it to Favorites in one tap.
+   *  The two effects surface separately though — this button's own icon/label
+   *  track only the chat delivery; the heart next to it is what shows "saved". */
   async function handleTrackDownload(track: Track) {
     if (trackDownloads[track.uri]?.kind === "sending") return;
     setTrackDownloads((m) => ({ ...m, [track.uri]: { kind: "sending" } }));
     try {
       await Promise.all([
         api.download(`${track.title} — ${track.artist}`, [track]),
-        savedTracks[track.uri]
-          ? Promise.resolve()
-          : api.addMyMusic({ uri: track.uri, title: track.title, artist: track.artist, artwork: track.artwork }),
+        isSaved(track.uri) ? Promise.resolve() : toggleSaved(track),
       ]);
       downloadedUris.current.add(track.uri);
-      setSavedTracks((m) => ({ ...m, [track.uri]: true }));
       setTrackDownloads((m) => ({ ...m, [track.uri]: { kind: "sent" } }));
       window.dispatchEvent(new CustomEvent("download-created"));
     } catch (err) {
@@ -230,10 +227,12 @@ export function ResultsScreen({
   }
 
   return (
-    <GlassPanel className="reveal">
+    <GlassPanel className="reveal results-panel">
+      <div className="results-main">
       {editingName ? (
         <input
           className="playlist-name-input"
+          aria-label="Название плейлиста"
           autoFocus
           value={nameDraft}
           disabled={renameBusy}
@@ -251,22 +250,16 @@ export function ResultsScreen({
           }}
         />
       ) : (
-        <h1
-          className="playlist-name-title"
-          role="button"
-          tabIndex={0}
-          aria-label="Переименовать плейлист"
-          onClick={() => { setNameDraft(current.name); setEditingName(true); }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setNameDraft(current.name);
-              setEditingName(true);
-            }
-          }}
-        >
+        <h1 className="playlist-name-title">
           {current.name}
-          <PencilSimple size={16} weight="bold" className="playlist-name-edit-icon" />
+          <button
+            type="button"
+            className="playlist-name-edit-btn"
+            aria-label={`Переименовать плейлист «${current.name}»`}
+            onClick={() => { setNameDraft(current.name); setEditingName(true); }}
+          >
+            <PencilSimple size={16} weight="bold" className="playlist-name-edit-icon" />
+          </button>
         </h1>
       )}
       {done.current && visibleTracks.length === 0 ? (
@@ -279,40 +272,33 @@ export function ResultsScreen({
             style={{ ["--i" as string]: i }}
             onClick={() => handleTrackClick(track)}
             artwork={track.artwork}
+            artworkBadge={verificationIcon(track.uri)}
             title={track.title}
             meta={track.artist}
             trailing={
               <>
-                {verificationIcon(track.uri)}
-                <button
-                  type="button"
-                  className="icon-btn track-download-btn"
-                  aria-label={
-                    trackDownloads[track.uri]?.kind === "sent" || savedTracks[track.uri]
-                      ? "Отправлено в чат и в избранном"
-                      : "Скачать и добавить в избранное"
-                  }
-                  title={
-                    trackDownloads[track.uri]?.kind === "sent" || savedTracks[track.uri]
-                      ? "Отправлено в чат и в избранном"
-                      : "Скачать и добавить в избранное"
-                  }
-                  disabled={trackDownloads[track.uri]?.kind === "sending"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void handleTrackDownload(track);
-                  }}
-                >
-                  {trackDownloads[track.uri]?.kind === "sending" ? (
-                    <CircleNotch size={18} className="spin" />
-                  ) : trackDownloads[track.uri]?.kind === "sent" || savedTracks[track.uri] ? (
-                    <CheckCircle size={18} weight="fill" />
-                  ) : (
-                    <DownloadSimple size={18} />
-                  )}
-                </button>
+                <SaveTrackButton track={track} />
                 <TrackOverflowMenu
                   actions={[
+                    {
+                      key: "download",
+                      label:
+                        trackDownloads[track.uri]?.kind === "sending"
+                          ? "Отправляем в чат…"
+                          : trackDownloads[track.uri]?.kind === "sent"
+                            ? "Отправить повторно"
+                            : "Скачать в чат",
+                      icon:
+                        trackDownloads[track.uri]?.kind === "sending" ? (
+                          <CircleNotch size={18} className="spin" />
+                        ) : trackDownloads[track.uri]?.kind === "sent" ? (
+                          <CheckCircle size={18} weight="fill" />
+                        ) : (
+                          <DownloadSimple size={18} />
+                        ),
+                      disabled: trackDownloads[track.uri]?.kind === "sending",
+                      onClick: () => void handleTrackDownload(track),
+                    },
                     {
                       key: "add-to-playlist",
                       label: "Добавить в плейлист",
@@ -328,6 +314,8 @@ export function ResultsScreen({
         ))}
         </div>
       )}
+      </div>
+      <div className="results-side">
       {download.kind === "error" && (
         <div className="error-row mt-12">
           <span className="error-row-icon">
@@ -371,6 +359,7 @@ export function ResultsScreen({
             value={extendPrompt}
             onChange={(e) => setExtendPrompt(e.target.value)}
             placeholder="Что добавить в плейлист?"
+            aria-label="Что добавить в плейлист?"
             disabled={extendBusy}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -439,6 +428,7 @@ export function ResultsScreen({
             <DownloadSimple size={18} />
           )}
         </button>
+      </div>
       </div>
     </GlassPanel>
   );

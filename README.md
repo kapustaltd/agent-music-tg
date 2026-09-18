@@ -25,7 +25,29 @@ cd miniapp && bun run build   # typecheck + build the Mini App
 
 ## Deploy
 
+Every push to `main` runs the checks in `.github/workflows/ci.yml` and, when
+they pass, automatically deploys the separate test instance through
+`deploy/deploy-test.sh`. Pull requests run the checks but never deploy. The
+workflow can also be started manually with `workflow_dispatch` and an optional
+ref. Deploys are serialized so two releases cannot restart the test service at
+the same time.
+
+Configure these GitHub Actions values once:
+
+- repository/environment variable `DEPLOY_HOST` (optional; defaults to
+  `root@45.128.235.219`);
+- environment `test` secret `DEPLOY_SSH_KEY` — the private key for the
+  dedicated Actions deploy key;
+- environment `test` secret `DEPLOY_KNOWN_HOSTS` — the pinned SSH host key;
+- environment `test` secret `TEST_BOT_TOKEN` — the token used when the test
+  `.env` is bootstrapped on the VPS.
+
+The test workflow deploys to `/opt/agent-music-tg-test`, listens on port `8788`,
+and serves the Mini App at `https://miniapp-dev.xdshka.party`. Production is
+still promoted explicitly after the test bot has been checked:
+
 ```bash
+./deploy/deploy-test.sh             # test instance
 ./deploy/deploy.sh                  # standard deploy
 ./deploy/deploy.sh --dry-run        # dry-run (pre-flight only, no changes)
 ./deploy/deploy.sh --no-typecheck   # skip tsc type check
@@ -58,7 +80,9 @@ curl -fsS http://127.0.0.1:8787/healthz
 
 ## Audio downloads & in-app playback
 
-Playlist results can be downloaded as audio: the Mini App's «Скачать» button queues a server-side job that extracts each track via **yt-dlp** (+ **ffmpeg**) and delivers it to the user's bot chat as audio messages (`deploy.sh` installs/updates both tools on the VPS). Uploaded tracks are cached by Telegram `file_id` (`audio_cache` table), so repeats never re-extract or re-upload. Download history lives in the profile's «Загрузки» tab with re-send and delete. Tracks also play inline in the Mini App via `GET /api/stream/:uri` (Range-supporting, initData-authenticated via query param): the server resolves a short-lived upstream audio URL with `yt-dlp` and proxies bytes immediately without downloading or transcoding a full MP3 first.
+Playlist results can be downloaded as audio: the Mini App's «Скачать» button queues a server-side job that resolves a progressive audio stream with **yt-dlp** and pipes it straight into Telegram, overlapping the upstream download with the Bot API upload instead of first waiting for a complete temporary file. If streaming is unavailable or Telegram rejects it, the existing **yt-dlp** (+ **ffmpeg**) file extraction path takes over automatically (`deploy.sh` installs/updates both tools on the VPS). Uploaded tracks are cached by Telegram `file_id` (`audio_cache` table), so repeats never re-extract or re-upload. Download history lives in the profile's «Загрузки» tab with re-send and delete. Tracks also play inline in the Mini App via `GET /api/stream/:uri` (Range-supporting, initData-authenticated via query param).
+
+The fast streaming path uses the catalog duration because bytes are never written as a complete local file. The file fallback measures the produced audio with **ffprobe**, and that measured value wins whenever available. Either value is cached with the `file_id`, so re-sends carry it too. SoundCloud results that are preview-only (`policy: SNIP`) or have no playable transcoding (`policy: BLOCK`) are dropped at search time rather than surfaced as songs.
 
 Endpoints (all under initData auth): `POST /api/download`, `GET /api/downloads`, `POST /api/downloads/:id/resend`, `DELETE /api/downloads/:id`, `GET /api/stream/:uri`.
 
@@ -73,6 +97,22 @@ Links take the form `https://t.me/<bot>?start=pl_<token>`. Set the optional `TEL
 Arrivals are attributed to `share / telegram / shared-playlist` in admin statistics and credit the author through the existing referral reward, with the same per-invitee dedupe and cap. `GET /api/shares/:token` is the one route that serves callers who are not on the allowlist — that is what lets a link work for someone who is not a user yet; publishing, listing, and revoking stay behind the normal gate. Authors can revoke a link at any time (it then answers 410) and see its view count.
 
 Endpoints: `POST /api/shares`, `GET /api/shares`, `GET /api/shares/:token`, `DELETE /api/shares/:token`.
+
+## Group-chat keyword search
+
+Added to any group chat (no allowlist entry needed — a group is not a user), the bot answers `найти <название трека>` — or `@bot <название трека>`, for when [privacy mode](https://core.telegram.org/bots/features#privacy-mode) is still enabled and it never sees plain text — by sending the first matching result straight into the chat. A reply to the bot's own message is deliberately *not* a trigger: it's as often conversational ("где?", "спасибо") as a new search, and a wrong-track false positive is worse than requiring the keyword or mention. **Turn privacy mode off** (`@BotFather` → `/setprivacy` → **Disable**) for the keyword to work without a mention; existing group memberships need the bot removed and re-added for the change to take effect.
+
+The first request for an uncached track uses the streaming path above; every later request for that track, in any chat, is a `file_id` re-send from `audio_cache` and lands almost instantly. Concurrent requests for the same not-yet-cached track are coalesced so only one delivery runs. A separate `groupExtractRateLimiter` (5/min per group) caps cache misses so one busy group can't starve shared audio capacity.
+
+Groups never touch the `users` table — no signup credits, no "new user" admin alert, no seat in per-user analytics or broadcast — they get their own counters in `group_chats` instead, surfaced in admin statistics as active groups / searches / tracks sent.
+
+## Inline search in any chat
+
+Typing `@<bot> <название трека>` in *any* chat — a DM with someone else, a group the bot was never added to, anywhere Telegram allows invoking an inline bot — pops up a list of tracks; tapping one sends it as playable audio from your own name. Open to everyone, same as group keyword search, guarded only by rate limits (no allowlist gate).
+
+Requires two one-time steps in `@BotFather`: **`/setinline`** (turns on the feature at all; set a placeholder like «название трека») and, optionally, **`/setinlinefeedback`** → `Enabled` (lets the bot count tracks actually sent via `chosen_inline_result`, for admin stats only — search still works without it).
+
+Telegram requires answering an inline query within a few seconds, and only accepts already-uploaded audio (`audio_file_id`) as a result — there's no way to turn a placeholder into playable audio afterward. So a query answers instantly from whatever `audio_cache` already has, while cache misses are uploaded in the background to a private **storage channel**, purely to mint a reusable `file_id`. Set `AUDIO_STORAGE_CHAT_ID` to a channel where the bot is an admin with post rights. The same low-priority queue also warms the first result after Mini App and private-bot searches; it deduplicates URIs, processes one track at a time, and starts at most ten new tracks per minute. Without the channel, search still works but background warming is disabled.
 
 ## Payments (CryptoBot)
 

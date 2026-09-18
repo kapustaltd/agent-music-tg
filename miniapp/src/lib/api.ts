@@ -1,4 +1,4 @@
-import { getInitData } from "./telegram";
+import { getInitData, getInlineAuthToken } from "./telegram";
 import type { AgentEvent } from "./reasoning";
 
 /**
@@ -7,7 +7,10 @@ import type { AgentEvent } from "./reasoning";
  * must fall through to the status code rather than becoming the message.
  */
 async function responseError(res: Response): Promise<Error> {
-  const body = (await res.json().catch(() => ({}))) as { error?: string };
+  const body = (await res.json().catch(() => ({}))) as { error?: string; channels?: SubscriptionChannel[] };
+  if (body.error === "subscription_required" && body.channels) {
+    return new SubscriptionRequiredError(body.channels);
+  }
   return new Error(body.error || res.statusText || `request failed: ${res.status}`);
 }
 
@@ -18,6 +21,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers: {
       ...(isFormData ? {} : { "content-type": "application/json" }),
       "X-Telegram-Init-Data": getInitData(),
+      "X-Inline-Auth": getInlineAuthToken(),
       ...init?.headers,
     },
   });
@@ -108,6 +112,7 @@ export interface AdminStats {
   }[];
   trafficSources: AttributionBreakdown[];
   utmCampaigns: AttributionBreakdown[];
+  groups: { total: number; active: number; searches: number; tracks: number };
 }
 
 export interface AttributionBreakdown {
@@ -370,6 +375,29 @@ export class PlaylistLimitReachedError extends Error {
   }
 }
 
+export interface SubscriptionChannel {
+  title: string;
+  username: string | null;
+  inviteLink: string | null;
+}
+
+export class SubscriptionRequiredError extends Error {
+  constructor(public readonly channels: SubscriptionChannel[]) {
+    super("subscription_required");
+  }
+}
+
+export interface SubscriptionRecheckResult {
+  ok: boolean;
+  channels: Array<{
+    channelId: number;
+    title: string;
+    username: string | null;
+    inviteLink: string | null;
+    isMember: boolean;
+  }>;
+}
+
 export interface HistoryEntry {
   id: number;
   prompt: string;
@@ -414,6 +442,8 @@ export function streamUrl(uri: string, meta?: { title?: string; artist?: string;
   // Built by hand rather than with URLSearchParams: initData is itself a signed
   // query string, and form-encoding it (spaces as "+") would break the hash.
   let url = `/api/stream/${encodeURIComponent(uri)}?initData=${encodeURIComponent(getInitData())}`;
+  const inlineAuth = getInlineAuthToken();
+  if (inlineAuth) url += `&inlineAuth=${encodeURIComponent(inlineAuth)}`;
   if (meta?.title) url += `&title=${encodeURIComponent(meta.title)}`;
   if (meta?.artist) url += `&artist=${encodeURIComponent(meta.artist)}`;
   if (meta?.durationMs) url += `&duration=${Math.round(meta.durationMs)}`;
@@ -430,7 +460,11 @@ export type TrackVerificationStatus = "pending" | "checking" | "verified" | "una
 async function requestSSE<T>(path: string, body: unknown, onEvent: (e: AgentEvent) => void): Promise<T> {
   const res = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json", "X-Telegram-Init-Data": getInitData() },
+    headers: {
+      "content-type": "application/json",
+      "X-Telegram-Init-Data": getInitData(),
+      "X-Inline-Auth": getInlineAuthToken(),
+    },
     body: JSON.stringify(body),
   });
   if (!res.ok || !res.body) throw await responseError(res);
@@ -669,4 +703,8 @@ export const api = {
   adminPaymentsConfig: () => request<PaymentsConfig>("/api/admin/payments-config"),
   adminSetPaymentsConfig: (paymentsEnabled: boolean | null) =>
     request<{ ok: boolean }>("/api/admin/payments-config", { method: "POST", body: JSON.stringify({ paymentsEnabled }) }),
+
+  // --- Subscription gate ---
+  recheckSubscription: () =>
+    request<SubscriptionRecheckResult>("/api/subscription/recheck", { method: "POST" }),
 };

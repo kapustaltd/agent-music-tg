@@ -4,7 +4,13 @@ import { env } from "../env";
 import { verifyInitData } from "../lib/telegram-init-data";
 import { getChatRole } from "../lib/access-control";
 import { getOpenAccess } from "../lib/settings";
+import {
+  listRequiredChannels,
+  isSubscriptionGateEnabled,
+} from "../access/channel-gate-store";
+import { checkAllMemberships } from "../access/subscription-check";
 import type { AppEnv } from "./context";
+import { verifyInlineAuthToken } from "../lib/inline-auth";
 
 /**
  * Verifies initData and populates the auth context. `allowUnlisted` skips only
@@ -17,7 +23,21 @@ function authenticate(db: AppDb, allowUnlisted: boolean): MiddlewareHandler<AppE
     // initData is the same signed credential either way; verifyInitData
     // rejects tampering identically.
     const initData = c.req.header("X-Telegram-Init-Data") ?? c.req.query("initData") ?? "";
-    const verified = verifyInitData(initData, env.telegramBotToken);
+    let verified = verifyInitData(initData, env.telegramBotToken);
+    if (!verified) {
+      const inlineAuth = verifyInlineAuthToken(
+        c.req.header("X-Inline-Auth") ?? c.req.query("inlineAuth") ?? "",
+        env.telegramBotToken,
+      );
+      if (inlineAuth) {
+        verified = {
+          chatId: inlineAuth.userId,
+          user: { id: inlineAuth.userId },
+          authDate: inlineAuth.authDate,
+          startParam: null,
+        };
+      }
+    }
     if (!verified) {
       return c.json({ error: "unauthenticated" }, 401);
     }
@@ -61,3 +81,45 @@ export const requireAdmin: MiddlewareHandler<AppEnv> = async (c, next) => {
   }
   await next();
 };
+
+/**
+ * Subscription gate for the Mini App API. Rejects non-subscribed users with a
+ * 403 carrying the list of required channels, so the Mini App can show its own
+ * gate screen.
+ *
+ * Skips (calls next()) when:
+ * - the caller is an admin
+ * - the gate is disabled or has no required channels
+ * - getChatMember is not wired (fail-open, matching other optional deps)
+ *
+ * Uses the TTL-cached check (force=false) since this runs on every gated
+ * request. The recheck route uses force=true for manual re-validation.
+ */
+export function requireSubscription(db: AppDb, deps: { getChatMember?: (channelId: number, chatId: number) => Promise<{ status: string }> }): MiddlewareHandler<AppEnv> {
+  return async (c, next) => {
+    if (c.get("isAdmin")) return next();
+    if (!deps.getChatMember) return next();
+    if (!isSubscriptionGateEnabled(db)) return next();
+
+    const channels = listRequiredChannels(db);
+    if (channels.length === 0) return next();
+
+    const chatId = c.get("chatId");
+    const membershipDeps = { getChatMember: deps.getChatMember };
+
+    const allOk = await checkAllMemberships(db, membershipDeps, channels, chatId, false);
+    if (allOk) return next();
+
+    return c.json(
+      {
+        error: "subscription_required",
+        channels: channels.map((ch) => ({
+          title: ch.title,
+          username: ch.username,
+          inviteLink: ch.inviteLink,
+        })),
+      },
+      403,
+    );
+  };
+}

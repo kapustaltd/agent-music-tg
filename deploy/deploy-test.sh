@@ -15,7 +15,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/deploy.conf"
 [ -f "$CONFIG_FILE" ] && source "$CONFIG_FILE"
 
-: ${HOST:="root@103.214.69.38"}
+: ${HOST:="root@45.128.235.219"}
 : ${TEST_API_DIR:="/opt/agent-music-tg-test"}
 : ${TEST_STATIC_DIR:="/srv/www/miniapp-dev.xdshka.party"}
 : ${TEST_PUBLIC_ORIGIN:="https://miniapp-dev.xdshka.party"}

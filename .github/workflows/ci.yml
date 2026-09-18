@@ -1,0 +1,99 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or commit SHA to verify and deploy"
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install server dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type-check server
+        run: bun run typecheck
+
+      - name: Install Mini App dependencies
+        working-directory: miniapp
+        run: bun install --frozen-lockfile
+
+      # run-generation.test.ts installs process-wide module mocks. Run it in
+      # its own Bun process so parallel test-file discovery cannot import the
+      # real generation module before the test mock is registered.
+      - name: Run generation tests
+        run: bun test server/core/run-generation.test.ts
+
+      - name: Run remaining tests
+        run: bun test --path-ignore-patterns '**/run-generation.test.ts'
+
+      - name: Build Mini App
+        run: bun run build:miniapp
+
+  deploy-test:
+    name: Deploy test instance
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: test
+    concurrency:
+      group: agent-music-tg-test
+      cancel-in-progress: false
+    env:
+      HOST: ${{ vars.DEPLOY_HOST || 'root@45.128.235.219' }}
+      TEST_BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$KNOWN_HOSTS"
+          test -n "$TEST_BOT_TOKEN"
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 644 "$HOME/.ssh/known_hosts"
+          ssh -o BatchMode=yes -o IdentitiesOnly=yes "$HOST" true
+          printf 'SSH_OPTS=%s\n' "-o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
+
+      - name: Deploy test instance
+        run: ./deploy/deploy-test.sh --no-typecheck

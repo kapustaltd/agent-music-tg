@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
   ArrowLeft,
-  Heart,
+  HeartStraight,
   Pause,
   Play,
   SkipBack,
@@ -12,12 +12,16 @@ import {
   CircleNotch,
 } from "@phosphor-icons/react";
 import { usePlayer, usePlayerTime } from "../lib/player";
+import { useMyMusic } from "../lib/my-music";
 import { VolumeControl } from "../components/VolumeControl";
 import { LyricsScreen } from "./LyricsScreen";
 import { api } from "../lib/api";
 import { ARTWORK_FULL, artworkUrl } from "../lib/artwork";
+import { useDialog } from "../lib/useDialog";
+import { shouldEngageVerticalSwipe } from "../lib/swipeGesture";
 
 const SWIPE_THRESHOLD = 80;
+type SwipeState = "idle" | "pending" | "swiping" | "rejected";
 
 /**
  * Upgrade known low-res artwork URLs to a size that fills the fullscreen
@@ -47,14 +51,21 @@ export function PlayerScreen({
   const { progress, currentTime, duration } = usePlayerTime();
   const [artworkError, setArtworkError] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
-  const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [reacting, setReacting] = useState(false);
+  const { isSaved, isPending, toggleSaved } = useMyMusic();
 
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useDialog<HTMLDivElement>(true, onClose);
+  const startX = useRef(0);
   const startY = useRef(0);
   const currentY = useRef(0);
-  const swiping = useRef(false);
+  // "pending" until travel clears a slop and picks a dominant axis (see
+  // shouldEngageVerticalSwipe) — only then does the gesture actually start
+  // moving the card. "rejected" once a horizontal drag has been identified,
+  // so the rest of that same gesture is ignored instead of re-evaluated on
+  // every subsequent pointermove.
+  const swipeState = useRef<SwipeState>("idle");
+  const rafId = useRef<number | null>(null);
 
   // Drag state for the progress slider: while dragging, show the local ratio
   // instead of the live player progress and only commit the seek on release
@@ -64,36 +75,31 @@ export function PlayerScreen({
   const [dragRatio, setDragRatio] = useState<number | null>(null);
 
   useEffect(() => {
-    setLiked(false);
+    // Closing mid-swipe (e.g. via the back button while dragging) must not
+    // leave a stale rAF callback writing to overlayRef after unmount.
+    return () => {
+      if (rafId.current != null) cancelAnimationFrame(rafId.current);
+    };
+  }, []);
+
+  useEffect(() => {
     setDisliked(false);
     // Per-track, not sticky: without this one dead cover URL kept the
     // placeholder up for every track played afterwards.
     setArtworkError(false);
     if (!track) return;
+    // "liked" now comes from the shared my-music store (see toggleLike below)
+    // — reactionStatus is only consulted here for "disliked", which has no
+    // other source of truth.
     api
       .reactionStatus(track.uri)
-      .then(({ liked, disliked }) => {
-        setLiked(liked);
-        setDisliked(disliked);
-      })
+      .then(({ disliked }) => setDisliked(disliked))
       .catch(() => {});
   }, [track?.uri]);
 
-  async function toggleLike() {
-    if (!track || reacting) return;
-    setReacting(true);
-    try {
-      if (liked) {
-        await api.removeMyMusic(track.uri);
-        setLiked(false);
-      } else {
-        await api.addMyMusic({ uri: track.uri, title: track.title, artist: track.artist, artwork: track.artwork });
-        setLiked(true);
-        setDisliked(false);
-      }
-    } finally {
-      setReacting(false);
-    }
+  function toggleLike() {
+    if (!track) return;
+    void toggleSaved(track);
   }
 
   async function toggleDislike() {
@@ -106,7 +112,6 @@ export function PlayerScreen({
       } else {
         await api.dislikeTrack({ uri: track.uri, title: track.title, artist: track.artist });
         setDisliked(true);
-        setLiked(false);
       }
     } finally {
       setReacting(false);
@@ -137,42 +142,82 @@ export function PlayerScreen({
     player.seek(ratio);
   }
 
+  function resetCardTransform() {
+    if (rafId.current != null) {
+      cancelAnimationFrame(rafId.current);
+      rafId.current = null;
+    }
+    if (overlayRef.current) {
+      overlayRef.current.style.transition = "";
+      overlayRef.current.style.transform = "";
+    }
+  }
+
   function handlePointerDown(e: PointerEvent) {
     // Swipe-to-close must not capture pointers aimed at controls: capturing
     // retargets pointerup to the container and the button click never fires.
     if ((e.target as HTMLElement).closest("button, [role='slider'], input")) return;
+    // Desktop has the back button and Escape — a mouse drag anywhere on the
+    // card would otherwise read as an attempted swipe-to-close.
+    if (e.pointerType === "mouse") return;
+    startX.current = e.clientX;
     startY.current = e.clientY;
     currentY.current = e.clientY;
-    swiping.current = true;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    // Not "swiping" yet — see shouldEngageVerticalSwipe. Pointer capture is
+    // deferred to the same moment, so a mostly-horizontal drag never grabs
+    // the pointer away from whatever it was aimed at.
+    swipeState.current = "pending";
   }
 
   function handlePointerMove(e: PointerEvent) {
-    if (!swiping.current) return;
-    currentY.current = e.clientY;
-    const dy = currentY.current - startY.current;
-    if (dy > 0 && overlayRef.current) {
-      overlayRef.current.style.transition = "none";
-      overlayRef.current.style.transform = `translateY(${dy}px)`;
+    const state = swipeState.current;
+    if (state === "idle" || state === "rejected") return;
+    const dx = e.clientX - startX.current;
+    const dy = e.clientY - startY.current;
+
+    if (state === "pending") {
+      if (!shouldEngageVerticalSwipe(dx, dy)) {
+        // Only reject once the horizontal axis is clearly ahead — small,
+        // still-ambiguous travel stays "pending" so a gesture that starts
+        // diagonally can still resolve to a vertical swipe a moment later.
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+          swipeState.current = "rejected";
+        }
+        return;
+      }
+      swipeState.current = "swiping";
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     }
+
+    currentY.current = e.clientY;
+    // Coalesce every pointermove between frames into one style write instead
+    // of one per event — pointermove can fire far faster than the display.
+    if (rafId.current != null) return;
+    rafId.current = requestAnimationFrame(() => {
+      rafId.current = null;
+      const liveDy = currentY.current - startY.current;
+      if (liveDy > 0 && overlayRef.current) {
+        overlayRef.current.style.transition = "none";
+        overlayRef.current.style.transform = `translateY(${liveDy}px)`;
+      }
+    });
   }
 
   function handlePointerUp(_e: PointerEvent) {
-    if (!swiping.current) return;
-    swiping.current = false;
+    const wasSwiping = swipeState.current === "swiping";
+    swipeState.current = "idle";
+    if (!wasSwiping) return;
     const dy = currentY.current - startY.current;
-    if (dy > SWIPE_THRESHOLD) {
-      if (overlayRef.current) {
-        overlayRef.current.style.transition = "";
-        overlayRef.current.style.transform = "";
-      }
-      onClose();
-    } else {
-      if (overlayRef.current) {
-        overlayRef.current.style.transition = "";
-        overlayRef.current.style.transform = "";
-      }
-    }
+    resetCardTransform();
+    if (dy > SWIPE_THRESHOLD) onClose();
+  }
+
+  function handlePointerCancel(_e: PointerEvent) {
+    // Interrupted mid-gesture (e.g. the OS takes the pointer for its own
+    // back-swipe) — without this the card could be left translated off
+    // its resting position with no matching pointerup to undo it.
+    swipeState.current = "idle";
+    resetCardTransform();
   }
 
   const playIcon =
@@ -193,9 +238,13 @@ export function PlayerScreen({
       <div
         ref={overlayRef}
         className="player-screen glass"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Плеер"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
         <div className="player-screen-header">
           <button
@@ -206,6 +255,7 @@ export function PlayerScreen({
           >
             <ArrowLeft size={24} />
           </button>
+          <span className="player-screen-header-label">Сейчас играет</span>
         </div>
 
         <div className="player-screen-artwork">
@@ -253,14 +303,37 @@ export function PlayerScreen({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round((dragRatio ?? progress) * 100)}
+              aria-valuetext={
+                showTime
+                  ? `${formatTime(dragRatio != null ? dragRatio * duration : currentTime)} из ${formatTime(duration)}`
+                  : undefined
+              }
               tabIndex={0}
               onPointerDown={handleProgressPointerDown}
               onPointerMove={handleProgressPointerMove}
               onPointerUp={handleProgressPointerUp}
               onPointerCancel={handleProgressPointerUp}
               onKeyDown={(e) => {
-                if (e.key === "ArrowRight") player.seek(progress + 0.05);
-                if (e.key === "ArrowLeft") player.seek(progress - 0.05);
+                switch (e.key) {
+                  case "ArrowRight":
+                  case "ArrowUp":
+                    e.preventDefault();
+                    player.seek(progress + 0.05);
+                    break;
+                  case "ArrowLeft":
+                  case "ArrowDown":
+                    e.preventDefault();
+                    player.seek(progress - 0.05);
+                    break;
+                  case "Home":
+                    e.preventDefault();
+                    player.seek(0);
+                    break;
+                  case "End":
+                    e.preventDefault();
+                    player.seek(1);
+                    break;
+                }
               }}
             >
               <div className={`player-screen-progress${dragRatio != null ? " dragging" : ""}`}>
@@ -282,15 +355,6 @@ export function PlayerScreen({
 
         <div className="player-screen-controls">
           <div className="player-screen-controls-row">
-            <button
-              type="button"
-              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
-              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-              disabled={!track || reacting}
-              onClick={() => void toggleDislike()}
-            >
-              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
-            </button>
             <button
               type="button"
               className="player-screen-skip-btn"
@@ -317,25 +381,41 @@ export function PlayerScreen({
             >
               <SkipForward size={26} weight="fill" />
             </button>
+          </div>
+          {/* Neither the heart nor dislike/lyrics is a transport control, so
+              all three sit below the transport row instead of bookending it —
+              a 4th item there would unbalance the row around the play button
+              (see DESIGN.md). */}
+          <div className="player-screen-secondary-row">
             <button
               type="button"
-              className={`player-screen-reaction-btn${liked ? " active" : ""}`}
-              aria-label={liked ? "Убрать из избранного" : "Нравится"}
-              disabled={!track || reacting}
-              onClick={() => void toggleLike()}
+              className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
+              aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+              aria-pressed={!!track && isSaved(track.uri)}
+              disabled={!track || isPending(track.uri)}
+              onClick={toggleLike}
             >
-              <Heart size={20} weight={liked ? "fill" : "regular"} />
+              <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
+            </button>
+            <button
+              type="button"
+              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
+              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              disabled={!track || reacting}
+              onClick={() => void toggleDislike()}
+            >
+              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
+            </button>
+            <button
+              type="button"
+              className="player-screen-lyrics-btn"
+              aria-label="Текст песни"
+              disabled={!track}
+              onClick={() => setShowLyrics(true)}
+            >
+              <TextAlignLeft size={16} weight="bold" /> Текст песни
             </button>
           </div>
-          <button
-            type="button"
-            className="player-screen-lyrics-btn"
-            aria-label="Текст песни"
-            disabled={!track}
-            onClick={() => setShowLyrics(true)}
-          >
-            <TextAlignLeft size={16} weight="bold" /> Текст песни
-          </button>
           <VolumeControl
             volume={volume}
             muted={muted}

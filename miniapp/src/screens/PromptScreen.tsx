@@ -148,25 +148,21 @@ export function PromptScreen({
     <GlassPanel className="reveal prompt-card">
       <div className="prompt-hero">
         <p className="prompt-hero-kicker">{mode === "ai" ? "AI собирает плейлист" : "Поиск по каталогу"}</p>
-        <h1>
-          <button
-            type="button"
-            className="prompt-hero-action"
-            aria-label={`Сменить фразу. Сейчас: ${heroFull}`}
-            onClick={handleHeroClick}
-          >
-            {heroDisplay.slice(0, heroPhrase.before.length)}
-            <span className="prompt-hero-accent">
-              {heroDisplay.slice(heroPhrase.before.length, heroPhrase.before.length + heroPhrase.accent.length)}
-            </span>
-            {heroDisplay.slice(heroPhrase.before.length + heroPhrase.accent.length)}
-          </button>
-        </h1>
-        <p className="prompt-hero-copy">
-          {mode === "ai"
-            ? "Опишите настроение или занятие. Получите готовую подборку реальных треков, которую можно сразу слушать и сохранять."
-            : "Введите трек, исполнителя или альбом и сразу включайте."}
-        </p>
+        {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
+            page structure — wrapping it in <h1> made the page's one heading
+            announce a control instruction instead of readable text. */}
+        <button
+          type="button"
+          className="prompt-hero-action"
+          aria-label={`Сменить фразу. Сейчас: ${heroFull}`}
+          onClick={handleHeroClick}
+        >
+          {heroDisplay.slice(0, heroPhrase.before.length)}
+          <span className="prompt-hero-accent">
+            {heroDisplay.slice(heroPhrase.before.length, heroPhrase.before.length + heroPhrase.accent.length)}
+          </span>
+          {heroDisplay.slice(heroPhrase.before.length + heroPhrase.accent.length)}
+        </button>
       </div>
 
       <div className="prompt-modes" role="group" aria-label="Режим">
@@ -201,6 +197,7 @@ export function PromptScreen({
           className="prompt-pill-input"
           rows={1}
           placeholder={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
+          aria-label={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
           value={prompt}
           onChange={(e) => {
             setPrompt(e.target.value);
@@ -227,26 +224,32 @@ export function PromptScreen({
         )}
       </div>
 
-      {mode === "ai" ? (
-        <AiMode
-          busy={busy}
-          events={events}
-          isAdmin={isAdmin}
-          hasDraft={prompt.trim().length > 0}
-          suggestions={suggestions}
-          examples={promptExamples}
-          onRefreshExamples={refreshPromptExamples}
-          onPickPrompt={fillInput}
-          onOpenGeneration={onOpenGeneration}
-        />
-      ) : (
-        <SearchMode
-          query={prompt}
-          suggestions={suggestions}
-          onOpenArtist={onOpenArtist}
-          onPickQuery={fillInput}
-        />
-      )}
+      {/* Wraps the mode body (both return fragments) so the desktop 2-column
+          grid has one spanning element for the right column instead of N
+          siblings interleaved with the composer's own rows — see glass.css. */}
+      <div className="prompt-body">
+        {mode === "ai" ? (
+          <AiMode
+            busy={busy}
+            events={events}
+            isAdmin={isAdmin}
+            hasDraft={prompt.trim().length > 0}
+            suggestions={suggestions}
+            examples={promptExamples}
+            onRefreshExamples={refreshPromptExamples}
+            onPickPrompt={fillInput}
+            onOpenGeneration={onOpenGeneration}
+            onOpenArtist={onOpenArtist}
+          />
+        ) : (
+          <SearchMode
+            query={prompt}
+            suggestions={suggestions}
+            onOpenArtist={onOpenArtist}
+            onPickQuery={fillInput}
+          />
+        )}
+      </div>
     </GlassPanel>
   );
 }
