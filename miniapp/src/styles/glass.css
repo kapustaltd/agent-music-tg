@@ -9184,3 +9184,60 @@ div.player-bar-thumbnail::after {
     transform: none;
   }
 }
+
+/* Header rhythm: one compact surface, balanced 44px actions, independently
+   centered brand. Keep the action controls transparent so the top bar does
+   not become a pill inside another pill. */
+.app-top-bar,
+.app-shell > .app-top-bar,
+.app-sidebar .app-top-bar {
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  height: 52px;
+  min-height: 52px;
+  padding: 3px 4px;
+  border-radius: var(--radius-lg);
+}
+
+.app-top-search,
+.app-top-account,
+.app-shell > .app-top-bar .app-top-search,
+.app-shell > .app-top-bar .app-top-account,
+.app-sidebar .app-top-bar .app-top-search,
+.app-sidebar .app-top-bar .app-top-account {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+}
+
+.app-top-brand,
+.app-shell > .app-top-bar .app-top-brand,
+.app-sidebar .app-top-bar .app-top-brand {
+  position: absolute;
+  inset-inline-start: 50%;
+  z-index: 0;
+  width: max-content;
+  max-width: calc(100% - 120px);
+  transform: translateX(-50%);
+}
+
+.app-top-actions {
+  z-index: 1;
+  width: 48px;
+  min-width: 48px;
+  gap: 0;
+}
+
+.app-top-search,
+.app-top-account {
+  z-index: 1;
+}
+
+.app-top-account-label {
+  display: none;
+}

@@ -440,7 +440,7 @@ function AppInner() {
             title="Поиск"
             onClick={() => navigate({ kind: "prompt", initialMode: "search" }, "back")}
           >
-            <MagnifyingGlass size={16} weight="bold" aria-hidden="true" />
+            <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
           </button>
 
         <span className="app-top-brand" title="music agent">
@@ -454,9 +454,10 @@ function AppInner() {
             type="button"
             className="app-top-account"
             aria-label="Открыть профиль"
+            title="Профиль"
             onClick={() => navigate({ kind: "profile" })}
           >
-            <UserCircle size={17} weight="bold" aria-hidden="true" />
+            <UserCircle size={18} weight="bold" aria-hidden="true" />
             <span className="app-top-account-label">Профиль</span>
           </button>
         </span>
