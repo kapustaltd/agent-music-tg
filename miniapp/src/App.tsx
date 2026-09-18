@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
-import { MagnifyingGlass, UserCircle } from "@phosphor-icons/react";
+import { MagnifyingGlass, UserCircle } from "./icons";
 import { PromptScreen } from "./screens/PromptScreen";
 import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";

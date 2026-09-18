@@ -6,7 +6,7 @@ import {
   MagnifyingGlass,
   MusicNotes,
   Sparkle,
-} from "@phosphor-icons/react";
+} from "../icons";
 
 const EXAMPLES = [
   "Спокойный инди-поп для вечерней прогулки",

@@ -3517,8 +3517,30 @@ a.icon-btn {
 }
 
 .dock-tab.active {
+  color: var(--text-muted-dark);
+  font-weight: 600;
+}
+
+.dock-tab-icon {
+  display: inline-flex;
+  color: var(--text-muted-dark);
+}
+
+.dock-tab.active .dock-tab-icon {
   color: var(--accent);
-  font-weight: 700;
+}
+
+.dock-tab-label {
+  color: inherit;
+}
+
+.dock-tab.active .dock-tab-label {
+  color: var(--text-muted-dark);
+}
+
+:root[data-scheme="light"] .dock-tab.active,
+:root[data-scheme="light"] .dock-tab.active .dock-tab-label {
+  color: var(--text-muted-light);
 }
 
 .dock-tab:focus-visible {

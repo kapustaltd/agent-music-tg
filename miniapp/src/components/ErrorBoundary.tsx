@@ -1,5 +1,5 @@
 import { Component, lazy, type ErrorInfo, type ReactNode, type ComponentType } from "react";
-import { WarningCircle } from "@phosphor-icons/react";
+import { WarningCircle } from "../icons";
 
 interface ErrorBoundaryProps {
   children: ReactNode;

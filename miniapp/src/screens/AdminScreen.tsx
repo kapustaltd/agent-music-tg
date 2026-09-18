@@ -3,7 +3,7 @@ import {
   WarningCircle, Circle, Key, XCircle, Plus, Minus, Star,
   Calendar, Prohibit, Crown, User, PencilSimple, Paperclip, X,
   Gauge, UsersThree, Storefront, SlidersHorizontal, PaperPlaneTilt,
-} from "@phosphor-icons/react";
+} from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { AdminSettingsBar } from "../components/AdminSettingsBar";
 import { Segmented } from "../components/Segmented";

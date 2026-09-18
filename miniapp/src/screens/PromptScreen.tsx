@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "@phosphor-icons/react";
+import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentProgressEvent } from "../lib/api";

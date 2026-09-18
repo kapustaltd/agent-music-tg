@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, CircleNotch, Eye, LinkBreak, MusicNotes, Sparkle, BookmarkSimple, WarningCircle, X } from "@phosphor-icons/react";
+import { Check, CircleNotch, Eye, LinkBreak, MusicNotes, Sparkle, BookmarkSimple, WarningCircle, X } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { EmptyState } from "../components/EmptyState";

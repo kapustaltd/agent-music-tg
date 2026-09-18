@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { Sparkle, Storefront, MusicNotes, Shield } from "@phosphor-icons/react";
+import { Sparkle, Storefront, MusicNotes, Shield } from "../icons";
 
 type Tab = "create" | "shop" | "playlists" | "admin";
 
@@ -74,8 +74,14 @@ export function BottomNav({
               aria-current={tab === t.key ? "page" : undefined}
               onClick={() => onTab(t.key)}
             >
-              <Icon size={18} weight={tab === t.key ? "fill" : "bold"} />
-              {t.label}
+              <span className="dock-tab-icon" aria-hidden="true">
+                <Icon
+                  size={18}
+                  weight={tab === t.key ? "fill" : "bold"}
+                  fill={tab === t.key ? "currentColor" : "none"}
+                />
+              </span>
+              <span className="dock-tab-label">{t.label}</span>
             </button>
           );
         })}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "@phosphor-icons/react";
+import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";

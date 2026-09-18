@@ -10,7 +10,7 @@ import {
   WarningCircle,
   CircleNotch,
   X,
-} from "@phosphor-icons/react";
+} from "../icons";
 import { usePlayer, usePlayerTime } from "../lib/player";
 import { useMyMusic } from "../lib/my-music";
 import { VolumeControl } from "../components/VolumeControl";

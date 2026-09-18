@@ -1,4 +1,4 @@
-import { CaretDown, ChatCircle, PlayCircle, Sparkle } from "@phosphor-icons/react";
+import { CaretDown, ChatCircle, PlayCircle, Sparkle } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { openSupport } from "../lib/telegram";
 

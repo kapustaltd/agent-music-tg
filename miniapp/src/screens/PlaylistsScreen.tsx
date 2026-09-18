@@ -5,7 +5,7 @@ import {
   ArrowsClockwise, CaretDown, CaretUp, DownloadSimple,
   Check, X, BookmarkSimple, ArrowLeft, Plus, PencilSimple, Playlist as PlaylistIcon, Sparkle,
   ShareNetwork,
-} from "@phosphor-icons/react";
+} from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { EmptyState } from "../components/EmptyState";
 import { TrackRow } from "../components/TrackRow";

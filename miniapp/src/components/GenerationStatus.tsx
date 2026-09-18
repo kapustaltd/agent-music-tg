@@ -1,4 +1,4 @@
-import { CircleNotch } from "@phosphor-icons/react";
+import { CircleNotch } from "../icons";
 import type { AgentProgressEvent, AgentProgressPhase } from "../lib/api";
 
 const STATUS_LABELS: Record<AgentProgressPhase, string> = {

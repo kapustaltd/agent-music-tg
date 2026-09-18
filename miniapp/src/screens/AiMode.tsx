@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { ArrowsClockwise, User } from "@phosphor-icons/react";
+import { ArrowsClockwise, User } from "../icons";
 import { GenerationStatus } from "../components/GenerationStatus";
 import type { AgentProgressEvent, HistoryEntry, SuggestionsResponse } from "../lib/api";
 import { buildPromptFeed } from "../lib/suggestions";

@@ -1,4 +1,4 @@
-import { WarningCircle, X, Lifebuoy } from "@phosphor-icons/react";
+import { WarningCircle, X, Lifebuoy } from "../icons";
 import { humanizeError } from "../lib/errorText";
 
 export function InlineNotice({

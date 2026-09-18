@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, MusicNotesPlus, Plus, Check, CircleNotch, Sparkle } from "@phosphor-icons/react";
+import { X, MusicNotesPlus, Plus, Check, CircleNotch, Sparkle } from "../icons";
 import { api, PlaylistLimitReachedError, type Playlist } from "../lib/api";
 import { openStarsInvoice } from "../lib/telegram";
 import { useDialog } from "../lib/useDialog";

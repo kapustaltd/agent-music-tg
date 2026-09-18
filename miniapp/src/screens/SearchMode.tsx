@@ -8,7 +8,7 @@ import {
   CaretRightIcon,
   User,
   WarningCircle,
-} from "@phosphor-icons/react";
+} from "../icons";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
 import { SaveTrackButton } from "../components/SaveTrackButton";

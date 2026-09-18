@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { DotsThreeVertical } from "@phosphor-icons/react";
+import { DotsThreeVertical } from "../icons";
 
 export interface TrackMenuAction {
   key: string;

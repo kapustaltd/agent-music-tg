@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleNotch, MagnifyingGlass, Check, CreditCard, Gift, Star } from "@phosphor-icons/react";
+import { CircleNotch, MagnifyingGlass, Check, CreditCard, Gift, Star } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorBanner } from "../components/ErrorBanner";

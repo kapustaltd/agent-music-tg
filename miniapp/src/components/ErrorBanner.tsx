@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, WarningCircle, ArrowsClockwise } from "@phosphor-icons/react";
+import { X, WarningCircle, ArrowsClockwise } from "../icons";
 import { humanizeError } from "../lib/errorText";
 
 export function ErrorBanner({

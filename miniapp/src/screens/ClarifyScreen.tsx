@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, CaretRight, CircleNotch } from "@phosphor-icons/react";
+import { ArrowUp, CaretRight, CircleNotch } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { GenerationStatus } from "../components/GenerationStatus";
 import type { AgentProgressEvent } from "../lib/api";

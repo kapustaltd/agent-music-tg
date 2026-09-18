@@ -1,4 +1,4 @@
-import { CircleNotch, HeartStraight, Pause, Play, Queue, SkipForward, WarningCircle } from "@phosphor-icons/react";
+import { CircleNotch, HeartStraight, Pause, Play, Queue, SkipForward, WarningCircle } from "../icons";
 import { useMyMusic } from "../lib/my-music";
 import { ARTWORK_FULL, artworkUrl } from "../lib/artwork";
 import { usePlayer, usePlayerTime } from "../lib/player";

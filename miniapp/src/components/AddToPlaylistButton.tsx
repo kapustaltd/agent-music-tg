@@ -1,4 +1,4 @@
-import { ListPlus } from "@phosphor-icons/react";
+import { ListPlus } from "../icons";
 import type { Track } from "../lib/api";
 
 export interface AddToPlaylistTrack {

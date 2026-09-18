@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Bank, ArrowSquareOut } from "@phosphor-icons/react";
+import { X, Bank, ArrowSquareOut } from "../icons";
 import { openPayUrl, openSupport } from "../lib/telegram";
 import { useDialog } from "../lib/useDialog";
 

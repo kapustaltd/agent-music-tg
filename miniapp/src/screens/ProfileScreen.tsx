@@ -6,7 +6,7 @@ import {
   ChartBar,
   UsersThree, Copy, Check,
   Question, CaretRight,
-} from "@phosphor-icons/react";
+} from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { Segmented } from "../components/Segmented";
 import { EmptyState } from "../components/EmptyState";

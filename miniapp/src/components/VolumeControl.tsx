@@ -1,4 +1,4 @@
-import { SpeakerHigh, SpeakerLow, SpeakerX } from "@phosphor-icons/react";
+import { SpeakerHigh, SpeakerLow, SpeakerX } from "../icons";
 
 export function VolumeControl({
   volume,

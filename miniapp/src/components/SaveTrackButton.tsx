@@ -1,4 +1,4 @@
-import { HeartStraight } from "@phosphor-icons/react";
+import { HeartStraight } from "../icons";
 import { useMyMusic, type MyMusicTrack } from "../lib/my-music";
 
 /**

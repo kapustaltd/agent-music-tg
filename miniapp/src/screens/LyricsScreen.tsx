@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleNotch, MusicNotesSimple, WarningCircle, X } from "@phosphor-icons/react";
+import { CircleNotch, MusicNotesSimple, WarningCircle, X } from "../icons";
 import { api, type LyricsResult } from "../lib/api";
 import { useDialog } from "../lib/useDialog";
 

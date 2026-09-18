@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowsClockwise, CaretRightIcon, CircleNotch, ListPlus, User, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowsClockwise, CaretRightIcon, CircleNotch, ListPlus, User, WarningCircle } from "../icons";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
 import { SaveTrackButton } from "../components/SaveTrackButton";
