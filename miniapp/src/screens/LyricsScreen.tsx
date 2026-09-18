@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, CircleNotch, MusicNotesSimple, WarningCircle } from "@phosphor-icons/react";
+import { CircleNotch, MusicNotesSimple, WarningCircle, X } from "@phosphor-icons/react";
 import { api, type LyricsResult } from "../lib/api";
 import { useDialog } from "../lib/useDialog";
 
@@ -89,6 +89,7 @@ export function LyricsScreen({
   const [result, setResult] = useState<LyricsResult | "loading" | "error">("loading");
   const [accent, setAccent] = useState<string | null>(null);
   const lineRefs = useRef<(HTMLLIElement | null)[]>([]);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const dialogRef = useDialog<HTMLDivElement>(true, onClose);
 
   useEffect(() => {
@@ -117,8 +118,12 @@ export function LyricsScreen({
 
   useEffect(() => {
     if (activeIndex < 0) return;
+    const body = bodyRef.current;
+    const line = lineRefs.current[activeIndex];
+    if (!body || !line) return;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    lineRefs.current[activeIndex]?.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
+    const lineTop = line.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+    body.scrollTo({ top: Math.max(0, lineTop - body.clientHeight * 0.35), behavior: reduceMotion ? "auto" : "smooth" });
   }, [activeIndex]);
 
   return (
@@ -132,12 +137,16 @@ export function LyricsScreen({
         style={accent ? ({ "--accent": accent } as CSSProperties) : undefined}
       >
         <div className="player-screen-header">
-          <button type="button" className="action-btn action-btn--neutral" aria-label="Закрыть текст песни" onClick={onClose}>
-            <ArrowLeft size={24} />
+          <button type="button" className="action-btn action-btn--neutral" aria-label="Закрыть текст песни" title="Закрыть текст песни" onClick={onClose}>
+            <X size={24} weight="bold" />
           </button>
+          <div className="lyrics-screen-context">
+            <strong>{track.title}</strong>
+            <span>{track.artist} · Текст песни</span>
+          </div>
         </div>
 
-        <div className="lyrics-screen-body">
+        <div className="lyrics-screen-body" ref={bodyRef}>
           {result === "loading" && (
             <p className="text-muted lyrics-screen-status">
               <CircleNotch size={18} className="spin" /> Ищу текст…
@@ -165,7 +174,7 @@ export function LyricsScreen({
                 >
                   <button
                     type="button"
-                    className={`lyrics-screen-line${i === activeIndex ? " active" : ""}`}
+                  className={`lyrics-screen-line ${i === activeIndex ? "active" : i < activeIndex ? "is-past" : "is-next"}`}
                     aria-label={l.line ? `Перейти к строке: ${l.line}` : "Перейти к музыкальной паузе"}
                     onClick={() => onSeek(duration > 0 ? l.t / duration : 0)}
                   >

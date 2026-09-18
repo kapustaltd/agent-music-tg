@@ -13,11 +13,11 @@ colors:
   ink: "#0d0d10"
 typography:
   display:
-    fontFamily: "Golos Text, -apple-system, BlinkMacSystemFont, sans-serif"
+    fontFamily: "Super Grotesk, FF Super Grotesk, Space Grotesk, -apple-system, BlinkMacSystemFont, sans-serif"
     fontWeight: 700
     lineHeight: 1.1
   body:
-    fontFamily: "-apple-system, BlinkMacSystemFont, SF Pro Text, Segoe UI, system-ui, sans-serif"
+    fontFamily: "Super Grotesk, FF Super Grotesk, Space Grotesk, -apple-system, BlinkMacSystemFont, SF Pro Text, Segoe UI, system-ui, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.45
@@ -65,7 +65,7 @@ The system explicitly rejects the Spotify-clone look (green-on-black, browsing-f
 - Near-black base (`#050508`) with dual light scheme (`#EEEEF3`), driven by Telegram theme.
 - One accent — Accent Teal — reserved for primary actions and active state.
 - Glass panels with structural blur (22–24px) and specular top-edge insets.
-- System fonts for UI; Golos Text only for display headings.
+- Super Grotesk first for UI and display; Space Grotesk is the web fallback when a licensed Super Grotesk file is not installed.
 - Short, state-conveying motion (0.18s ease; 0.35s morph for layout shifts).
 
 ## 2. Colors
@@ -103,10 +103,10 @@ Never hard-code a status color. A literal red in a rule is drift from `--danger`
 
 ## 3. Typography
 
-**Display Font:** Golos Text (with -apple-system fallback)
-**Body Font:** system-ui stack (SF Pro Text on iOS)
+**Display Font:** Super Grotesk (with FF Super Grotesk / Space Grotesk fallback)
+**Body Font:** Super Grotesk (with FF Super Grotesk / Space Grotesk and system fallback)
 
-**Character:** Native-feeling and quiet. Body text is the platform's own voice; Golos Text appears only where a screen needs one strong headline — a distinctly Cyrillic-native grotesque, not the Inter-family default.
+**Character:** Compact and geometric. Super Grotesk gives the interface one consistent voice; the fallback stack keeps the same grotesk direction in browsers without the licensed face.
 
 ### Hierarchy
 All sizes are fixed px (this is an app UI, not a fluid web page) and are exposed as `--fs-*` tokens in `glass.css`. Never hard-code `font-size` in TSX — use the tokens or `.fs-*` utility classes.

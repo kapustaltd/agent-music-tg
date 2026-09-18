@@ -60,6 +60,7 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
             type="button"
             className={`web-now-playing-like${liked ? " active" : ""}`}
             aria-label={liked ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+            title={liked ? "Убрать из моей музыки" : "Добавить в мою музыку"}
             aria-pressed={liked}
             disabled={isPending(track.uri)}
             onClick={() => void toggleSaved(track)}
@@ -82,6 +83,7 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
           type="button"
           className="web-now-playing-play"
           aria-label={player.status === "playing" ? `Пауза: ${track.title}` : `Слушать: ${track.title}`}
+          title={player.status === "playing" ? "Пауза" : "Воспроизвести"}
           onClick={() => player.toggle(track)}
         >
           {playControl}
@@ -90,6 +92,7 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
           type="button"
           className="web-now-playing-next"
           aria-label="Следующий трек"
+          title="Следующий трек"
           disabled={!hasNext}
           onClick={() => player.nextTrack()}
         >
@@ -105,6 +108,7 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
               <button
                 type="button"
                 className="web-now-playing-queue-item"
+                title={`Слушать ${nextTrack.title}`}
                 key={nextTrack.uri}
                 onClick={() => player.toggle(nextTrack, player.queue)}
               >

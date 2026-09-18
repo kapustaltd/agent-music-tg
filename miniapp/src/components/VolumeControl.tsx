@@ -30,6 +30,7 @@ export function VolumeControl({
         type="button"
         className="icon-btn volume-icon"
         aria-label={muted ? "Включить звук" : "Выключить звук"}
+        title={muted ? "Включить звук" : "Выключить звук"}
         onClick={(e) => {
           if (stopPropagation) e.stopPropagation();
           onToggleMute();

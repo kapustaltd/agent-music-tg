@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import {
-  ArrowLeft,
   HeartStraight,
   Pause,
   Play,
@@ -10,6 +9,7 @@ import {
   ThumbsDown,
   WarningCircle,
   CircleNotch,
+  X,
 } from "@phosphor-icons/react";
 import { usePlayer, usePlayerTime } from "../lib/player";
 import { useMyMusic } from "../lib/my-music";
@@ -251,11 +251,12 @@ export function PlayerScreen({
             type="button"
             className="action-btn action-btn--neutral"
             aria-label="Закрыть плеер"
+            title="Закрыть плеер"
             onClick={onClose}
           >
-            <ArrowLeft size={24} />
+            <X size={24} weight="bold" />
           </button>
-          <span className="player-screen-header-label">Сейчас играет</span>
+          <span className="sr-only">Плеер</span>
         </div>
 
         <div className="player-screen-artwork">
@@ -359,6 +360,7 @@ export function PlayerScreen({
               type="button"
               className="player-screen-skip-btn"
               aria-label="Предыдущий трек"
+              title="Предыдущий трек"
               disabled={player.queueIndex <= 0}
               onClick={() => player.previousTrack()}
             >
@@ -368,6 +370,7 @@ export function PlayerScreen({
               type="button"
               className="player-screen-play-btn"
               aria-label={status === "playing" ? "Пауза" : "Играть"}
+              title={status === "playing" ? "Пауза" : "Играть"}
               onClick={() => player.toggle(track!)}
             >
               {playIcon}
@@ -376,6 +379,7 @@ export function PlayerScreen({
               type="button"
               className="player-screen-skip-btn"
               aria-label="Следующий трек"
+              title="Следующий трек"
               disabled={player.queueIndex >= player.queue.length - 1}
               onClick={() => player.nextTrack()}
             >
@@ -390,6 +394,7 @@ export function PlayerScreen({
               type="button"
               className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
               aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              title={disliked ? "Убрать из нелюбимых" : "Не нравится"}
               disabled={!track || reacting}
               onClick={() => void toggleDislike()}
             >
@@ -399,6 +404,7 @@ export function PlayerScreen({
               type="button"
               className="player-screen-lyrics-btn"
               aria-label="Текст песни"
+              title="Текст песни"
               disabled={!track}
               onClick={() => setShowLyrics(true)}
             >
@@ -408,6 +414,7 @@ export function PlayerScreen({
               type="button"
               className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
               aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+              title={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
               aria-pressed={!!track && isSaved(track.uri)}
               disabled={!track || isPending(track.uri)}
               onClick={toggleLike}

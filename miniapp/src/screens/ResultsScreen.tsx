@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookmarkSimple, CaretRight, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "@phosphor-icons/react";
+import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
@@ -54,8 +54,6 @@ export function ResultsScreen({
 
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
-  const activeTrackIndex = player.track ? visibleTracks.findIndex((track) => track.uri === player.track?.uri) : -1;
-  const sidebarTracks = visibleTracks.slice(activeTrackIndex >= 0 ? activeTrackIndex + 1 : 0, activeTrackIndex >= 0 ? activeTrackIndex + 4 : 3);
   const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 4);
 
   // The server resolves the URL in the background, while the browser starts
@@ -261,7 +259,21 @@ export function ResultsScreen({
   return (
     <GlassPanel className="reveal results-panel">
       <div className="results-main">
-      {editingName ? (
+        <header className="results-playlist-header">
+          <div className="results-playlist-cover" aria-hidden="true">
+            {coverTracks.length > 0 ? coverTracks.map((track) => (
+              <img
+                key={track.uri}
+                src={artworkUrl(track.artwork, ARTWORK_ROW)}
+                alt=""
+                loading="lazy"
+                onError={(event) => { event.currentTarget.style.display = "none"; }}
+              />
+            )) : <MusicNotes className="results-playlist-cover-fallback" size={28} weight="duotone" />}
+          </div>
+          <div className="results-playlist-header-copy">
+            <p className="results-playlist-kicker">Плейлист</p>
+            {editingName ? (
         <input
           className="playlist-name-input"
           aria-label="Название плейлиста"
@@ -281,7 +293,7 @@ export function ResultsScreen({
             }
           }}
         />
-      ) : (
+            ) : (
         <h1 className="playlist-name-title">
           {current.name}
           <button
@@ -293,7 +305,80 @@ export function ResultsScreen({
             <PencilSimple size={16} weight="bold" className="playlist-name-edit-icon" />
           </button>
         </h1>
-      )}
+            )}
+            <p className="results-playlist-meta">{trackCountLabel(visibleTracks.length || current.tracks.length)}</p>
+            <div className="row results-actions">
+              <button className="glass-button results-actions-label" onClick={onNewPrompt} title="Новый плейлист">
+                <Plus size={18} />
+                <span>Новый</span>
+              </button>
+              <button className="glass-button icon-only" onClick={() => void handleToggleSave()} disabled={saveBusy} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
+                {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
+              </button>
+              <button className="glass-button icon-only" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
+                {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
+              </button>
+              <button
+                className="glass-button primary icon-only"
+                onClick={handleDownload}
+                disabled={download.kind === "sending"}
+                aria-label={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать"}
+                title={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать"}
+              >
+                {download.kind === "sending" ? <CircleNotch size={18} className="spin" /> : download.kind === "sent" ? <CheckCircle size={18} weight="fill" /> : <DownloadSimple size={18} />}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {download.kind === "error" && (
+          <div className="error-row mt-12">
+            <span className="error-row-icon"><WarningCircle size={16} weight="bold" /></span>
+            <p role="alert" className="error-row-message">{download.message}</p>
+            <button className="glass-button" onClick={() => setDownload({ kind: "idle" })}>Повторить</button>
+          </div>
+        )}
+        {shareError && (
+          <div className="error-row mt-12">
+            <span className="error-row-icon"><WarningCircle size={16} weight="bold" /></span>
+            <p role="alert" className="error-row-message">{shareError}</p>
+            <button className="glass-button" onClick={() => void handleShare()}>Повторить</button>
+          </div>
+        )}
+        {extendError && (
+          <div className="error-row mt-12">
+            <span className="error-row-icon"><WarningCircle size={16} weight="bold" /></span>
+            <p role="alert" className="error-row-message">{extendError}</p>
+          </div>
+        )}
+
+        <section className="results-extend" aria-labelledby="results-extend-title">
+          <div className="results-extend-heading">
+            <h2 id="results-extend-title">Добавить треки</h2>
+            <span>по запросу</span>
+          </div>
+          <div className="prompt-pill">
+            <textarea
+              className="prompt-pill-input"
+              rows={1}
+              value={extendPrompt}
+              onChange={(e) => setExtendPrompt(e.target.value)}
+              placeholder="Что добавить в плейлист?"
+              aria-label="Что добавить в плейлист?"
+              disabled={extendBusy}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleExtend();
+                }
+              }}
+            />
+            <button type="button" className="prompt-submit" aria-label="Добавить треки в плейлист" disabled={extendBusy || extendPrompt.trim().length === 0} onClick={() => void handleExtend()}>
+              {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
+            </button>
+          </div>
+        </section>
+
       {done.current && visibleTracks.length === 0 ? (
         <p className="text-muted mt-16">Все треки недоступны</p>
       ) : (
@@ -346,174 +431,6 @@ export function ResultsScreen({
         ))}
         </div>
       )}
-      </div>
-      <div className="results-side">
-      <div className="results-sidebar-summary" aria-label="Сводка плейлиста">
-        <div className="results-sidebar-cover" aria-hidden="true">
-          {coverTracks.length > 0 ? coverTracks.map((track) => (
-            <img
-              key={track.uri}
-              src={artworkUrl(track.artwork, ARTWORK_ROW)}
-              alt=""
-              loading="lazy"
-              onError={(event) => { event.currentTarget.style.display = "none"; }}
-            />
-          )) : <MusicNotes className="results-sidebar-cover-fallback" size={24} weight="duotone" />}
-        </div>
-        <div className="results-sidebar-summary-copy">
-          <p className="results-sidebar-kicker">Плейлист</p>
-          <p className="results-sidebar-name">{current.name}</p>
-          <p className="results-sidebar-meta">{trackCountLabel(visibleTracks.length || current.tracks.length)}</p>
-        </div>
-      </div>
-      <div className="results-sidebar-divider" />
-      {download.kind === "error" && (
-        <div className="error-row mt-12">
-          <span className="error-row-icon">
-            <WarningCircle size={16} weight="bold" />
-          </span>
-          <p role="alert" className="error-row-message">
-            {download.message}
-          </p>
-          <button className="glass-button" onClick={() => setDownload({ kind: "idle" })} style={{ padding: "6px 12px" }}>
-            Повторить
-          </button>
-        </div>
-      )}
-      {shareError && (
-        <div className="error-row mt-12">
-          <span className="error-row-icon">
-            <WarningCircle size={16} weight="bold" />
-          </span>
-          <p role="alert" className="error-row-message">
-            {shareError}
-          </p>
-          <button className="glass-button" onClick={() => void handleShare()} style={{ padding: "6px 12px" }}>
-            Повторить
-          </button>
-        </div>
-      )}
-      {extendError && (
-        <div className="error-row mt-12">
-          <span className="error-row-icon">
-            <WarningCircle size={16} weight="bold" />
-          </span>
-          <p role="alert" className="error-row-message">
-            {extendError}
-          </p>
-        </div>
-      )}
-      <div className="results-sidebar-actions-block">
-        <p className="results-sidebar-label">Добавить треки</p>
-        <div className="prompt-pill">
-          <textarea
-            className="prompt-pill-input"
-            rows={1}
-            value={extendPrompt}
-            onChange={(e) => setExtendPrompt(e.target.value)}
-            placeholder="Что добавить в плейлист?"
-            aria-label="Что добавить в плейлист?"
-            disabled={extendBusy}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void handleExtend();
-              }
-            }}
-          />
-          <button
-            type="button"
-            className="prompt-submit"
-            aria-label="Добавить треки в плейлист"
-            disabled={extendBusy || extendPrompt.trim().length === 0}
-            onClick={() => void handleExtend()}
-          >
-            {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
-          </button>
-        </div>
-      <div className="row results-actions">
-        <button className="glass-button results-actions-label" onClick={onNewPrompt} title="Новый плейлист">
-          <Plus size={18} />
-          <span>Новый</span>
-        </button>
-        <button
-          className="glass-button icon-only"
-          onClick={() => void handleToggleSave()}
-          disabled={saveBusy}
-          aria-label={saved ? "Убрать из истории" : "Сохранить в историю"}
-          title={saved ? "Убрать из истории" : "Сохранить в историю"}
-        >
-          {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
-        </button>
-        <button
-          className="glass-button icon-only"
-          onClick={() => void handleShare()}
-          disabled={sharing}
-          aria-label="Поделиться плейлистом"
-          title="Поделиться плейлистом"
-        >
-          {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
-        </button>
-        <button
-          className="glass-button primary icon-only"
-          onClick={handleDownload}
-          disabled={download.kind === "sending"}
-          aria-label={
-            download.kind === "sending"
-              ? "Отправляю в чат…"
-              : download.kind === "sent"
-                ? "Отправлено в чат"
-                : "Скачать"
-          }
-          title={
-            download.kind === "sending"
-              ? "Отправляю в чат…"
-              : download.kind === "sent"
-                ? "Отправлено в чат"
-                : "Скачать"
-          }
-        >
-          {download.kind === "sending" ? (
-            <CircleNotch size={18} className="spin" />
-          ) : download.kind === "sent" ? (
-            <CheckCircle size={18} weight="fill" />
-          ) : (
-            <DownloadSimple size={18} />
-          )}
-        </button>
-      </div>
-      </div>
-      <div className="results-sidebar-divider" />
-      <section className="results-up-next" aria-label={activeTrackIndex >= 0 ? "Дальше в очереди" : "Треки в плейлисте"}>
-        <div className="results-up-next-heading">
-          <h2>{activeTrackIndex >= 0 ? "Дальше в очереди" : "В плейлисте"}</h2>
-          <span>{sidebarTracks.length > 0 ? `ещё ${sidebarTracks.length}` : "готово"}</span>
-        </div>
-        {sidebarTracks.length > 0 ? (
-          <div className="results-up-next-list">
-            {sidebarTracks.map((track) => (
-              <button
-                key={track.uri}
-                type="button"
-                className="results-up-next-row"
-                onClick={() => handleTrackClick(track)}
-                aria-label={`Слушать ${track.title}`}
-              >
-                <span className="results-up-next-artwork" aria-hidden="true">
-                  {track.artwork ? <img src={artworkUrl(track.artwork, ARTWORK_ROW)} alt="" loading="lazy" /> : <MusicNotes size={16} weight="duotone" />}
-                </span>
-                <span className="results-up-next-copy">
-                  <span className="results-up-next-title">{track.title}</span>
-                  <span className="results-up-next-meta">{track.artist}</span>
-                </span>
-                <CaretRight size={16} aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="results-up-next-empty">Нажмите на трек, чтобы начать очередь.</p>
-        )}
-      </section>
       </div>
     </GlassPanel>
   );
