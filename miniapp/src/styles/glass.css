@@ -9841,3 +9841,91 @@ div.player-bar-thumbnail::after {
     padding-bottom: calc(var(--mini-player-height) + 104px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Second polish pass: keep the create flow useful-first on narrow screens. */
+.prompt-card {
+  gap: 16px;
+}
+
+.prompt-compose {
+  gap: 10px;
+}
+
+.prompt-hero-action {
+  min-height: 40px;
+  margin: -2px 0;
+  font-size: 26px;
+}
+
+.prompt-pill {
+  min-height: 52px;
+  padding: 4px 8px 4px 14px;
+}
+
+.prompt-pill--search {
+  padding-left: 12px;
+}
+
+.prompt-pill-input {
+  padding-block: 6px;
+}
+
+.prompt-modes {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--lg-v2-chip) 38%, transparent);
+}
+
+.prompt-mode-seg-btn.active {
+  background: color-mix(in srgb, var(--lg-v2-chip) 72%, transparent);
+  box-shadow: none;
+}
+
+:root[data-scheme="light"] .prompt-modes {
+  background: rgba(13, 13, 16, 0.025);
+}
+
+:root[data-scheme="light"] .prompt-mode-seg-btn.active {
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.search-recent {
+  gap: 6px;
+}
+
+.search-recent-chip {
+  min-height: 38px;
+  padding: 5px 10px;
+}
+
+/* Search and library rows should read as one list. Reserve a surface for
+   hover, pressed, and selected states instead of drawing every row as a card. */
+.prompt-card .track-row:not(.search-best-row) {
+  margin: 0;
+  padding: 10px 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+}
+
+.prompt-card .track-row:not(.search-best-row):last-child {
+  border-bottom: 0;
+}
+
+.prompt-card .track-row:not(.search-best-row):hover {
+  background: color-mix(in srgb, var(--lg-v2-chip) 58%, transparent);
+}
+
+.prompt-card .track-row:not(.search-best-row):active {
+  background: color-mix(in srgb, var(--lg-v2-chip) 78%, transparent);
+}
+
+.prompt-card .track-row.is-active:not(.search-best-row) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+@media (min-width: 840px) {
+  .prompt-hero-action {
+    font-size: 36px;
+  }
+}
