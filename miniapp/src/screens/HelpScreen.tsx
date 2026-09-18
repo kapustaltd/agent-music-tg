@@ -81,8 +81,6 @@ export default function HelpScreen({
       </GlassPanel>
 
       <GlassPanel className="reveal help-actions-panel">
-        <h2 className="screen-title">Нужна ещё помощь?</h2>
-        <p className="text-muted fs-label">Знакомство можно пройти снова — или написать в поддержку, если вопрос не решился.</p>
         <div className="help-actions">
           <button type="button" className="glass-button" onClick={onReplayOnboarding}>
             <PlayCircle size={17} weight="bold" />

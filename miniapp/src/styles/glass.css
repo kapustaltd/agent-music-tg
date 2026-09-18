@@ -3301,27 +3301,10 @@ a.icon-btn {
   width: 100%;
 }
 
-.screen-exit {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-/* Переход между экранами — только кросс-фейд, без бокового смещения:
-   в узком вьюпорте Telegram любой сдвиг по X читается как «уехавший» экран. */
 @media (prefers-reduced-motion: no-preference) {
-  .screen-exit {
-    animation: screen-fade-out 0.2s ease both;
-  }
-
   .screen-enter {
     animation: screen-fade-in 0.24s ease both;
   }
-}
-
-@keyframes screen-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
 }
 
 @keyframes screen-fade-in {
@@ -7415,39 +7398,6 @@ div.player-bar-thumbnail::after {
 }
 
 @media (min-width: 840px) {
-  body {
-    background:
-      radial-gradient(70% 80% at 76% 12%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 68%),
-      radial-gradient(45% 50% at 22% 92%, rgba(74, 56, 146, 0.12), transparent 72%),
-      var(--lg-v2-bg);
-  }
-
-  :root[data-scheme="light"] body {
-    background:
-      radial-gradient(70% 80% at 76% 12%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 68%),
-      radial-gradient(45% 50% at 22% 92%, rgba(74, 56, 146, 0.07), transparent 72%),
-      var(--lg-v2-bg);
-  }
-
-  .app-shell::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.55;
-    background:
-      linear-gradient(90deg, transparent 0, transparent calc(50% - 0.5px), rgba(255, 255, 255, 0.035) 50%, transparent calc(50% + 0.5px)),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 28%);
-  }
-
-  :root[data-scheme="light"] .app-shell::before {
-    opacity: 0.3;
-    background:
-      linear-gradient(90deg, transparent 0, transparent calc(50% - 0.5px), rgba(13, 13, 16, 0.035) 50%, transparent calc(50% + 0.5px)),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 28%);
-  }
-
   .app-shell > .screen-stack {
     min-height: calc(100svh - 40px);
   }

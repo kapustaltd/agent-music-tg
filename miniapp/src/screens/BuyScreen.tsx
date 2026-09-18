@@ -157,7 +157,6 @@ export default function BuyScreen({ reason, isAdmin = false }: { reason?: string
     <div className="stack">
       <GlassPanel className="reveal">
         <h1 className="screen-title">Магазин</h1>
-        <p className="text-muted screen-subtitle">Подписка на сервис</p>
       </GlassPanel>
 
       {reason && (
