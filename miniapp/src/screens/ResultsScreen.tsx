@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "../icons";
-import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
 import { SaveTrackButton } from "../components/SaveTrackButton";
@@ -257,7 +256,7 @@ export function ResultsScreen({
   }
 
   return (
-    <GlassPanel className="reveal results-panel">
+    <div className="reveal results-panel">
       <div className="results-main">
         <header className="results-playlist-header">
           <div className="results-playlist-cover" aria-hidden="true">
@@ -307,29 +306,32 @@ export function ResultsScreen({
         </h1>
             )}
             <p className="results-playlist-meta">{trackCountLabel(visibleTracks.length || current.tracks.length)}</p>
-            <div className="row results-actions">
-              <button className="glass-button results-actions-label" onClick={onNewPrompt} title="Новый плейлист">
-                <Plus size={18} />
-                <span>Новый</span>
-              </button>
-              <button className="glass-button icon-only" onClick={() => void handleToggleSave()} disabled={saveBusy} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
-                {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
-              </button>
-              <button className="glass-button icon-only" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
-                {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
-              </button>
-              <button
-                className="glass-button primary icon-only"
-                onClick={handleDownload}
-                disabled={download.kind === "sending"}
-                aria-label={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать"}
-                title={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать"}
-              >
-                {download.kind === "sending" ? <CircleNotch size={18} className="spin" /> : download.kind === "sent" ? <CheckCircle size={18} weight="fill" /> : <DownloadSimple size={18} />}
-              </button>
-            </div>
           </div>
         </header>
+
+        <div className="results-actions" aria-label="Действия с плейлистом">
+          <button type="button" className="results-action results-action--new" onClick={onNewPrompt} title="Создать новый плейлист">
+            <Plus size={18} />
+            <span>Новый плейлист</span>
+          </button>
+          <button type="button" className={`results-action results-action--icon${saved ? " is-active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
+            {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
+          </button>
+          <button type="button" className="results-action results-action--icon" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
+            {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
+          </button>
+          <button
+            type="button"
+            className="results-action results-action--primary"
+            onClick={handleDownload}
+            disabled={download.kind === "sending"}
+            aria-label={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать плейлист"}
+            title={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать плейлист"}
+          >
+            {download.kind === "sending" ? <CircleNotch size={18} className="spin" /> : download.kind === "sent" ? <CheckCircle size={18} weight="fill" /> : <DownloadSimple size={18} />}
+            <span>{download.kind === "sent" ? "Отправлено" : "Скачать"}</span>
+          </button>
+        </div>
 
         {download.kind === "error" && (
           <div className="error-row mt-12">
@@ -354,17 +356,19 @@ export function ResultsScreen({
 
         <section className="results-extend" aria-labelledby="results-extend-title">
           <div className="results-extend-heading">
-            <h2 id="results-extend-title">Добавить треки</h2>
-            <span>по запросу</span>
+            <div>
+              <h2 id="results-extend-title">Добавить треки</h2>
+              <p>Опишите, чего не хватает в плейлисте</p>
+            </div>
           </div>
-          <div className="prompt-pill">
+          <div className="prompt-pill results-extend-input">
             <textarea
               className="prompt-pill-input"
               rows={1}
               value={extendPrompt}
               onChange={(e) => setExtendPrompt(e.target.value)}
-              placeholder="Что добавить в плейлист?"
-              aria-label="Что добавить в плейлист?"
+              placeholder="Например: больше инди или джаза"
+              aria-label="Какие треки добавить?"
               disabled={extendBusy}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -382,7 +386,7 @@ export function ResultsScreen({
       {done.current && visibleTracks.length === 0 ? (
         <p className="text-muted mt-16">Все треки недоступны</p>
       ) : (
-        <div className="stack mt-16 reveal-stagger">
+        <div className="results-track-list reveal-stagger" aria-label="Треки в плейлисте">
           {visibleTracks.map((track, i) => (
           <TrackRow
             key={track.uri}
@@ -432,6 +436,6 @@ export function ResultsScreen({
         </div>
       )}
       </div>
-    </GlassPanel>
+    </div>
   );
 }

@@ -9241,3 +9241,274 @@ div.player-bar-thumbnail::after {
 .app-top-account-label {
   display: none;
 }
+
+/* ResultsScreen distillation ----------------------------------------------
+   The playlist is a page, not another glass container. Surfaces are reserved
+   for the input and transient menus; hierarchy comes from spacing, alignment,
+   and one deliberate primary action. */
+.results-panel {
+  width: 100%;
+  max-width: none;
+  padding: 12px 0 32px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.results-panel::before {
+  display: none;
+}
+
+.results-panel > .results-main {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.results-playlist-header {
+  align-items: center;
+  gap: 16px;
+}
+
+.results-playlist-cover {
+  flex-basis: 88px;
+  width: 88px;
+  height: 88px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--lg-v2-input-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+}
+
+.results-playlist-kicker {
+  color: var(--text-muted-dark);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+
+.results-playlist-header .playlist-name-title {
+  max-width: 100%;
+  font-size: clamp(24px, 7vw, 32px);
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.results-playlist-header-copy {
+  gap: 6px;
+}
+
+.results-playlist-meta {
+  color: var(--text-muted-dark);
+  font-size: var(--fs-label);
+}
+
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 18px;
+}
+
+.results-action {
+  appearance: none;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-shrink: 0;
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.results-action--new {
+  margin-inline-end: auto;
+}
+
+.results-action--icon {
+  width: 40px;
+  padding: 0;
+}
+
+.results-action--primary {
+  padding-inline: 11px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.results-action.is-active,
+.results-action--icon:hover,
+.results-action--new:hover {
+  color: var(--accent);
+}
+
+.results-action--primary:hover {
+  background: var(--accent-deep);
+  color: #fff;
+}
+
+.results-action:active {
+  transform: scale(0.96);
+}
+
+.results-action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.results-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.results-extend {
+  margin-top: 40px;
+  padding-top: 0;
+  border-top: 0;
+  gap: 12px;
+}
+
+.results-extend-heading {
+  display: block;
+}
+
+.results-extend-heading h2 {
+  margin: 0;
+  font-size: var(--fs-title);
+  line-height: 1.2;
+}
+
+.results-extend-heading p {
+  margin: 4px 0 0;
+  color: var(--text-muted-dark);
+  font-size: var(--fs-label);
+}
+
+.results-extend .prompt-pill {
+  min-height: 52px;
+  border-radius: var(--radius-control);
+  border-color: var(--lg-v2-hairline);
+  background: color-mix(in srgb, var(--lg-v2-input-bg) 82%, transparent);
+  box-shadow: none;
+}
+
+.results-extend .prompt-pill:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.results-extend .prompt-pill-input::placeholder {
+  color: var(--text-muted-dark);
+  opacity: 0.9;
+}
+
+.results-track-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 28px;
+}
+
+.results-track-list .track-row {
+  margin-inline: 0;
+  padding: 10px 0;
+  border-radius: 0;
+  border-bottom-color: var(--lg-v2-hairline);
+  background: transparent;
+}
+
+.results-track-list .track-row:hover,
+.results-track-list .track-row:active {
+  background: color-mix(in srgb, var(--lg-v2-chip) 55%, transparent);
+}
+
+.results-track-list .track-row:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 360px) {
+  .results-action--new {
+    min-width: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+
+  .results-action--new span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .results-action--primary {
+    width: 40px;
+    padding: 0;
+  }
+
+  .results-action--primary span {
+    display: none;
+  }
+}
+
+/* The bottom navigation is app chrome, not a floating card. The extra scroll
+   reserve matches the actual dock/player stack, so the last track stays above
+   it instead of disappearing under the chrome. */
+@media (max-width: 839px) {
+  .app-shell {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .app-shell:has(> .player-bar) {
+    padding-bottom: calc(var(--player-height) + 88px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dock {
+    bottom: 0;
+    padding: 0;
+  }
+
+  .dock-inner {
+    width: 100%;
+    max-width: none;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    border-inline: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .dock-tab {
+    border-radius: var(--radius-control);
+  }
+}
+
+:root[data-keyboard="open"] .app-shell {
+  padding-bottom: calc(var(--keyboard-inset, 0px) + 24px);
+}
+
+@media (min-width: 840px) {
+  .results-panel {
+    padding-block: 16px 40px;
+  }
+
+  .results-playlist-cover {
+    flex-basis: 104px;
+    width: 104px;
+    height: 104px;
+  }
+}
