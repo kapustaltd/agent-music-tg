@@ -40,8 +40,14 @@ jobs:
         working-directory: miniapp
         run: bun install --frozen-lockfile
 
-      - name: Run tests
-        run: bun test
+      # run-generation.test.ts installs process-wide module mocks. Run it in
+      # its own Bun process so parallel test-file discovery cannot import the
+      # real generation module before the test mock is registered.
+      - name: Run generation tests
+        run: bun test server/core/run-generation.test.ts
+
+      - name: Run remaining tests
+        run: bun test --path-ignore-patterns '**/run-generation.test.ts'
 
       - name: Build Mini App
         run: bun run build:miniapp
