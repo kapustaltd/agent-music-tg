@@ -78,6 +78,9 @@ jobs:
         with:
           bun-version: 1.3.14
 
+      - name: Install server dependencies
+        run: bun install --frozen-lockfile
+
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
