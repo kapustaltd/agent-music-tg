@@ -110,9 +110,10 @@ jobs:
   deploy-production:
     name: Deploy production instance
     if: >-
-      github.event_name == 'workflow_dispatch' &&
-      inputs.deploy_production == true &&
-      inputs.ref == 'main'
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' &&
+       inputs.deploy_production == true &&
+       inputs.ref == 'main')
     needs: deploy-test
     runs-on: ubuntu-latest
     environment:
