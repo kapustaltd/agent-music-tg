@@ -4656,8 +4656,9 @@ div.player-bar-thumbnail::after {
 .player-screen-secondary-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0;
   margin-bottom: 12px;
 }
 

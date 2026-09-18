@@ -382,10 +382,9 @@ export function PlayerScreen({
               <SkipForward size={26} weight="fill" />
             </button>
           </div>
-          {/* Neither the heart nor dislike/lyrics is a transport control, so
-              all three sit below the transport row instead of bookending it —
-              a 4th item there would unbalance the row around the play button
-              (see DESIGN.md). */}
+          {/* Reactions and lyrics sit below transport. Keep the lyrics pill
+              centred between the two equal-width reaction controls, matching
+              the familiar player layout used in the web version. */}
           <div className="player-screen-secondary-row">
             <button
               type="button"
@@ -399,21 +398,21 @@ export function PlayerScreen({
             </button>
             <button
               type="button"
-              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
-              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-              disabled={!track || reacting}
-              onClick={() => void toggleDislike()}
-            >
-              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
-            </button>
-            <button
-              type="button"
               className="player-screen-lyrics-btn"
               aria-label="Текст песни"
               disabled={!track}
               onClick={() => setShowLyrics(true)}
             >
               <TextAlignLeft size={16} weight="bold" /> Текст песни
+            </button>
+            <button
+              type="button"
+              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
+              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              disabled={!track || reacting}
+              onClick={() => void toggleDislike()}
+            >
+              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
             </button>
           </div>
           <VolumeControl
