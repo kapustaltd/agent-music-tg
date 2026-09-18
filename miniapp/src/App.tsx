@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
-import { MagnifyingGlass, Moon, Sun, UserCircle, Wallet } from "@phosphor-icons/react";
+import { MagnifyingGlass, UserCircle, Wallet } from "@phosphor-icons/react";
 import { PromptScreen } from "./screens/PromptScreen";
 import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";
@@ -13,7 +13,7 @@ import { ErrorBanner } from "./components/ErrorBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { api, type MeResponse, type FinalizedPlaylist, type ShopConfig, type HistoryEntry, SubscriptionRequiredError, type SubscriptionChannel } from "./lib/api";
 import { reduceEvents, type AgentEvent } from "./lib/reasoning";
-import { getTelegramWebApp, getColorScheme, getInitData, callIfSupported } from "./lib/telegram";
+import { getTelegramWebApp, getInitData, callIfSupported } from "./lib/telegram";
 import { parseShareToken } from "./lib/share";
 import { useKeyboardInset } from "./lib/keyboard";
 import { PlayerProvider, usePlayer } from "./lib/player";
@@ -46,7 +46,7 @@ type Screen =
   | { kind: "help" }
   | { kind: "admin" };
 
-function activeTab(screen: Screen): "create" | "shop" | "playlists" | "profile" | "admin" {
+function activeTab(screen: Screen): "create" | "shop" | "playlists" | "admin" | null {
   switch (screen.kind) {
     case "prompt":
     case "clarify":
@@ -61,7 +61,7 @@ function activeTab(screen: Screen): "create" | "shop" | "playlists" | "profile" 
       return "playlists";
     case "profile":
     case "help":
-      return "profile";
+      return null;
     case "admin":
       return "admin";
   }
@@ -75,16 +75,6 @@ export function App() {
       </MyMusicProvider>
     </PlayerProvider>
   );
-}
-
-const SCHEME_STORAGE_KEY = "miniapp-scheme";
-
-function initialScheme(): "light" | "dark" {
-  if (typeof localStorage !== "undefined") {
-    const stored = localStorage.getItem(SCHEME_STORAGE_KEY);
-    if (stored === "light" || stored === "dark") return stored;
-  }
-  return getColorScheme();
 }
 
 function AppInner() {
@@ -102,7 +92,6 @@ function AppInner() {
   const [busy, setBusy] = useState(false);
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [scheme, setScheme] = useState<"light" | "dark">(() => initialScheme());
   const [accent, setAccent] = useState<string>(() => initialAccent());
   const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
   const [subscriptionGate, setSubscriptionGate] = useState<SubscriptionChannel[] | null>(null);
@@ -121,19 +110,6 @@ function AppInner() {
   // them over the keyboard when it opens. This publishes the keyboard's height
   // so the CSS can get them out of the way (see keyboard.ts).
   useKeyboardInset();
-
-  function toggleScheme() {
-    setScheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      document.documentElement.setAttribute("data-scheme", next);
-      try {
-        localStorage.setItem(SCHEME_STORAGE_KEY, next);
-      } catch {
-        // ignore storage failures (private mode etc.)
-      }
-      return next;
-    });
-  }
 
   useEffect(() => {
     const webApp = getTelegramWebApp();
@@ -449,15 +425,15 @@ function AppInner() {
     <ErrorBoundary onReset={handleReset}>
     <main className="app-shell">
       <header className="app-top-bar">
-        <button
-          type="button"
-          className="app-top-search"
-          aria-label="Открыть поиск"
-          onClick={() => navigate({ kind: "prompt", initialMode: "search" }, "back")}
-        >
-          <MagnifyingGlass size={16} weight="bold" aria-hidden="true" />
-          <span>Поиск</span>
-        </button>
+          <button
+            type="button"
+            className="app-top-search"
+            aria-label="Открыть поиск"
+            title="Поиск"
+            onClick={() => navigate({ kind: "prompt", initialMode: "search" }, "back")}
+          >
+            <MagnifyingGlass size={16} weight="bold" aria-hidden="true" />
+          </button>
 
         <span className="app-top-brand" title="music agent">
           <span className="app-top-logo" aria-hidden>
@@ -475,7 +451,7 @@ function AppInner() {
             <UserCircle size={17} weight="bold" aria-hidden="true" />
             <span className="app-top-account-label">Профиль</span>
           </button>
-          {tab !== "profile" && (
+          {tab !== null && (
             <button
               type="button"
               className="wallet-badge"
@@ -490,14 +466,6 @@ function AppInner() {
               ) : null}
             </button>
           )}
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-label={scheme === "dark" ? "Включить светлую тему" : "Включить тёмную тему"}
-            onClick={toggleScheme}
-          >
-            {scheme === "dark" ? <Sun size={16} weight="bold" /> : <Moon size={16} weight="bold" />}
-          </button>
         </span>
       </header>
 
@@ -515,15 +483,13 @@ function AppInner() {
         isAdmin={isAdmin}
         onTab={(t) => {
           navigate(
-            t === "shop"
+              t === "shop"
               ? { kind: "buy" }
               : t === "create"
                 ? lastCreateScreen
                 : t === "playlists"
                   ? { kind: "playlists" }
-                  : t === "profile"
-                    ? { kind: "profile" }
-                    : { kind: "admin" },
+                  : { kind: "admin" },
           );
         }}
       />

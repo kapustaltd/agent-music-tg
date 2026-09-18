@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
-import { Sparkle, Storefront, MusicNotes, User, Shield } from "@phosphor-icons/react";
+import { Sparkle, Storefront, MusicNotes, Shield } from "@phosphor-icons/react";
 
-type Tab = "create" | "shop" | "playlists" | "profile" | "admin";
+type Tab = "create" | "shop" | "playlists" | "admin";
 
 const TABS: { key: Tab; icon: typeof Sparkle; label: string }[] = [
   { key: "create", icon: Sparkle, label: "Создать" },
   { key: "shop", icon: Storefront, label: "Магазин" },
   { key: "playlists", icon: MusicNotes, label: "Музыка" },
-  { key: "profile", icon: User, label: "Профиль" },
 ];
 
 export function BottomNav({
@@ -15,7 +14,7 @@ export function BottomNav({
   isAdmin,
   onTab,
 }: {
-  tab: Tab;
+  tab: Tab | null;
   isAdmin: boolean;
   onTab: (tab: Tab) => void;
 }) {
@@ -80,13 +79,6 @@ export function BottomNav({
             </button>
           );
         })}
-        <div className="dock-note" aria-label="Источники музыки">
-          <span className="dock-note-icon" aria-hidden="true"><MusicNotes size={15} weight="fill" /></span>
-          <span>
-            <strong>Музыка без аккаунтов</strong>
-            <small>YouTube Music · SoundCloud</small>
-          </span>
-        </div>
       </div>
     </nav>
   );

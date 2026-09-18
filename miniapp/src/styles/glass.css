@@ -390,7 +390,7 @@ body {
   top: 8px;
   z-index: 10;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 5px 6px 5px 8px;
@@ -445,12 +445,9 @@ body {
 .app-top-search {
   grid-column: 1;
   justify-self: start;
-}
-
-.app-top-search {
-  min-width: 106px;
-  justify-content: flex-start;
-  padding: 0 13px;
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
   background: var(--lg-v2-chip);
   border-color: var(--lg-v2-chip-border);
   box-shadow: var(--lg-v2-specular);
@@ -489,7 +486,7 @@ body {
   letter-spacing: var(--ls-tight);
   color: var(--text-dark);
   min-width: 0;
-  max-width: 42%;
+  max-width: 100%;
   justify-content: center;
   text-align: center;
 }
@@ -569,29 +566,6 @@ body {
   color: var(--text-light);
 }
 
-.theme-toggle {
-  appearance: none;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted-dark);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--lg-v2-specular);
-  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
-}
-
-:root[data-scheme="light"] .theme-toggle {
-  border-color: var(--glass-border-light);
-  background: rgba(255, 255, 255, 0.5);
-  color: var(--text-light);
-}
-
 @media (hover: hover) {
   .app-top-search:hover,
   .app-top-account:hover {
@@ -604,21 +578,6 @@ body {
     color: var(--text-light);
   }
 
-  .theme-toggle:hover {
-    background: var(--lg-v2-chip-hover);
-  }
-  :root[data-scheme="light"] .theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.8);
-  }
-}
-
-.theme-toggle:active {
-  transform: scale(0.92);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 @media (max-width: 430px) {
@@ -633,18 +592,8 @@ body {
 }
 
 @media (max-width: 360px) {
-  .app-top-search {
-    width: 34px;
-    min-width: 34px;
-    padding-inline: 0;
-  }
-
-  .app-top-search span {
-    display: none;
-  }
-
   .app-top-brand {
-    max-width: 46%;
+    font-size: var(--fs-micro);
   }
 }
 
@@ -6777,11 +6726,6 @@ div.player-bar-thumbnail::after {
     padding-inline: 7px;
   }
 
-  .app-shell > .app-top-bar .theme-toggle {
-    width: 30px;
-    height: 30px;
-  }
-
   /* shopConfig.headerTitle (App.tsx) is operator-configurable and can run long. */
   .app-shell > .app-top-bar .app-top-brand {
     min-width: 0;
@@ -7460,8 +7404,7 @@ div.player-bar-thumbnail::after {
    the composer, useful starter prompts and the product's actual capabilities
    occupy the frame instead of floating as a short mobile card in dead space.
    ============================================================================ */
-.prompt-context,
-.dock-note {
+.prompt-context {
   display: none;
 }
 
@@ -7514,64 +7457,6 @@ div.player-bar-thumbnail::after {
     min-height: inherit;
   }
 
-  .app-shell > .dock .dock-inner {
-    min-height: clamp(280px, calc(100svh - 150px), 620px);
-  }
-
-  .app-shell > .dock .dock-note {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin: auto 6px 4px;
-    padding: 16px 6px 6px;
-    border-top: 1px solid var(--lg-v2-panel-border);
-    color: var(--text-muted-dark);
-  }
-
-  :root[data-scheme="light"] .app-shell > .dock .dock-note {
-    color: var(--text-muted-light);
-  }
-
-  .dock-note-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex: 0 0 28px;
-    border-radius: var(--radius-micro);
-    color: var(--accent);
-    background: var(--accent-bg);
-  }
-
-  .dock-note > span:last-child {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  .dock-note strong,
-  .dock-note small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .dock-note strong {
-    color: var(--text-dark);
-    font-size: var(--fs-micro);
-    font-weight: 700;
-  }
-
-  :root[data-scheme="light"] .dock-note strong {
-    color: var(--text-light);
-  }
-
-  .dock-note small {
-    font-size: 11px;
-    line-height: 1.25;
-  }
 }
 
 @media (min-width: 1000px) {
