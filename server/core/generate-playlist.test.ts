@@ -332,7 +332,7 @@ describe("generatePlaylist", () => {
   });
 
   test("default max iterations constant is sane", () => {
-    expect(DEFAULT_MAX_ITERATIONS).toBeGreaterThan(0);
+    expect(DEFAULT_MAX_ITERATIONS).toBe(4);
   });
 
   test("fails the run when the backend resolves zero tracks (no silent empty playlist)", async () => {

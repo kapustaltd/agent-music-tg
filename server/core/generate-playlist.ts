@@ -4,7 +4,10 @@ import { PLAYLIST_SYSTEM_PROMPT } from "../agent/prompts";
 import type { MusicProvider, Track } from "../music/types";
 import { mapWithConcurrency, withTimeout } from "./concurrency";
 
-export const DEFAULT_MAX_ITERATIONS = 12;
+// A normal request is search -> finalize. Four turns leave room for one
+// alternate search or a model retry without allowing a stalled agent to make
+// a dozen sequential LLM calls on the user's critical path.
+export const DEFAULT_MAX_ITERATIONS = 4;
 const SEARCH_CONCURRENCY = 5;
 // Finalize resolves the whole track list right before the response, so it sits
 // squarely on the critical path. The work is purely IO-bound against the music

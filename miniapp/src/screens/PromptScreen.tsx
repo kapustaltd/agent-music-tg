@@ -147,7 +147,7 @@ export function PromptScreen({
   return (
     <GlassPanel className="reveal prompt-card">
       <div className="prompt-hero">
-        <p className="prompt-hero-kicker">{mode === "ai" ? "AI собирает плейлист" : "Поиск по каталогу"}</p>
+        {mode === "search" && <p className="prompt-hero-kicker">Поиск по каталогу</p>}
         {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
             page structure — wrapping it in <h1> made the page's one heading
             announce a control instruction instead of readable text. */}

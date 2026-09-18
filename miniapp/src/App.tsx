@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
-import { Wallet, Sun, Moon, AtIcon } from "@phosphor-icons/react";
+import { Wallet, Sun, Moon } from "@phosphor-icons/react";
 import { PromptScreen } from "./screens/PromptScreen";
 import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";
@@ -28,6 +28,7 @@ import { SubscriptionGate } from "./components/SubscriptionGate";
 import { applyAccent, initialAccent } from "./lib/accent";
 import { Onboarding } from "./components/Onboarding";
 import { completeOnboarding, shouldShowOnboarding } from "./lib/onboarding";
+import { BrandMark } from "./components/BrandMark";
 
 // Lazy: the admin screen's own chunk is only fetched when isAdmin is true,
 // so it never ships to a regular allowed user's browser. The real
@@ -455,7 +456,7 @@ function AppInner() {
       <header className="app-top-bar">
         <span className="app-top-brand" title="music agent">
           <span className="app-top-logo" aria-hidden>
-            <AtIcon size={12} weight="fill" />
+            <BrandMark size={18} />
           </span>
           {shopConfig?.headerTitle || "agent music"}
         </span>

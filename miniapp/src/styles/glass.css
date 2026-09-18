@@ -440,6 +440,7 @@ body {
   border-radius: var(--radius-micro);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--lg-v2-chip-border);
+  color: var(--accent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
