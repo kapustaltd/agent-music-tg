@@ -95,6 +95,8 @@ Playlist results can be downloaded as audio: the Mini App's «Скачать» b
 
 The fast streaming path uses the catalog duration because bytes are never written as a complete local file. The file fallback measures the produced audio with **ffprobe**, and that measured value wins whenever available. Either value is cached with the `file_id`, so re-sends carry it too. SoundCloud results that are preview-only (`policy: SNIP`) or have no playable transcoding (`policy: BLOCK`) are dropped at search time rather than surfaced as songs.
 
+The Mini App also preloads one likely first/next track in a browser `Audio` element and adopts that element on tap. This overlaps DNS/TLS, stream resolution, and the first audio buffer with the time the user is looking at the result, while keeping only one speculative track and avoiding a server-side MP3 memory cache.
+
 Endpoints (all under initData auth): `POST /api/download`, `GET /api/downloads`, `POST /api/downloads/:id/resend`, `DELETE /api/downloads/:id`, `GET /api/stream/:uri`.
 
 Config (`.env`): `AUDIO_SCRATCH_DIR` (temporary files for chat downloads, deleted after upload).

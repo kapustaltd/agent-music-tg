@@ -88,6 +88,14 @@ export function ArtistScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target.id, target.name]);
 
+  useEffect(() => {
+    if (state.kind !== "ok") return;
+    const first = state.data.topTracks[0];
+    if (!first) return;
+    player.preload(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.kind === "ok" ? state.data.topTracks[0]?.uri : undefined]);
+
   const queue =
     state.kind === "ok"
       ? state.data.topTracks.map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork }))

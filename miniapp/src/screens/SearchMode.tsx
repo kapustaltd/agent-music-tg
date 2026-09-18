@@ -135,6 +135,19 @@ export function SearchMode({
     return () => clearTimeout(timer);
   }, [query]);
 
+  useEffect(() => {
+    const first = tracks[0];
+    if (!first) return;
+    player.preload({
+      uri: first.uri,
+      title: first.title,
+      artist: first.artist,
+      artwork: first.artwork,
+      durationMs: first.durationMs,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tracks[0]?.uri]);
+
   async function toggleAlbum(album: Album) {
     if (expanded[album.uri]) {
       setExpanded((m) => {

@@ -40,6 +40,8 @@ interface PlayerTimeInfo {
 interface PlayerApi extends Omit<PlayerState, "progress" | "currentTime" | "duration"> {
   /** Toggle playback; pass `queue` (the playlist's tracks) so next/prev work within it. */
   toggle(track: PlayerTrackInfo, queue?: PlayerTrackInfo[]): void;
+  /** Starts buffering a likely next choice without starting playback. */
+  preload(track: PlayerTrackInfo): void;
   seek(fraction: number): void;
   setVolume(v: number): void;
   toggleMute(): void;
@@ -187,6 +189,8 @@ export function syncMediaSessionPosition(
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  /** At most one speculative request is kept alive. It is adopted on click. */
+  const preloadedAudioRef = useRef<{ uri: string; audio: HTMLAudioElement } | null>(null);
   const prevVolumeRef = useRef(DEFAULT_VOLUME);
   const apiRef = useRef<PlayerApi>(null!);
   const retryTimerRef = useRef<number | null>(null);
@@ -229,11 +233,22 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return () => {
       if (retryTimerRef.current !== null) clearTimeout(retryTimerRef.current);
+      const audio = audioRef.current;
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      }
+      const preloaded = preloadedAudioRef.current?.audio;
+      if (preloaded) {
+        preloaded.pause();
+        preloaded.removeAttribute("src");
+        preloaded.load();
+      }
     };
   }, []);
 
-  function ensureAudio(): HTMLAudioElement {
-    if (audioRef.current) return audioRef.current;
+  function createAudio(): HTMLAudioElement {
     const audio = new Audio();
     // The source is assigned from the click handler, so allowing the element
     // to buffer immediately avoids an extra preload turn before play().
@@ -278,17 +293,68 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (audioRef.current !== audio) return;
       setState((s) => ({ ...s, duration: audio.duration }));
     });
+    return audio;
+  }
+
+  function ensureAudio(): HTMLAudioElement {
+    if (audioRef.current) return audioRef.current;
+    const audio = createAudio();
     audioRef.current = audio;
     return audio;
+  }
+
+  function disposeAudio(audio: HTMLAudioElement): void {
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+  }
+
+  function discardPreloadedAudio(): void {
+    const preloaded = preloadedAudioRef.current;
+    if (!preloaded) return;
+    preloadedAudioRef.current = null;
+    disposeAudio(preloaded.audio);
+  }
+
+  function preload(track: PlayerTrackInfo): void {
+    if (!track.uri || state.track?.uri === track.uri) return;
+    if (preloadedAudioRef.current?.uri === track.uri) return;
+
+    discardPreloadedAudio();
+    const audio = createAudio();
+    audio.src = streamUrl(track.uri, track);
+    preloadedAudioRef.current = { uri: track.uri, audio };
+    // `load()` is intentional: unlike `play()`, it is not blocked by mobile
+    // autoplay policy, but it starts DNS/TLS/HTTP buffering before the tap.
+    audio.load();
+  }
+
+  function adoptPreloadedAudio(uri: string): HTMLAudioElement | null {
+    const preloaded = preloadedAudioRef.current;
+    if (!preloaded || preloaded.uri !== uri) return null;
+    preloadedAudioRef.current = null;
+    if (preloaded.audio.error) {
+      disposeAudio(preloaded.audio);
+      return null;
+    }
+
+    const previous = audioRef.current;
+    if (previous) {
+      audioRef.current = null;
+      disposeAudio(previous);
+    }
+    preloaded.audio.volume = state.volume;
+    audioRef.current = preloaded.audio;
+    return preloaded.audio;
   }
 
   function replaceAudio(): HTMLAudioElement {
     const previous = audioRef.current;
     if (previous) {
-      previous.pause();
-      previous.removeAttribute("src");
-      previous.load();
+      audioRef.current = null;
+      disposeAudio(previous);
     }
+    discardPreloadedAudio();
     audioRef.current = null;
     return ensureAudio();
   }
@@ -327,7 +393,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   function playTrack(track: PlayerTrackInfo, queue?: PlayerTrackInfo[], attempt = 0) {
     cancelRetry();
     feedbackTrackerRef.current?.switchTo(track);
-    const audio = replaceAudio();
+    const adopted = attempt === 0 ? adoptPreloadedAudio(track.uri) : null;
+    const audio = adopted ?? replaceAudio();
     attemptRef.current = attempt;
     failureHandledRef.current = false;
     const nextQueue = queue ?? state.queue;
@@ -344,11 +411,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }));
     // Title/artist ride along so the server can silently substitute the same
     // song from another platform if this source turns out to be unplayable.
-    audio.src = streamUrl(track.uri, track) + (attempt > 0 ? `&_=${attempt}` : "");
+    if (!adopted) {
+      audio.src = streamUrl(track.uri, track) + (attempt > 0 ? `&_=${attempt}` : "");
+    }
     const source = audio.src;
     const playbackAttempt = ++playbackAttemptRef.current;
     onAudioErrorRef.current = () => handlePlayFailure(track, queue, playbackAttempt, source);
     void audio.play().catch(() => handlePlayFailure(track, queue, playbackAttempt, source));
+
+    const next = nextQueue[idx + 1];
+    if (next) preload(next);
   }
 
   function resumeTrack(track: PlayerTrackInfo, queue?: PlayerTrackInfo[]) {
@@ -396,6 +468,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       muted,
       queue,
       queueIndex,
+      preload,
       toggle(track, queue) {
         const audio = ensureAudio();
         if (state.track?.uri === track.uri) {

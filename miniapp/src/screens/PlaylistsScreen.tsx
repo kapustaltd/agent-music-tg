@@ -451,6 +451,13 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
     api.playlist(id).then((r) => setPlaylist(r.playlist)).catch(() => setPlaylist(null));
   }, [id]);
 
+  useEffect(() => {
+    const first = playlist?.tracks[0];
+    if (!first) return;
+    player.preload({ ...first, artwork: first.artwork ?? undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlist?.tracks[0]?.uri]);
+
   const queue = useMemo(
     () => (playlist?.tracks ?? []).map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork ?? undefined })),
     [playlist],
@@ -708,6 +715,13 @@ export default function PlaylistsScreen({ onOpenHistory }: { onOpenHistory: (ent
   useEffect(() => {
     api.myMusic().then((r) => setTracks(r.tracks)).catch(() => setTracks([]));
   }, []);
+
+  useEffect(() => {
+    const first = tracks?.[0];
+    if (!first) return;
+    player.preload({ ...first, artwork: first.artwork ?? undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tracks?.[0]?.uri]);
 
   const queue = useMemo(
     () => (tracks ?? []).map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork ?? undefined })),

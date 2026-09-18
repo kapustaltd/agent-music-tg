@@ -113,6 +113,20 @@ export function SharedPlaylistScreen({
     return () => { stopped = true; };
   }, [token]);
 
+  useEffect(() => {
+    if (state.kind !== "ready") return;
+    const first = state.share.tracks[0];
+    if (!first) return;
+    player.preload({
+      uri: first.uri,
+      title: first.title,
+      artist: first.artist,
+      artwork: first.artwork,
+      durationMs: first.durationMs,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.kind === "ready" ? state.share.tracks[0]?.uri : undefined]);
+
   if (state.kind === "loading") {
     return (
       <GlassPanel className="reveal">

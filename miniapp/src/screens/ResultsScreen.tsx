@@ -45,6 +45,25 @@ export function ResultsScreen({
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
 
+  // The server resolves the URL in the background, while the browser starts
+  // buffering the first likely choice. PlayerProvider keeps this one audio
+  // element and adopts it on the tap, so the click usually only has to pass
+  // through the already-open media connection.
+  useEffect(() => {
+    const first = visibleTracks[0] ?? current.tracks[0];
+    if (!first) return;
+    player.preload({
+      uri: first.uri,
+      title: first.title,
+      artist: first.artist,
+      artwork: first.artwork,
+      durationMs: first.durationMs,
+    });
+    // Re-run only when the first candidate changes; player state changes must
+    // not restart speculative network work for the same playlist.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleTracks[0]?.uri, current.tracks[0]?.uri]);
+
   useEffect(() => {
     polling.current = true;
     done.current = false;
