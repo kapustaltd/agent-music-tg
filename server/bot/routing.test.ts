@@ -131,7 +131,8 @@ describe("/search", () => {
     expect(searchCalls[0]?.query).toBe("мотогонки");
     const text = String(harness.sent()[0]?.payload.text ?? "");
     expect(text).toContain("Поиск: мотогонки");
-    expect(text).toContain("1. <b>Alps</b>");
+    expect(text).toContain("<b>Alps</b>");
+    expect(text).not.toContain("1. <b>Alps</b>");
   });
 
   test("with no query it asks for one and arms the next message", async () => {

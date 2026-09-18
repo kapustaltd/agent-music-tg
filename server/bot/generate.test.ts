@@ -34,7 +34,8 @@ describe("outcomeView", () => {
   test("renders a finished playlist with a download action", () => {
     const view = outcomeView(okOutcome);
     expect(view.text).toContain("Вечерний инди");
-    expect(view.text).toContain("1. <b>Alps</b>");
+    expect(view.text).toContain("<b>Alps</b>");
+    expect(view.text).not.toContain("1. <b>Alps</b>");
     expect(view.text).toContain("2 треков");
     expect(callbackData(view.keyboard)).toContain("gen:dl:42");
   });

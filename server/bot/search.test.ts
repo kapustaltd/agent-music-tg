@@ -42,11 +42,13 @@ describe("pagination arithmetic", () => {
 });
 
 describe("buildSearchView", () => {
-  test("shows one page of results with absolute numbering", () => {
+  test("shows one page of results without numbering", () => {
     const view = buildSearchView("инди", tracks(12), 1);
-    expect(view.text).toContain("6. <b>Трек 5</b>");
-    expect(view.text).toContain("10. <b>Трек 9</b>");
-    expect(view.text).not.toContain("11. <b>Трек 10</b>");
+    expect(view.text).toContain("<b>Трек 5</b>");
+    expect(view.text).toContain("<b>Трек 9</b>");
+    expect(view.text).not.toContain("6. <b>Трек 5</b>");
+    expect(view.text).not.toContain("10. <b>Трек 9</b>");
+    expect(view.text).not.toContain("<blockquote>");
     expect(view.text).toContain("Страница 2 из 3");
   });
 
@@ -67,9 +69,11 @@ describe("buildSearchView", () => {
   });
 
   test("addresses tracks by absolute index, not by uri or query", () => {
-    const data = callbackData(buildSearchView("q", tracks(12), 1));
+    const view = buildSearchView("q", tracks(12), 1);
+    const data = callbackData(view);
     expect(data).toContain("srch:dl:5");
     expect(data).toContain("srch:dl:9");
+    expect(view.keyboard.inline_keyboard.flat().some((button) => "text" in button && /^\d+\. /.test(button.text))).toBe(false);
   });
 
   // Telegram silently drops buttons whose callback_data exceeds 64 bytes, which

@@ -9,7 +9,7 @@ import { processDownload } from "../audio/deliver";
 import { createRuntimeAudioDeps } from "../audio/runtime";
 import { env } from "../env";
 import { btnText } from "./emoji";
-import { detailBlock, escapeHtml, messageHint, messageTitle, statusMessage } from "./message-format";
+import { escapeHtml, messageHint, messageTitle, statusMessage } from "./message-format";
 import { getPendingClarify, setPendingClarify, clearSession, setPendingInput } from "./session";
 import { offersKeyboard, purchasePromptText } from "./shop";
 
@@ -75,7 +75,7 @@ export interface GenerationView {
 function playlistView(outcome: Extract<GenerationOutcome, { status: "ok" }>): GenerationView {
   const { playlist, generationId } = outcome;
   const lines = playlist.tracks.map(
-    (track, i) => `${i + 1}. <b>${escapeHtml(track.title)}</b>\n    ${escapeHtml(track.artist)}`,
+    (track) => `<b>${escapeHtml(track.title)}</b>\n    ${escapeHtml(track.artist)}`,
   );
   const kb = new InlineKeyboard()
     .text(btnText("Скачать в чат", "music"), `gen:dl:${generationId}`)
@@ -87,7 +87,7 @@ function playlistView(outcome: Extract<GenerationOutcome, { status: "ok" }>): Ge
     text: [
       messageTitle("star", playlist.name),
       "",
-      detailBlock(lines),
+      lines.join("\n"),
       "",
       messageHint(`${playlist.tracks.length} треков`),
     ].join("\n"),

@@ -11,7 +11,7 @@ import { createRuntimeAudioDeps } from "../audio/runtime";
 import { enqueueWarmTracks } from "../audio/warm-queue";
 import { env } from "../env";
 import { btnText } from "./emoji";
-import { detailBlock, escapeHtml, messageHint, messageTitle, statusMessage } from "./message-format";
+import { escapeHtml, messageHint, messageTitle, statusMessage } from "./message-format";
 import { setPendingInput } from "./session";
 
 const DEFAULT_BACKEND = "youtube-music";
@@ -91,24 +91,22 @@ export function buildSearchView(query: string, tracks: Track[], page: number): S
   const slice = tracks.slice(start, start + PAGE_SIZE);
 
   const lines = slice.map(
-    (track, i) =>
-      `${start + i + 1}. <b>${escapeHtml(track.title)}</b>\n    ${escapeHtml(track.artist)}${formatDuration(track.durationMs)}`,
+    (track) => `<b>${escapeHtml(track.title)}</b>\n    ${escapeHtml(track.artist)}${formatDuration(track.durationMs)}`,
   );
 
   const text = [
     messageTitle("search", `Поиск: ${query}`),
     "",
-    detailBlock(lines),
+    lines.join("\n"),
     "",
     messageHint(`Страница ${current + 1} из ${pageCount(total)} · найдено ${total}`),
   ].join("\n");
 
   const kb = new InlineKeyboard();
-  // One row per track keeps the labels readable; the number ties the button to
-  // the numbered line above it.
+  // One row per track keeps the labels readable.
   for (const [i, track] of slice.entries()) {
     const index = start + i;
-    kb.text(btnText(`${index + 1}. ${track.title}`.slice(0, 40), "music"), `srch:dl:${index}`).row();
+    kb.text(btnText(track.title.slice(0, 40), "music"), `srch:dl:${index}`).row();
   }
 
   const pages = pageCount(total);
