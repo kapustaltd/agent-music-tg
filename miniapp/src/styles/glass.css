@@ -451,6 +451,22 @@ body {
   display: block;
 }
 
+.brand-mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.brand-mark img {
+  display: block;
+  width: 170%;
+  height: 170%;
+  max-width: none;
+  transform: translate(-20.5%, -20.5%);
+  object-fit: cover;
+}
+
 .app-top-chip {
   display: inline-flex;
   align-items: center;

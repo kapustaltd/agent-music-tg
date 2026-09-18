@@ -44,6 +44,12 @@ export function humanizeError(raw: string): FriendlyError {
       detail: text,
     };
   }
+  if (/ai отвечает слишком долго|llm call timed out|llm.*(?:timeout|timed out)/i.test(lower)) {
+    return {
+      message: "AI отвечает слишком долго. Попробуйте ещё раз.",
+      detail: text,
+    };
+  }
   if (/timeout|timed out|econn|enotfound|fetch failed|load failed|network|no route|connection/i.test(lower)) {
     return {
       message: "Произошла ошибка подключения. Проверьте соединение и попробуйте ещё раз.",

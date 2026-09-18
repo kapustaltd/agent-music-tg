@@ -14,4 +14,10 @@ describe("humanizeError", () => {
       "Произошла ошибка подключения. Проверьте соединение и попробуйте ещё раз.",
     );
   });
+
+  test("keeps the server's AI timeout message visible", () => {
+    expect(humanizeError("AI отвечает слишком долго. Попробуйте ещё раз.").message).toBe(
+      "AI отвечает слишком долго. Попробуйте ещё раз.",
+    );
+  });
 });
