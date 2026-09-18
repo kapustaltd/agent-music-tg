@@ -50,4 +50,22 @@ describe("CheapVibeCode provider defaults", () => {
 
     expect(calls).toBe(1);
   });
+
+  test("falls back to a healthy CheapVibeCode model after a timeout", async () => {
+    const requestBodies: Record<string, unknown>[] = [];
+    let calls = 0;
+    globalThis.fetch = mock(async (_input: string | URL | Request, init?: RequestInit) => {
+      requestBodies.push(JSON.parse(String(init?.body)));
+      calls++;
+      if (calls === 1) throw new Error("request timed out");
+      return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }));
+    }) as unknown as typeof fetch;
+
+    const provider = createCheapVibeCodeProvider("test-key", "deepseek-v4-flash");
+    await expect(provider.generateMessages("system", [{ role: "user", content: "test" }], [])).resolves.toMatchObject({
+      text: "ok",
+    });
+
+    expect(requestBodies.map((body) => body.model)).toEqual(["deepseek-v4-flash", "gpt-5.6-luna"]);
+  });
 });
