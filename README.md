@@ -25,7 +25,29 @@ cd miniapp && bun run build   # typecheck + build the Mini App
 
 ## Deploy
 
+Every push to `main` runs the checks in `.github/workflows/ci.yml` and, when
+they pass, automatically deploys the separate test instance through
+`deploy/deploy-test.sh`. Pull requests run the checks but never deploy. The
+workflow can also be started manually with `workflow_dispatch` and an optional
+ref. Deploys are serialized so two releases cannot restart the test service at
+the same time.
+
+Configure these GitHub Actions values once:
+
+- repository/environment variable `DEPLOY_HOST` (optional; defaults to
+  `root@45.128.235.219`);
+- environment `test` secret `DEPLOY_SSH_KEY` — the private key for the
+  dedicated Actions deploy key;
+- environment `test` secret `DEPLOY_KNOWN_HOSTS` — the pinned SSH host key;
+- environment `test` secret `TEST_BOT_TOKEN` — the token used when the test
+  `.env` is bootstrapped on the VPS.
+
+The test workflow deploys to `/opt/agent-music-tg-test`, listens on port `8788`,
+and serves the Mini App at `https://miniapp-dev.xdshka.party`. Production is
+still promoted explicitly after the test bot has been checked:
+
 ```bash
+./deploy/deploy-test.sh                  # test instance
 ./deploy/deploy.sh                  # standard deploy
 ./deploy/deploy.sh --dry-run        # dry-run (pre-flight only, no changes)
 ./deploy/deploy.sh --no-typecheck   # skip tsc type check
