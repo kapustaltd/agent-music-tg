@@ -9191,7 +9191,7 @@ div.player-bar-thumbnail::after {
 .app-top-bar,
 .app-shell > .app-top-bar,
 .app-sidebar .app-top-bar {
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  grid-template-columns: minmax(48px, 1fr) minmax(0, max-content) minmax(48px, 1fr);
   height: 52px;
   min-height: 52px;
   padding: 3px 4px;
@@ -9218,12 +9218,15 @@ div.player-bar-thumbnail::after {
 .app-top-brand,
 .app-shell > .app-top-bar .app-top-brand,
 .app-sidebar .app-top-bar .app-top-brand {
-  position: absolute;
-  inset-inline-start: 50%;
-  z-index: 0;
+  position: relative;
+  grid-column: 2;
+  justify-self: center;
+  z-index: 1;
+  inset-inline-start: auto;
+  top: auto;
   width: max-content;
-  max-width: calc(100% - 120px);
-  transform: translateX(-50%);
+  max-width: calc(100% - 8px);
+  transform: none;
 }
 
 .app-top-actions {
