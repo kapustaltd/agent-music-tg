@@ -9462,6 +9462,247 @@ div.player-bar-thumbnail::after {
   }
 }
 
+/* ==========================================================================
+   Interface refinement: page-led composer, quieter search, clearer playback
+   --------------------------------------------------------------------------
+   The create flow is a workspace. Surfaces carry interaction and state; the
+   page itself stays open so sections can breathe without becoming nested cards.
+   ========================================================================== */
+.prompt-card {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.prompt-card::before {
+  display: none;
+}
+
+.prompt-card > .prompt-body {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.prompt-compose {
+  gap: 12px;
+}
+
+.prompt-hero {
+  padding: 0;
+}
+
+.prompt-hero-action {
+  font-size: var(--fs-display);
+}
+
+.prompt-modes {
+  align-self: flex-start;
+  width: min(100%, 220px);
+  min-height: 40px;
+  padding: 2px;
+  border: 1px solid var(--lg-v2-panel-border);
+  border-radius: var(--radius-control);
+  background: transparent;
+}
+
+.prompt-mode-seg-btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: var(--radius-chip);
+}
+
+.prompt-mode-seg-btn.active {
+  background: var(--lg-v2-chip);
+  box-shadow: var(--glass-shadow-sm);
+}
+
+.search-section {
+  margin-top: 0;
+  gap: 8px;
+}
+
+.search-section + .search-section {
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.search-section-title {
+  letter-spacing: 0;
+}
+
+/* One accent surface is enough: the best-match section itself is transparent,
+   while its selected row carries the emphasis. */
+.search-best-match {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.search-best-match .search-section-heading {
+  margin-bottom: 6px;
+}
+
+.search-best-row {
+  margin: 0;
+  padding: 10px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border-subtle));
+  border-radius: var(--radius-row);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.search-best-row:hover {
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+
+.search-best-rest {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.search-artist-card {
+  margin: 0;
+  padding: 10px 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.album-block {
+  border-radius: 0;
+  background: transparent;
+}
+
+.album-head {
+  border-radius: 0;
+}
+
+.resume-rail,
+.search-artist-rail {
+  padding-inline-end: 24px;
+}
+
+.resume-card {
+  width: clamp(142px, calc((100% - 34px) / 2), 164px);
+}
+
+.resume-cover {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.player-bar-play-btn {
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+
+.player-bar-play-btn:active {
+  background: var(--accent-deep);
+}
+
+.player-screen-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.player-screen-status--error {
+  color: var(--danger);
+  font-size: var(--fs-label);
+}
+
+.player-screen-reactions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+@media (max-width: 839px) {
+  .app-shell:has(> .player-bar) {
+    padding-bottom: calc(var(--mini-player-height) + 104px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .prompt-starters .prompt-suggestions {
+    padding-inline-end: 24px;
+  }
+
+  .prompt-starters .prompt-suggestion {
+    flex-basis: calc(100% - 24px);
+    max-width: 340px;
+    min-height: 52px;
+    white-space: normal;
+    text-align: left;
+  }
+
+  .player-screen {
+    justify-content: flex-start;
+    gap: 0;
+    padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .player-screen-header {
+    margin-bottom: 12px;
+  }
+
+  .player-screen-artwork {
+    width: min(100%, 340px, calc(100svh - 430px));
+  }
+
+  .player-screen-info {
+    margin: 14px 0 0;
+  }
+
+  .player-screen-progress-wrap {
+    margin: 20px 0 0;
+  }
+
+  .player-screen-controls {
+    gap: 12px;
+    max-width: 300px;
+    margin-top: 12px;
+  }
+
+  .player-screen-controls-row {
+    gap: 24px;
+  }
+
+  .player-screen-secondary-row {
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0;
+  }
+
+  .player-screen-volume {
+    max-width: 300px;
+  }
+
+  .player-screen-play-btn,
+  :root[data-scheme="light"] .player-screen-play-btn {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+@media (min-width: 840px) {
+  .prompt-hero-action {
+    font-size: var(--fs-hero);
+  }
+}
+
 /* The bottom navigation is app chrome, not a floating card. The extra scroll
    reserve matches the actual dock/player stack, so the last track stays above
    it instead of disappearing under the chrome. */
@@ -9580,5 +9821,12 @@ div.player-bar-thumbnail::after {
 
   .results-action--primary span {
     display: none;
+  }
+}
+
+/* Keep the final mobile scroll reserve aligned with the refined mini-player. */
+@media (max-width: 839px) {
+  .app-shell:has(> .player-bar) {
+    padding-bottom: calc(var(--mini-player-height) + 104px + env(safe-area-inset-bottom, 0px));
   }
 }

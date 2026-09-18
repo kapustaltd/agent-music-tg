@@ -156,6 +156,11 @@ Refined and restrained: controls are pills and soft panels that respond by sinki
 - **Border:** 1px hairline.
 - **Internal Padding:** 16px.
 
+The create screen is a page surface, not a glass panel. Its hierarchy comes
+from spacing and typography; glass is reserved for the prompt field, focused
+results, sheets, and floating player chrome. Do not wrap the whole workflow in
+another rounded container.
+
 ### Inputs
 - **Style:** white 5% fill (60% light), `--radius-input` (20px), hairline border.
 - **Focus:** border/box-shadow shift on `:focus-visible`; no color flood.

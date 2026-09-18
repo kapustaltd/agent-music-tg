@@ -1,4 +1,4 @@
-import { CircleNotch, HeartStraight, Pause, Play, SkipForward, WarningCircle } from "../icons";
+import { CircleNotch, HeartStraight, Pause, Play, SkipForward } from "../icons";
 import { usePlayer } from "../lib/player";
 import { useMyMusic } from "../lib/my-music";
 import { ARTWORK_ROW, artworkUrl } from "../lib/artwork";
@@ -26,8 +26,6 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
       <CircleNotch size={18} weight="bold" className="spin" />
     ) : status === "playing" ? (
       <Pause size={18} weight="fill" />
-    ) : status === "error" ? (
-      <WarningCircle size={18} weight="bold" />
     ) : (
       <Play size={18} weight="fill" />
     );
@@ -66,9 +64,9 @@ export function PlayerBar({ onOpen }: { onOpen?: () => void }) {
       </button>
       <button
         type="button"
-        className="player-bar-btn"
-        aria-label={status === "playing" ? `Пауза: ${track.title}` : `Слушать: ${track.title}`}
-        title={status === "playing" ? "Пауза" : "Воспроизвести"}
+        className="player-bar-btn player-bar-play-btn"
+        aria-label={status === "error" ? `Повторить: ${track.title}` : status === "playing" ? `Пауза: ${track.title}` : `Слушать: ${track.title}`}
+        title={status === "error" ? "Повторить" : status === "playing" ? "Пауза" : "Воспроизвести"}
         onClick={() => player.toggle(track)}
       >
         {playIcon}

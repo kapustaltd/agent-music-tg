@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "../icons";
-import { GlassPanel } from "../components/GlassPanel";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentProgressEvent } from "../lib/api";
 import { useTextScramble } from "../lib/useTextScramble";
@@ -149,7 +148,7 @@ export function PromptScreen({
   ];
 
   return (
-    <GlassPanel className="reveal prompt-card">
+    <div className="reveal prompt-card">
       <div className="prompt-compose">
         <div className="prompt-hero">
           {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
@@ -254,6 +253,6 @@ export function PromptScreen({
         )}
       </div>
 
-    </GlassPanel>
+    </div>
   );
 }

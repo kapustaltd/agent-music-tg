@@ -276,7 +276,10 @@ export function PlayerScreen({
         <div className="player-screen-info">
           <p className="player-screen-title">{track?.title ?? ""}</p>
           {status === "error" ? (
-            <p className="player-screen-artist text-muted">Не удалось воспроизвести</p>
+            <p className="player-screen-artist player-screen-status player-screen-status--error">
+              <WarningCircle size={14} weight="bold" aria-hidden="true" />
+              Не удалось воспроизвести
+            </p>
           ) : (
             <button
               type="button"
@@ -386,20 +389,31 @@ export function PlayerScreen({
               <SkipForward size={26} weight="fill" />
             </button>
           </div>
-          {/* Reactions and lyrics sit below transport. Keep the lyrics pill
-              centred between the two equal-width reaction controls; dislike
-              leads on the left and like closes the row on the right. */}
+          {/* Reactions are a group; lyrics is navigation into another surface. */}
           <div className="player-screen-secondary-row">
-            <button
-              type="button"
-              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
-              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-              title={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-              disabled={!track || reacting}
-              onClick={() => void toggleDislike()}
-            >
-              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
-            </button>
+            <div className="player-screen-reactions" role="group" aria-label="Реакция на трек">
+              <button
+                type="button"
+                className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
+                aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+                title={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+                disabled={!track || reacting}
+                onClick={() => void toggleDislike()}
+              >
+                <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
+              </button>
+              <button
+                type="button"
+                className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
+                aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+                title={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+                aria-pressed={!!track && isSaved(track.uri)}
+                disabled={!track || isPending(track.uri)}
+                onClick={toggleLike}
+              >
+                <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
+              </button>
+            </div>
             <button
               type="button"
               className="player-screen-lyrics-btn"
@@ -409,17 +423,6 @@ export function PlayerScreen({
               onClick={() => setShowLyrics(true)}
             >
               <TextAlignLeft size={16} weight="bold" /> Текст песни
-            </button>
-            <button
-              type="button"
-              className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
-              aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
-              title={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
-              aria-pressed={!!track && isSaved(track.uri)}
-              disabled={!track || isPending(track.uri)}
-              onClick={toggleLike}
-            >
-              <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
             </button>
           </div>
           <VolumeControl
