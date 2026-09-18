@@ -58,14 +58,19 @@ describe("CheapVibeCode provider defaults", () => {
       requestBodies.push(JSON.parse(String(init?.body)));
       calls++;
       if (calls === 1) throw new Error("request timed out");
-      return new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }));
+      return new Response(JSON.stringify({ choices: [{ message: { content: "ok", reasoning_content: "Выбираю треки" } }] }));
     }) as unknown as typeof fetch;
 
+    const reasoningDeltas: string[] = [];
     const provider = createCheapVibeCodeProvider("test-key", "deepseek-v4-flash");
-    await expect(provider.generateMessages("system", [{ role: "user", content: "test" }], [])).resolves.toMatchObject({
-      text: "ok",
-    });
+    await expect(
+      provider.generateMessages("system", [{ role: "user", content: "test" }], [], {
+        onReasoning: (delta) => reasoningDeltas.push(delta),
+      }),
+    ).resolves.toMatchObject({ text: "ok", reasoning: "Выбираю треки" });
 
     expect(requestBodies.map((body) => body.model)).toEqual(["deepseek-v4-flash", "gpt-5.6-luna"]);
+    expect(requestBodies[1]?.stream).toBeUndefined();
+    expect(reasoningDeltas).toEqual([]);
   });
 });

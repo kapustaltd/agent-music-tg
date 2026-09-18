@@ -43,7 +43,10 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
               system,
               messages,
               tools,
-              options,
+              // This fallback model exposes reasoning in the completed JSON
+              // message but omits it from its SSE deltas. Keep the result
+              // separate so the admin transcript still receives it.
+              undefined,
             );
           } catch (fallbackModelError) {
             err = fallbackModelError;
