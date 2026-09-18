@@ -8,5 +8,5 @@
 
 - [x] 2.1 Добавить regression-проверки extractor args и fallback format.
 - [x] 2.2 Прогнать `bun run typecheck`, полный `bun test` и `bun run build:miniapp`.
-- [ ] 2.3 Выполнить `deploy/deploy-test.sh` и проверить `/healthz`.
-- [ ] 2.4 Запушить исправление в `origin/main`.
+- [x] 2.3 Выполнить `deploy/deploy-test.sh` и проверить `/healthz`.
+- [x] 2.4 Запушить исправление в `origin/main`.
