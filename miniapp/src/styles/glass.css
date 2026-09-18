@@ -1108,6 +1108,11 @@ textarea.glass-input {
   border-bottom: none;
 }
 
+.playlist-list .track-row,
+.playlist-track-list .track-row {
+  border-bottom: none;
+}
+
 /* The row's clickable artwork+title+meta block. A real <button> rather than
    folding the whole row (including `trailing`'s own buttons) into one
    role="button" — a button can't validly nest other buttons. */

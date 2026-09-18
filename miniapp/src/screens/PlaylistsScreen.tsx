@@ -418,7 +418,7 @@ function PlaylistsSection({ onOpen }: { onOpen: (id: number) => void }) {
       )}
 
       {playlists !== null && playlists.length > 0 && (
-        <div className="stack reveal-stagger mt-12">
+        <div className="stack reveal-stagger mt-12 playlist-list">
           {playlists.map((p, i) => (
             <button key={p.id} type="button" className="track-row search-artist-row" style={{ ["--i" as string]: i }} onClick={() => onOpen(p.id)}>
               <PlaylistCover playlistId={p.id} />
@@ -638,7 +638,7 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
           {playlist.tracks.length === 0 ? (
             <EmptyState icon={<PlaylistIcon size={22} weight="bold" />} label="В плейлисте пока нет треков" />
           ) : (
-            <div className="stack reveal-stagger mt-12">
+            <div className="stack reveal-stagger mt-12 playlist-track-list">
               {playlist.tracks.map((track, i) => (
                 <TrackRow
                   key={track.uri}
