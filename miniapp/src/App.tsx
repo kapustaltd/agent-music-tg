@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
-import { MagnifyingGlass, UserCircle, Wallet } from "@phosphor-icons/react";
+import { MagnifyingGlass, UserCircle } from "@phosphor-icons/react";
 import { PromptScreen } from "./screens/PromptScreen";
 import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";
@@ -451,21 +451,6 @@ function AppInner() {
             <UserCircle size={17} weight="bold" aria-hidden="true" />
             <span className="app-top-account-label">Профиль</span>
           </button>
-          {tab !== null && (
-            <button
-              type="button"
-              className="wallet-badge"
-              aria-label={`Генераций осталось: ${me?.credits ?? 0}`}
-              title="Генерации"
-              onClick={() => navigate({ kind: "profile" })}
-            >
-              <Wallet size={14} weight="bold" />
-              <span className="wallet-count">{me?.credits ?? 0}</span>
-              {me?.trial?.active && me.trial.creditsLeft > 0 ? (
-                <span className="wallet-trial">+{me.trial.creditsLeft}</span>
-              ) : null}
-            </button>
-          )}
         </span>
       </header>
 

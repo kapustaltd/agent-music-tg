@@ -4,12 +4,12 @@
 
 ### Requirement: Header has one clear action for each concern
 
-The Mini App SHALL show one icon-only search action, one visible brand name, one profile action, and the generation balance. It SHALL NOT show a theme toggle or a second profile action in the same navigation frame.
+The Mini App SHALL show one icon-only search action, one visible brand name, and one profile action. The generation balance SHALL be shown only inside ProfileScreen. The header SHALL NOT show a theme toggle or a second profile action in the same navigation frame.
 
 #### Scenario: Narrow mobile header
 
 - **WHEN** the app renders at a narrow mobile width
-- **THEN** the search icon, brand name, profile action, and balance fit without clipping or horizontal scroll
+- **THEN** the search icon, brand name, and profile action fit without clipping or horizontal scroll, while the balance remains on ProfileScreen
 
 ### Requirement: Profile is not duplicated in navigation
 
