@@ -1,4 +1,4 @@
-import { PROGRESSIVE_AUDIO_FORMAT, sourceUrlForUri, YTDLP_COMMON_ARGS } from "./extractor";
+import { extractorArgsForUri, PROGRESSIVE_AUDIO_FORMAT, sourceUrlForUri, YTDLP_COMMON_ARGS } from "./extractor";
 import { streamResolveSemaphore } from "./ytdlp-limits";
 
 export interface ResolvedStream {
@@ -103,7 +103,7 @@ export class YtDlpStreamResolver implements StreamResolver {
       [
         this.binary,
         ...YTDLP_COMMON_ARGS,
-        ...(uri.startsWith("ytm:") ? ["--extractor-args", "youtube:player_client=android"] : []),
+        ...extractorArgsForUri(uri),
         "-f", uri.startsWith("ytm:") ? STREAM_YOUTUBE_FORMAT : STREAM_AUDIO_FORMAT,
         "--no-download",
         "--dump-single-json",

@@ -23,6 +23,13 @@ export function fileNameForUri(uri: string): string {
   return `${uri.replace(":", "_")}.mp3`;
 }
 
+/** YouTube client used for both playback and downloads of YouTube Music tracks. */
+export const YOUTUBE_ANDROID_ARGS = ["--extractor-args", "youtube:player_client=android"] as const;
+
+export function extractorArgsForUri(uri: string): readonly string[] {
+  return uri.startsWith("ytm:") ? YOUTUBE_ANDROID_ARGS : [];
+}
+
 export interface ExtractedAudio {
   filePath: string;
   sizeBytes: number;
@@ -47,6 +54,10 @@ export interface Extractor {
 const PROBE_TIMEOUT_MS = 15_000;
 const EXTRACT_TIMEOUT_MS = 45_000;
 const FFPROBE_TIMEOUT_MS = 10_000;
+
+export interface YtDlpExtractorOptions {
+  binary?: string;
+}
 
 /**
  * Progressive (non-HLS) audio-only format: m4a preferred, mp3 fallback.
@@ -134,10 +145,10 @@ async function runWithTimeout(
   }
 }
 
-async function runProbe(uri: string): Promise<ProbeResult> {
+async function runProbe(uri: string, binary: string): Promise<ProbeResult> {
   const url = sourceUrlForUri(uri);
   const proc = Bun.spawn(
-    ["yt-dlp", ...YTDLP_COMMON_ARGS, "-f", "bestaudio/best", "--dump-json", url],
+    [binary, ...YTDLP_COMMON_ARGS, ...extractorArgsForUri(uri), "-f", "bestaudio/best", "--dump-json", url],
     { stdout: "pipe", stderr: "pipe" },
   );
   const { stdout, stderr, code } = await runWithTimeout(proc, PROBE_TIMEOUT_MS);
@@ -212,11 +223,19 @@ interface RunExtractResult {
  * — only used by the fallback attempt below, for sources offering neither
  * m4a nor mp3 progressively.
  */
-async function runExtractOnce(url: string, outputTemplate: string, format: string, transcode: boolean): Promise<RunExtractResult> {
+async function runExtractOnce(
+  binary: string,
+  url: string,
+  outputTemplate: string,
+  format: string,
+  transcode: boolean,
+  extraArgs: readonly string[],
+): Promise<RunExtractResult> {
   const proc = Bun.spawn(
     [
-      "yt-dlp",
+      binary,
       ...YTDLP_COMMON_ARGS,
+      ...extraArgs,
       "--concurrent-fragments", "4",
       "-f", format,
       ...(transcode ? ["-x", "--audio-format", "mp3", "--audio-quality", "192K"] : []),
@@ -251,15 +270,22 @@ async function runExtractOnce(url: string, outputTemplate: string, format: strin
  * ffmpeg mux pass on every cache-miss track for no one.
  */
 export class YtDlpExtractor implements Extractor {
+  private readonly binary: string;
+
+  constructor(options: YtDlpExtractorOptions = {}) {
+    this.binary = options.binary ?? "yt-dlp";
+  }
+
   async extract(uri: string, targetDir: string): Promise<ExtractedAudio> {
     const url = sourceUrlForUri(uri);
+    const extraArgs = extractorArgsForUri(uri);
     mkdirSync(targetDir, { recursive: true });
     const outputTemplate = join(targetDir, fileNameForUri(uri)).replace(/\.mp3$/, ".%(ext)s");
 
     const ytdlpStart = performance.now();
-    let result = await runExtractOnce(url, outputTemplate, DOWNLOAD_AUDIO_FORMAT, false);
+    let result = await runExtractOnce(this.binary, url, outputTemplate, DOWNLOAD_AUDIO_FORMAT, false, extraArgs);
     if (result.code !== 0 && !result.timedOut && result.stderr.includes(FORMAT_UNAVAILABLE_MARKER)) {
-      result = await runExtractOnce(url, outputTemplate, "bestaudio/best", true);
+      result = await runExtractOnce(this.binary, url, outputTemplate, "bestaudio/best", true, extraArgs);
     }
     const ytdlpMs = performance.now() - ytdlpStart;
 
@@ -282,7 +308,7 @@ export class YtDlpExtractor implements Extractor {
     for (let attempt = 0; attempt < 3; attempt++) {
       if (attempt > 0) await new Promise((r) => setTimeout(r, 1000));
       try {
-        const result = await runProbe(uri);
+        const result = await runProbe(uri, this.binary);
         if (attempt === 0 || result.available === false) return result;
         return result;
       } catch {
