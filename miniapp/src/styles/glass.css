@@ -1328,6 +1328,244 @@ h1 {
   white-space: nowrap;
 }
 
+/* Desktop results rail: one quiet information layer beside the tracklist.
+   It gives the wide layout a useful anchor without turning every detail into
+   another floating glass card. The summary and queue are intentionally
+   desktop-only; on a phone the tracklist already provides the right context. */
+.results-sidebar-summary,
+.results-sidebar-divider,
+.results-up-next,
+.results-sidebar-label {
+  display: none;
+}
+
+.results-sidebar-actions-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.results-sidebar-actions-block .prompt-pill,
+.results-sidebar-actions-block .results-actions {
+  margin-top: 0;
+}
+
+.results-sidebar-label {
+  margin: 0;
+  color: var(--text-muted-dark);
+  font-size: var(--fs-label);
+  font-weight: 700;
+}
+
+.results-sidebar-summary {
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.results-sidebar-cover {
+  display: grid;
+  flex: 0 0 88px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 88px;
+  height: 88px;
+  gap: 2px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border-dark);
+  border-radius: var(--radius-block);
+  background: var(--lg-v2-input-bg);
+  color: var(--text-muted-dark);
+}
+
+.results-sidebar-cover img {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: cover;
+}
+
+.results-sidebar-cover-fallback {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  width: 32px;
+  height: 32px;
+  place-self: center;
+}
+
+.results-sidebar-summary-copy {
+  min-width: 0;
+}
+
+.results-sidebar-kicker,
+.results-sidebar-name,
+.results-sidebar-meta {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.results-sidebar-kicker {
+  color: var(--text-muted-dark);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.results-sidebar-name {
+  margin-top: 4px;
+  color: var(--text-dark);
+  font-size: var(--fs-body);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.results-sidebar-meta {
+  margin-top: 7px;
+  color: var(--text-muted-dark);
+  font-size: var(--fs-label);
+}
+
+.results-up-next {
+  min-width: 0;
+}
+
+.results-up-next-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.results-up-next-heading h2 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: var(--fs-body);
+  font-weight: 750;
+}
+
+.results-up-next-heading span {
+  flex-shrink: 0;
+  color: var(--text-muted-dark);
+  font-size: var(--fs-micro);
+}
+
+.results-up-next-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.results-up-next-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  gap: 10px;
+  padding: 7px 6px;
+  border: 0;
+  border-radius: var(--radius-row);
+  color: var(--text-dark);
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.results-up-next-row:hover,
+.results-up-next-row:focus-visible {
+  background: var(--lg-v2-chip-hover);
+}
+
+.results-up-next-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.results-up-next-artwork {
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--lg-v2-input-bg);
+  color: var(--text-muted-dark);
+}
+
+.results-up-next-artwork img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.results-up-next-copy {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.results-up-next-title,
+.results-up-next-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.results-up-next-title {
+  font-size: var(--fs-label);
+  font-weight: 700;
+}
+
+.results-up-next-meta,
+.results-up-next-row > svg {
+  color: var(--text-muted-dark);
+}
+
+.results-up-next-meta {
+  font-size: var(--fs-micro);
+}
+
+.results-up-next-empty {
+  margin: 0;
+  color: var(--text-muted-dark);
+  font-size: var(--fs-label);
+  line-height: 1.4;
+}
+
+:root[data-scheme="light"] .results-sidebar-label,
+:root[data-scheme="light"] .results-sidebar-kicker,
+:root[data-scheme="light"] .results-sidebar-meta,
+:root[data-scheme="light"] .results-up-next-heading span,
+:root[data-scheme="light"] .results-up-next-meta,
+:root[data-scheme="light"] .results-up-next-row > svg,
+:root[data-scheme="light"] .results-up-next-empty {
+  color: var(--text-muted-light);
+}
+
+:root[data-scheme="light"] .results-sidebar-name,
+:root[data-scheme="light"] .results-up-next-heading h2,
+:root[data-scheme="light"] .results-up-next-row {
+  color: var(--text-light);
+}
+
+:root[data-scheme="light"] .results-sidebar-cover,
+:root[data-scheme="light"] .results-up-next-artwork {
+  border-color: var(--glass-border-light);
+}
+
 .share-views {
   display: inline-flex;
   align-items: center;
@@ -6832,6 +7070,41 @@ div.player-bar-thumbnail::after {
   .results-panel > .results-side {
     position: sticky;
     top: var(--desktop-sticky-top);
+    display: flex;
+    min-height: min(720px, calc(100dvh - var(--desktop-sticky-top) - 24px));
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .results-sidebar-summary,
+  .results-sidebar-divider,
+  .results-up-next,
+  .results-sidebar-label {
+    display: flex;
+  }
+
+  .results-sidebar-divider {
+    width: 100%;
+    height: 1px;
+    flex: 0 0 1px;
+    background: var(--glass-border-dark);
+  }
+
+  .results-sidebar-label {
+    display: block;
+  }
+
+  .results-sidebar-actions-block {
+    margin-top: 0;
+  }
+
+  .results-up-next {
+    display: block;
+    margin-top: auto;
+  }
+
+  :root[data-scheme="light"] .results-sidebar-divider {
+    background: var(--glass-border-light);
   }
 }
 

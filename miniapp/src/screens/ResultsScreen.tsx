@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, PencilSimple, Plus, ShareNetwork, WarningCircle } from "@phosphor-icons/react";
+import { BookmarkSimple, CaretRight, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "@phosphor-icons/react";
 import { GlassPanel } from "../components/GlassPanel";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
@@ -7,10 +7,20 @@ import { SaveTrackButton } from "../components/SaveTrackButton";
 import { requestAddToPlaylist } from "../components/AddToPlaylistButton";
 import { usePlayer } from "../lib/player";
 import { api, type FinalizedPlaylist, type Track, type TrackVerificationStatus } from "../lib/api";
+import { ARTWORK_ROW, artworkUrl } from "../lib/artwork";
 import { useMyMusic } from "../lib/my-music";
 import { shareUrlToChat } from "../lib/share";
 
 type DownloadState = { kind: "idle" } | { kind: "sending" } | { kind: "sent" } | { kind: "error"; message: string };
+
+function trackCountLabel(count: number) {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return `${count} треков`;
+  if (mod10 === 1) return `${count} трек`;
+  if (mod10 >= 2 && mod10 <= 4) return `${count} трека`;
+  return `${count} треков`;
+}
 
 export function ResultsScreen({
   playlist,
@@ -44,6 +54,9 @@ export function ResultsScreen({
 
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
+  const activeTrackIndex = player.track ? visibleTracks.findIndex((track) => track.uri === player.track?.uri) : -1;
+  const sidebarTracks = visibleTracks.slice(activeTrackIndex >= 0 ? activeTrackIndex + 1 : 0, activeTrackIndex >= 0 ? activeTrackIndex + 4 : 3);
+  const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 4);
 
   // The server resolves the URL in the background, while the browser starts
   // buffering the first likely choice. PlayerProvider keeps this one audio
@@ -335,6 +348,25 @@ export function ResultsScreen({
       )}
       </div>
       <div className="results-side">
+      <div className="results-sidebar-summary" aria-label="Сводка плейлиста">
+        <div className="results-sidebar-cover" aria-hidden="true">
+          {coverTracks.length > 0 ? coverTracks.map((track) => (
+            <img
+              key={track.uri}
+              src={artworkUrl(track.artwork, ARTWORK_ROW)}
+              alt=""
+              loading="lazy"
+              onError={(event) => { event.currentTarget.style.display = "none"; }}
+            />
+          )) : <MusicNotes className="results-sidebar-cover-fallback" size={24} weight="duotone" />}
+        </div>
+        <div className="results-sidebar-summary-copy">
+          <p className="results-sidebar-kicker">Плейлист</p>
+          <p className="results-sidebar-name">{current.name}</p>
+          <p className="results-sidebar-meta">{trackCountLabel(visibleTracks.length || current.tracks.length)}</p>
+        </div>
+      </div>
+      <div className="results-sidebar-divider" />
       {download.kind === "error" && (
         <div className="error-row mt-12">
           <span className="error-row-icon">
@@ -371,7 +403,9 @@ export function ResultsScreen({
           </p>
         </div>
       )}
-      <div className="prompt-pill mt-12">
+      <div className="results-sidebar-actions-block">
+        <p className="results-sidebar-label">Добавить треки</p>
+        <div className="prompt-pill">
           <textarea
             className="prompt-pill-input"
             rows={1}
@@ -397,7 +431,7 @@ export function ResultsScreen({
             {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
           </button>
         </div>
-      <div className="row mt-16 results-actions">
+      <div className="row results-actions">
         <button className="glass-button results-actions-label" onClick={onNewPrompt} title="Новый плейлист">
           <Plus size={18} />
           <span>Новый</span>
@@ -448,6 +482,38 @@ export function ResultsScreen({
           )}
         </button>
       </div>
+      </div>
+      <div className="results-sidebar-divider" />
+      <section className="results-up-next" aria-label={activeTrackIndex >= 0 ? "Дальше в очереди" : "Треки в плейлисте"}>
+        <div className="results-up-next-heading">
+          <h2>{activeTrackIndex >= 0 ? "Дальше в очереди" : "В плейлисте"}</h2>
+          <span>{sidebarTracks.length > 0 ? `ещё ${sidebarTracks.length}` : "готово"}</span>
+        </div>
+        {sidebarTracks.length > 0 ? (
+          <div className="results-up-next-list">
+            {sidebarTracks.map((track) => (
+              <button
+                key={track.uri}
+                type="button"
+                className="results-up-next-row"
+                onClick={() => handleTrackClick(track)}
+                aria-label={`Слушать ${track.title}`}
+              >
+                <span className="results-up-next-artwork" aria-hidden="true">
+                  {track.artwork ? <img src={artworkUrl(track.artwork, ARTWORK_ROW)} alt="" loading="lazy" /> : <MusicNotes size={16} weight="duotone" />}
+                </span>
+                <span className="results-up-next-copy">
+                  <span className="results-up-next-title">{track.title}</span>
+                  <span className="results-up-next-meta">{track.artist}</span>
+                </span>
+                <CaretRight size={16} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="results-up-next-empty">Нажмите на трек, чтобы начать очередь.</p>
+        )}
+      </section>
       </div>
     </GlassPanel>
   );
