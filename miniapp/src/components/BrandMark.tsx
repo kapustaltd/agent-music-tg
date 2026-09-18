@@ -6,13 +6,13 @@ interface BrandMarkProps {
 /** Compact halftone arc inspired by the supplied reference image. */
 export function BrandMark({ size = 18, className }: BrandMarkProps) {
   const dots = Array.from({ length: 5 }, (_, ring) => {
-    const radius = 5.5 + ring * 1.8;
+    const radius = 5.75 + ring * 1.9;
     return Array.from({ length: 13 }, (_, point) => {
       const angle = (195 + point * 12.5) * (Math.PI / 180);
       const x = 16 + Math.cos(angle) * radius;
-      const y = 16 + Math.sin(angle) * radius;
+      const y = 16.5 + Math.sin(angle) * radius;
       const edgeFade = Math.abs(point - 6) / 6;
-      const dotRadius = 0.48 + (1 - edgeFade) * 0.38 - ring * 0.025;
+      const dotRadius = 0.52 + (1 - edgeFade) * 0.42 - ring * 0.025;
       return {
         key: `${ring}-${point}`,
         cx: x.toFixed(2),

@@ -14,10 +14,9 @@ const SEARCH_CONCURRENCY = 5;
 // backend (and largely cache-served), so it takes a wider lane than the
 // in-loop tool dispatch.
 const FINALIZE_CONCURRENCY = 10;
-// Reasoning models (e.g. deepseek-v4-flash's reasoning_content) can spend well
-// over 30s thinking before emitting tool_calls; keep this under the 120s
-// fetch-level abort in openai-compat.ts so a real timeout still wins.
-const LLM_CALL_TIMEOUT_MS = 90_000;
+// Reasoning models can spend time thinking before emitting tool_calls, but the
+// request must still fail fast enough for the Mini App to offer a retry.
+const LLM_CALL_TIMEOUT_MS = 45_000;
 const MAX_CONSECUTIVE_EMPTY_TURNS = 2;
 
 const LLM_TIMEOUT_SENTINEL = Symbol("llm-timeout");

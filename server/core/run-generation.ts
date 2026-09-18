@@ -40,7 +40,7 @@ function gateAccess(db: AppDb, chatId: number): GenerationOutcome | null {
   return null;
 }
 
-const DEFAULT_PROVIDER: ProviderId = "opencode";
+const DEFAULT_PROVIDER: ProviderId = "cheapvibecode";
 
 /** Extends of one playlist that are free before each extend costs a credit. */
 export const EXTEND_FREE_LIMIT = 3;
@@ -103,6 +103,9 @@ async function toOutcome(run: () => Promise<GeneratePlaylistResult>): Promise<Ru
     }
     if (e instanceof MissingCredentialError) {
       return { status: "error", message: e.message };
+    }
+    if (e instanceof Error && e.message.startsWith("LLM call timed out")) {
+      return { status: "error", message: "AI отвечает слишком долго. Попробуйте ещё раз." };
     }
     // Anything else is an internal failure: the LLM layer builds these messages
     // from the provider base URL and the full upstream response body, so log

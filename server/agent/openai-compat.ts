@@ -34,6 +34,8 @@ export interface OpenAICompatConfig {
   baseUrl: string;
   apiKey: string;
   model: string;
+  /** Abort a provider request before the agent-level timeout can leave it hanging. */
+  timeoutMs?: number;
   /** OpenAI reasoning budget. Omitted for third-party compatible APIs. */
   reasoningEffort?: "minimal" | "low" | "medium" | "high";
 }
@@ -57,7 +59,7 @@ export async function openaiCompatChat(
       tools: tools.length > 0 ? toolsForOpenAIChat(tools) : undefined,
       reasoning_effort: config.reasoningEffort,
     }),
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(config.timeoutMs ?? 120_000),
   });
   if (!res.ok) {
     throw new Error(`${config.baseUrl} chat completion failed: ${res.status} ${await res.text()}`);

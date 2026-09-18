@@ -447,6 +447,10 @@ body {
   flex-shrink: 0;
 }
 
+.app-top-logo svg {
+  display: block;
+}
+
 .app-top-chip {
   display: inline-flex;
   align-items: center;
