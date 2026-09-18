@@ -1463,6 +1463,23 @@ h1 {
   display: none;
 }
 
+/* The scrollbar is intentionally hidden on touch, so the clipped edge is the
+   affordance that tells the user there are more starter prompts to swipe. */
+.prompt-suggestions[data-fade-left] {
+  mask-image: linear-gradient(to right, transparent, #000 24px);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 24px);
+}
+
+.prompt-suggestions[data-fade-right] {
+  mask-image: linear-gradient(to left, transparent, #000 24px);
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 24px);
+}
+
+.prompt-suggestions[data-fade-left][data-fade-right] {
+  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
 .prompt-examples {
   display: flex;
   flex-direction: column;
@@ -6769,41 +6786,25 @@ div.player-bar-thumbnail::after {
   }
 
   .prompt-starters .prompt-suggestions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
   }
 
   .prompt-starters .prompt-suggestion {
-    position: relative;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     width: 100%;
-    min-height: 82px;
-    padding: 16px;
-    overflow: hidden;
-    border-radius: var(--radius-surface);
+    min-height: 52px;
+    padding: 12px 14px;
+    border-radius: var(--radius-row);
     text-align: start;
     white-space: normal;
     line-height: 1.35;
     text-wrap: balance;
-  }
-
-  .prompt-starters .prompt-suggestion:first-child {
-    grid-column: 1 / -1;
-    min-height: 104px;
-    padding-inline-end: 28%;
-    border-color: color-mix(in srgb, var(--accent) 28%, var(--lg-v2-chip-border));
-    background:
-      radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 34%),
-      color-mix(in srgb, var(--accent) 8%, var(--lg-v2-chip));
-  }
-
-  @media (hover: hover) {
-    .prompt-starters .prompt-suggestion:hover {
-      transform: translateY(-2px);
-    }
   }
 
   /* --- ResultsScreen: tracklist (left) / composer+actions (right) --------

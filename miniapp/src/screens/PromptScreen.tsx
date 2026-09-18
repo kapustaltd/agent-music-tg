@@ -233,7 +233,6 @@ export function PromptScreen({
             busy={busy}
             events={events}
             isAdmin={isAdmin}
-            hasDraft={prompt.trim().length > 0}
             suggestions={suggestions}
             examples={promptExamples}
             onRefreshExamples={refreshPromptExamples}

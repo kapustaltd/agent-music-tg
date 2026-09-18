@@ -33,7 +33,6 @@ export function AiMode({
   busy,
   events,
   isAdmin,
-  hasDraft,
   suggestions,
   examples,
   onRefreshExamples,
@@ -44,8 +43,6 @@ export function AiMode({
   busy: boolean;
   events: AgentEvent[];
   isAdmin?: boolean;
-  /** True while the user has typed something — the idle rails give way to it. */
-  hasDraft: boolean;
   suggestions: SuggestionsResponse;
   examples: string[];
   onRefreshExamples: () => void;
@@ -63,7 +60,6 @@ export function AiMode({
   if (busy || events.length > 0) {
     return <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} showCompleted={isAdmin} />;
   }
-  if (hasDraft) return null;
 
   const feed = buildPromptFeed(suggestions, examples);
 
