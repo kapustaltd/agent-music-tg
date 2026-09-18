@@ -46,7 +46,14 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
         if (primary === PRIMARY_BASE_URL && model !== FALLBACK_MODEL) {
           try {
             return await openaiCompatChat(
-              { baseUrl: primary, apiKey, model: FALLBACK_MODEL, timeoutMs: CALL_TIMEOUT_MS, maxTokens: MAX_TOKENS },
+              {
+                baseUrl: primary,
+                apiKey,
+                model: FALLBACK_MODEL,
+                timeoutMs: CALL_TIMEOUT_MS,
+                maxTokens: MAX_TOKENS,
+                reasoningEffort: "minimal",
+              },
               system,
               messages,
               tools,
