@@ -1,6 +1,6 @@
 /** Structured event streamed from the server agent loop — mirrors server/agent/types.ts's AgentEvent. */
 export type AgentEvent =
-  | { kind: "reasoning"; delta: string }
+  | { kind: "reasoning"; delta: string; adminOnly?: boolean }
   | { kind: "tool_call"; id: string; name: string; args: Record<string, unknown> }
   | { kind: "tool_result"; id: string; ok: boolean; result: unknown };
 
@@ -13,7 +13,11 @@ export function reduceEvents(prev: AgentEvent[], e: AgentEvent): AgentEvent[] {
   if (e.kind === "reasoning") {
     const last = prev[prev.length - 1];
     if (last && last.kind === "reasoning") {
-      return [...prev.slice(0, -1), { kind: "reasoning", delta: last.delta + e.delta }];
+      const adminOnly = last.adminOnly || e.adminOnly;
+      return [
+        ...prev.slice(0, -1),
+        { kind: "reasoning", delta: last.delta + e.delta, ...(adminOnly ? { adminOnly: true } : {}) },
+      ];
     }
   }
   return [...prev, e];

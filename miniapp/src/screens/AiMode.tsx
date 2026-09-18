@@ -61,7 +61,7 @@ export function AiMode({
   useScrollFade(artistRailRef);
 
   if (busy || events.length > 0) {
-    return <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} />;
+    return <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} showCompleted={isAdmin} />;
   }
   if (hasDraft) return null;
 

@@ -69,9 +69,17 @@ export async function openaiCompatChat(
   // non-streaming JSON body — strip it before parsing rather than fail.
   const rawBody = (await res.text()).replace(/\s*data:\s*\[DONE\]\s*$/, "");
   const data = parseJsonText<{
-    choices: Array<{ message: { content: string | null; tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }> } }>;
+    choices: Array<{
+      message: {
+        content: string | null;
+        reasoning?: string | null;
+        reasoning_content?: string | null;
+        tool_calls?: Array<{ id: string; function: { name: string; arguments: string } }>;
+      };
+    }>;
   }>(rawBody, config.baseUrl);
   const message = data.choices[0]?.message;
+  const reasoning = message?.reasoning_content ?? message?.reasoning;
   const toolCalls: ToolCall[] | undefined = message?.tool_calls?.map((tc) => {
     let args: Record<string, unknown> = {};
     try {
@@ -81,5 +89,9 @@ export async function openaiCompatChat(
     }
     return { id: tc.id, name: tc.function.name, args };
   });
-  return { text: message?.content ?? "", toolCalls: toolCalls && toolCalls.length > 0 ? toolCalls : undefined };
+  return {
+    text: message?.content ?? "",
+    reasoning: typeof reasoning === "string" && reasoning.trim().length > 0 ? reasoning : undefined,
+    toolCalls: toolCalls && toolCalls.length > 0 ? toolCalls : undefined,
+  };
 }

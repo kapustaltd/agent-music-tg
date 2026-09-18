@@ -274,6 +274,9 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
       throw new Error(`LLM call timed out after ${LLM_CALL_TIMEOUT_MS / 1000}s`);
     }
     const result = raced;
+    if (result.reasoning?.trim()) {
+      opts.onEvent?.({ kind: "reasoning", delta: result.reasoning.trim(), adminOnly: true });
+    }
     const calls = result.toolCalls ?? [];
 
     if (calls.length === 0) {

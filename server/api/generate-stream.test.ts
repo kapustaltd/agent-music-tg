@@ -9,6 +9,7 @@ const TEST_CHAT = 888881;
 // resolve with a fixed outcome.
 mock.module("../core/run-generation", () => ({
   startGeneration: async (_db: unknown, _chatId: number, _prompt: string, onEvent?: (e: unknown) => void) => {
+    onEvent?.({ kind: "reasoning", delta: "private model thought", adminOnly: true });
     onEvent?.({ kind: "tool_call", id: "call-1", name: "searchTrack", args: { artist: "Burial", title: "Archangel" } });
     onEvent?.({ kind: "tool_result", id: "call-1", ok: true, result: { artist: "Burial", title: "Archangel", uri: "ytm:x" } });
     return {
@@ -58,9 +59,9 @@ function buildInitData(chatId: number): string {
   return params.toString();
 }
 
-function freshDb() {
+function freshDb(isAdmin = false) {
   const db = openDb(":memory:");
-  db.run("INSERT INTO allowlist (chat_id, is_admin) VALUES (?, 0)", [TEST_CHAT]);
+  db.run("INSERT INTO allowlist (chat_id, is_admin) VALUES (?, ?)", [TEST_CHAT, isAdmin ? 1 : 0]);
   return db;
 }
 
@@ -90,9 +91,32 @@ describe("/generate/stream SSE payload shape", () => {
       name: "searchTrack",
       args: { artist: "Burial", title: "Archangel" },
     });
+    expect(frames.some((f) => f.type === "agent_event" && f.event?.adminOnly === true)).toBe(false);
 
     const outcomeFrame = frames.find((f) => f.type === "outcome");
     expect(outcomeFrame?.outcome?.status).toBe("ok");
+  });
+
+  test("admin SSE includes provider-native reasoning", async () => {
+    const db = freshDb(true);
+    const app = createApiRoutes(db);
+    const res = await app.request("/generate/stream", {
+      method: "POST",
+      headers: { "X-Telegram-Init-Data": buildInitData(TEST_CHAT), "content-type": "application/json" },
+      body: JSON.stringify({ prompt: "Burial" }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    const frames = body
+      .split("\n\n")
+      .map((f) => f.split("\n").find((l) => l.startsWith("data:")))
+      .filter((l): l is string => Boolean(l))
+      .map((l) => JSON.parse(l.slice(5).trim()));
+
+    expect(frames).toContainEqual({
+      type: "agent_event",
+      event: { kind: "reasoning", delta: "private model thought", adminOnly: true },
+    });
   });
 
   test("/generate/extend/stream returns generationId and merged tracks", async () => {

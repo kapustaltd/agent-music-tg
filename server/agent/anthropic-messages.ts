@@ -7,8 +7,9 @@
 import type { AgentMessage } from "./types";
 
 export interface AnthropicContentBlock {
-  type: "text" | "tool_use" | "tool_result";
+  type: "text" | "thinking" | "tool_use" | "tool_result";
   text?: string;
+  thinking?: string;
   id?: string;
   name?: string;
   input?: Record<string, unknown>;

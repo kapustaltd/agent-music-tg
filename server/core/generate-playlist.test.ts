@@ -158,6 +158,22 @@ describe("generatePlaylist", () => {
     expect(result?.ok).toBe(true);
   });
 
+  test("marks provider-native reasoning as admin-only", async () => {
+    const events: unknown[] = [];
+    const provider = fakeProvider([
+      {
+        text: "",
+        reasoning: "Проверяю настроение",
+        toolCalls: [{ id: "call-final", name: "finalize_playlist", args: { name: "Test", tracks: [{ artist: "A", title: "One" }] } }],
+      },
+    ]);
+    const music = fakeMusic({ remotePlaylists: false });
+
+    await generatePlaylist({ provider, music, prompt: "test", onEvent: (e) => events.push(e) });
+
+    expect(events).toContainEqual({ kind: "reasoning", delta: "Проверяю настроение", adminOnly: true });
+  });
+
   test("finalizes against a playlist-capable backend (creates a real playlist)", async () => {
     const provider = fakeProvider([finalizeResult("Vibes", [{ artist: "A", title: "One" }])]);
     const music = fakeMusic({ remotePlaylists: true });

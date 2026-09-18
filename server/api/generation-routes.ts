@@ -1,14 +1,24 @@
 import { Hono } from "hono";
-import { streamSSE } from "hono/streaming";
+import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { AppDb } from "../db";
 import type { AppEnv } from "./context";
 import { getPendingClarify, setPendingClarify, clearSession } from "../bot/session";
 import { startGeneration, resumeGeneration, extendGeneration, type GenerationOutcome } from "../core/run-generation";
+import type { AgentEvent } from "../agent/types";
 import { readJsonBody, sseErrorOutcome } from "./shared";
 import { recordDailyEvent, recordEvent } from "../analytics/store";
 
 type ClarifyOutcome = Extract<GenerationOutcome, { status: "clarify" }>;
 type GenerationFlow = "generate" | "resume" | "extend";
+
+function writeAgentEvent(
+  stream: SSEStreamingApi,
+  event: AgentEvent,
+  isAdmin: boolean,
+): void {
+  if (event.kind === "reasoning" && event.adminOnly && !isAdmin) return;
+  stream.writeSSE({ data: JSON.stringify({ type: "agent_event", event }) }).catch(() => {});
+}
 
 function recordGenerationOutcome(db: AppDb, chatId: number, flow: GenerationFlow, outcome: GenerationOutcome): void {
   if (outcome.status === "ok") {
@@ -69,7 +79,7 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     recordEvent(db, chatId, "generation_started", { flow: "generate" });
     return streamSSE(c, async (stream) => {
       const outcome = await startGeneration(db, chatId, prompt, (e) => {
-        stream.writeSSE({ data: JSON.stringify({ type: "agent_event", event: e }) }).catch(() => {});
+        writeAgentEvent(stream, e, c.get("isAdmin"));
       });
       recordGenerationOutcome(db, chatId, "generate", outcome);
       if (outcome.status === "clarify") {
@@ -117,7 +127,7 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     recordEvent(db, chatId, "generation_started", { flow: "resume" });
     return streamSSE(c, async (stream) => {
       const outcome = await resumeGeneration(db, chatId, pending.originalPrompt, pending.messages, answer, pending.round, (e) => {
-        stream.writeSSE({ data: JSON.stringify({ type: "agent_event", event: e }) }).catch(() => {});
+        writeAgentEvent(stream, e, c.get("isAdmin"));
       });
       recordGenerationOutcome(db, chatId, "resume", outcome);
       if (outcome.status === "clarify") {
@@ -172,7 +182,7 @@ export function createGenerationRoutes(db: AppDb): Hono<AppEnv> {
     recordEvent(db, chatId, "generation_started", { flow: "extend" });
     return streamSSE(c, async (stream) => {
       const outcome = await extendGeneration(db, chatId, generationId, prompt, (e) => {
-        stream.writeSSE({ data: JSON.stringify({ type: "agent_event", event: e }) }).catch(() => {});
+        writeAgentEvent(stream, e, c.get("isAdmin"));
       });
       recordGenerationOutcome(db, chatId, "extend", outcome);
       if (outcome.status === "clarify") {

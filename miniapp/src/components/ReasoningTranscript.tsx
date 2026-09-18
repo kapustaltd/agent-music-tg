@@ -10,6 +10,8 @@ interface ReasoningTranscriptProps {
   maxHeight?: number;
   /** Regular users get Russian tool labels instead of raw camelCase/snake_case names. */
   friendly?: boolean;
+  /** Admins keep the completed transcript open so private model reasoning can be inspected. */
+  showCompleted?: boolean;
 }
 
 const TONE_CLASS: Record<LineSegment["tone"], string> = {
@@ -27,12 +29,13 @@ const MARKER_CLASS: Record<string, string> = {
   "·": "reasoning-dot-thought",
 };
 
-export function ReasoningTranscript({ events, active, maxHeight = 160, friendly }: ReasoningTranscriptProps) {
+export function ReasoningTranscript({ events, active, maxHeight = 160, friendly, showCompleted = false }: ReasoningTranscriptProps) {
   const rootRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
 
-  const lines = active ? toLines(events, { friendly }) : [];
+  const showTranscript = active || showCompleted;
+  const lines = showTranscript ? toLines(events, { friendly }) : [];
 
   // Infinite status motion is useful only while visible. Keep the DOM marked
   // as running by default for older WebViews that lack IntersectionObserver.
@@ -62,7 +65,7 @@ export function ReasoningTranscript({ events, active, maxHeight = 160, friendly 
     stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
   }
 
-  if (!active) {
+  if (!active && !showCompleted) {
     const toolCount = countTools(events);
     if (toolCount === 0) return null;
     return (
@@ -73,14 +76,16 @@ export function ReasoningTranscript({ events, active, maxHeight = 160, friendly 
   }
 
   return (
-    <section ref={rootRef} className="reasoning-shell" data-motion="running" aria-busy="true">
+    <section ref={rootRef} className="reasoning-shell" data-motion={active ? "running" : "paused"} aria-busy={active}>
       <div className="reasoning-status" role="status" aria-live="polite" aria-atomic="true">
-        <span className="reasoning-equalizer" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-        <span>Подбираю музыку…</span>
+        {active ? (
+          <span className="reasoning-equalizer" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        ) : null}
+        <span>{active ? (showCompleted ? "Рассуждение модели…" : "Подбираю музыку…") : "Рассуждение модели"}</span>
       </div>
 
       {lines.length > 0 && (

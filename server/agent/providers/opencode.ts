@@ -63,14 +63,16 @@ export function createOpencodeProvider(apiKey: string, baseUrl = DEFAULT_BASE_UR
       }
       const data = await parseJsonResponse<{ content: AnthropicContentBlock[] }>(res, "opencode");
       let text = "";
+      let reasoning = "";
       const toolCalls: ToolCall[] = [];
       for (const block of data.content ?? []) {
         if (block.type === "text" && block.text) text += block.text;
+        if (block.type === "thinking" && block.thinking) reasoning += block.thinking;
         if (block.type === "tool_use" && block.id && block.name) {
           toolCalls.push({ id: block.id, name: block.name, args: block.input ?? {} });
         }
       }
-      return { text, toolCalls: toolCalls.length > 0 ? toolCalls : undefined };
+      return { text, reasoning: reasoning || undefined, toolCalls: toolCalls.length > 0 ? toolCalls : undefined };
     },
   };
 }

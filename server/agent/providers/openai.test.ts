@@ -35,4 +35,18 @@ describe("OpenAI provider latency defaults", () => {
 
     expect(requestBody).not.toHaveProperty("reasoning_effort");
   });
+
+  test("preserves provider reasoning separately from the visible response", async () => {
+    globalThis.fetch = mock(async () =>
+      new Response(JSON.stringify({
+        choices: [{ message: { content: "", reasoning_content: "Проверяю запрос" } }],
+      })),
+    ) as unknown as typeof fetch;
+
+    const provider = createOpenAIProvider("test-key");
+    await expect(provider.generateMessages("system", [{ role: "user", content: "test" }], [])).resolves.toMatchObject({
+      text: "",
+      reasoning: "Проверяю запрос",
+    });
+  });
 });

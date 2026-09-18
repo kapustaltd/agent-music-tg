@@ -12,9 +12,11 @@ export interface ToolCall {
   args: Record<string, unknown>;
 }
 
-/** Structured agent response: free-text (possibly empty) plus any tool calls. */
+/** Structured agent response: free-text, optional private reasoning, and tool calls. */
 export interface AgentResult {
   text: string;
+  /** Provider-native chain-of-thought, never sent to regular users. */
+  reasoning?: string;
   toolCalls?: ToolCall[];
 }
 
@@ -69,6 +71,6 @@ export function parseJsonText<T>(raw: string, providerLabel: string): T {
 
 /** A structured event emitted while the agent loop runs, for live progress UI. */
 export type AgentEvent =
-  | { kind: "reasoning"; delta: string }
+  | { kind: "reasoning"; delta: string; adminOnly?: boolean }
   | { kind: "tool_call"; id: string; name: string; args: Record<string, unknown> }
   | { kind: "tool_result"; id: string; ok: boolean; result: unknown };

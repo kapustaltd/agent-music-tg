@@ -75,7 +75,7 @@ export function ClarifyScreen({
       </div>
 
       {(busy || events.length > 0) && (
-        <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} />
+        <ReasoningTranscript events={events} active={busy} friendly={!isAdmin} showCompleted={isAdmin} />
       )}
     </GlassPanel>
   );
