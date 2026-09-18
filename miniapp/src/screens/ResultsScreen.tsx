@@ -358,7 +358,6 @@ export function ResultsScreen({
           <div className="results-extend-heading">
             <div>
               <h2 id="results-extend-title">Добавить треки</h2>
-              <p>Опишите, чего не хватает в плейлисте</p>
             </div>
           </div>
           <div className="prompt-pill results-extend-input">
