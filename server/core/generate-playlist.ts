@@ -14,9 +14,10 @@ const SEARCH_CONCURRENCY = 5;
 // backend (and largely cache-served), so it takes a wider lane than the
 // in-loop tool dispatch.
 const FINALIZE_CONCURRENCY = 10;
-// Reasoning models can spend time thinking before emitting tool_calls, but the
-// request must still fail fast enough for the Mini App to offer a retry.
-const LLM_CALL_TIMEOUT_MS = 45_000;
+// CheapVibeCode may try up to three endpoints/models internally, each with a
+// 25s deadline. Keep the agent-level guard above that bounded fallback chain,
+// while still failing well before an unbounded request can strand the UI.
+const LLM_CALL_TIMEOUT_MS = 90_000;
 const MAX_CONSECUTIVE_EMPTY_TURNS = 2;
 
 const LLM_TIMEOUT_SENTINEL = Symbol("llm-timeout");

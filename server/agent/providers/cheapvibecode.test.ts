@@ -51,6 +51,33 @@ describe("CheapVibeCode provider defaults", () => {
     expect(calls).toBe(1);
   });
 
+  test("keeps playlist turns on the reliable JSON transport", async () => {
+    let requestBody: Record<string, unknown> | undefined;
+    globalThis.fetch = mock(async (_input: string | URL | Request, init?: RequestInit) => {
+      requestBody = JSON.parse(String(init?.body));
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: "",
+                tool_calls: [{ id: "call-1", function: { name: "finalize_playlist", arguments: "{}" } }],
+              },
+            },
+          ],
+        }),
+      );
+    }) as unknown as typeof fetch;
+
+    const provider = createCheapVibeCodeProvider("test-key");
+    const result = await provider.generateMessages("system", [{ role: "user", content: "test" }], [], {
+      onReasoning: () => {},
+    });
+
+    expect(requestBody?.stream).toBeUndefined();
+    expect(result.toolCalls?.[0]?.name).toBe("finalize_playlist");
+  });
+
   test("falls back to a healthy CheapVibeCode model after a timeout", async () => {
     const requestBodies: Record<string, unknown>[] = [];
     let calls = 0;

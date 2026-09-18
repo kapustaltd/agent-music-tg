@@ -1680,14 +1680,6 @@ h1 {
   padding: 0 2px;
 }
 
-.prompt-hero-kicker {
-  margin: 0 0 6px;
-  color: var(--accent);
-  font-size: var(--fs-micro);
-  font-weight: 650;
-  letter-spacing: var(--ls-label);
-}
-
 .prompt-hero-action {
   appearance: none;
   display: inline-block;

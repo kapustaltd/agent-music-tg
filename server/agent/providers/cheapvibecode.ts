@@ -1,13 +1,14 @@
-import type { AgentGenerateOptions, AgentProvider } from "../types";
+import type { AgentProvider } from "../types";
 import { openaiCompatChat } from "../openai-compat";
 
 const PRIMARY_BASE_URL = "https://ru.cheapvibecode.ru/v1";
 const FALLBACK_BASE_URL = "https://cheapvibecode.ru/v1";
 const LEGACY_PRIMARY_BASE_URL = FALLBACK_BASE_URL;
 const FALLBACK_MODEL = "gpt-5.6-luna";
-// A hung model must not consume the whole agent timeout before the provider
-// can try another CheapVibeCode model or endpoint.
-const CALL_TIMEOUT_MS = 12_000;
+// Give the provider enough time to route a tool call. The old 12s deadline
+// made every normal reasoning turn look like an outage, after which the
+// fallback chain also timed out before it could return a playlist.
+const CALL_TIMEOUT_MS = 25_000;
 const MAX_TOKENS = 4_096;
 
 function normalizeBaseUrl(baseUrl: string | undefined): string {
@@ -28,14 +29,13 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
   const primary = normalizeBaseUrl(baseUrl);
   return {
     id: "cheapvibecode",
-    generateMessages: async (system, messages, tools, options?: AgentGenerateOptions) => {
+    generateMessages: async (system, messages, tools) => {
       try {
         return await openaiCompatChat(
           { baseUrl: primary, apiKey, model, timeoutMs: CALL_TIMEOUT_MS, maxTokens: MAX_TOKENS },
           system,
           messages,
           tools,
-          options,
         );
       } catch (err) {
         if (!shouldTryFallback(err)) throw err;
@@ -57,10 +57,6 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
               system,
               messages,
               tools,
-              // This fallback model exposes reasoning in the completed JSON
-              // message but omits it from its SSE deltas. Keep the result
-              // separate so the admin transcript still receives it.
-              undefined,
             );
           } catch (fallbackModelError) {
             err = fallbackModelError;
@@ -79,7 +75,6 @@ export function createCheapVibeCodeProvider(apiKey: string, model = "deepseek-v4
           system,
           messages,
           tools,
-          options,
         );
       }
     },
