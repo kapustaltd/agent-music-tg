@@ -209,9 +209,7 @@ body,
    desktop browsers, so navigating between a short screen and a scrolling one
    doesn't add/remove it and slide the centred .app-shell sideways by ~15px.
    overscroll-behavior-y: none kills the root rubber-band/pull-to-refresh
-   bounce — the same jitter disableVerticalSwipes() (App.tsx) already guards
-   against inside Telegram's own client, but that call has no effect in a
-   plain desktop/mobile browser tab. */
+   bounce in ordinary desktop/mobile browser tabs. */
 html,
 body {
   overflow-x: clip;

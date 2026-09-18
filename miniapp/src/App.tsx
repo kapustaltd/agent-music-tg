@@ -13,7 +13,7 @@ import { ErrorBanner } from "./components/ErrorBanner";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { api, type MeResponse, type FinalizedPlaylist, type ShopConfig, type HistoryEntry, SubscriptionRequiredError, type SubscriptionChannel } from "./lib/api";
 import { reduceEvents, type AgentEvent } from "./lib/reasoning";
-import { getTelegramWebApp, getColorScheme, getInitData, callIfSupported } from "./lib/telegram";
+import { getTelegramWebApp, getColorScheme, getInitData } from "./lib/telegram";
 import { parseShareToken } from "./lib/share";
 import { useKeyboardInset } from "./lib/keyboard";
 import { PlayerProvider, usePlayer } from "./lib/player";
@@ -137,17 +137,6 @@ function AppInner() {
   useEffect(() => {
     const webApp = getTelegramWebApp();
     webApp?.ready();
-    // expand() is the baseline (fills the viewport under the TG header); on
-    // Bot API 8.0+ clients requestFullscreen() goes further (draws over the
-    // status bar too), and disableVerticalSwipes() stops a stray swipe-down
-    // from collapsing/closing the app mid-use. Both exist on every client's
-    // WebApp object but *throw* on clients below their required Bot API
-    // version rather than no-op — callIfSupported swallows that (see
-    // lib/telegram.ts); a naive `?.()` only guards absence, not support, and
-    // an uncaught throw here unmounts the whole app.
-    webApp?.expand();
-    callIfSupported(() => webApp?.requestFullscreen?.());
-    callIfSupported(() => webApp?.disableVerticalSwipes?.());
     applyAccent(accent);
     api.me().then(setMe).catch((err) => {
       if (err instanceof SubscriptionRequiredError) {
