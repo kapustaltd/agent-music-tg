@@ -211,7 +211,7 @@ function AppInner() {
     setEvents([]);
     try {
       const outcome = await api.generateStream(prompt, (e) => setEvents((prev) => [...prev, e]));
-      applyOutcome(outcome);
+      applyOutcome(outcome, prompt);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -230,7 +230,7 @@ function AppInner() {
         openPlainSearchAfterClarifyError(answer);
         return;
       }
-      applyOutcome(outcome);
+      applyOutcome(outcome, lastGenerate?.prompt);
     } catch {
       openPlainSearchAfterClarifyError(answer);
     } finally {
@@ -283,7 +283,7 @@ function AppInner() {
     return `${hh}:${mm}`;
   }
 
-  function applyOutcome(outcome: Awaited<ReturnType<typeof api.generate>>) {
+  function applyOutcome(outcome: Awaited<ReturnType<typeof api.generate>>, request = lastGenerate?.prompt) {
     if (outcome.status === "clarify") {
       navigate({ kind: "clarify", question: outcome.question, options: outcome.options });
     } else if (outcome.status === "ok") {
@@ -292,7 +292,7 @@ function AppInner() {
         kind: "results",
         playlist: outcome.playlist,
         generationId: outcome.generationId,
-        request: lastGenerate?.prompt,
+        request,
       });
     } else if (outcome.status === "needs_purchase") {
       navigate({ kind: "buy", reason: "Генерации закончились. Выберите пакет, чтобы продолжить." });
