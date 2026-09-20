@@ -55,7 +55,9 @@ export function TrackRow({
       </div>
       <div className="track-row-copy">
         <p className="search-row-title">{title}</p>
-        <p className={`text-muted ${metaClassName}`}>{meta}</p>
+        {meta !== null && meta !== undefined && meta !== "" && (
+          <p className={`text-muted ${metaClassName}`}>{meta}</p>
+        )}
       </div>
     </>
   );

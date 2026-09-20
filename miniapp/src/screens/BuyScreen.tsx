@@ -77,6 +77,16 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   const selectedMethod: PaymentMethod = selected?.rubAmount && (method === "platega" || !selected.starsAmount) ? "platega" : "stars";
   const selectedPrice = selectedMethod === "platega" ? `${selected?.rubAmount} ₽` : `${selected?.starsAmount} звёзд`;
 
+  function purchaseLabel(invoice: Invoice) {
+    const offer = visible.find((item) => item.id === invoice.offerId);
+    return offer ? grantLabel(offer) : "Подписка";
+  }
+
+  function purchasePrice(invoice: Invoice) {
+    const unit = invoice.asset === "XTR" ? "звёзд" : invoice.asset === "RUB" ? "₽" : invoice.asset;
+    return `${invoice.amount} ${unit}`;
+  }
+
   async function buy(offerId: number, method: PaymentMethod = "stars") {
     setBusyId(offerId);
     setError(null);
@@ -211,15 +221,15 @@ export default function BuyScreen({ reason }: { reason?: string }) {
             <div className="subscription-options" role="group" aria-label="Срок подписки">
             {visible.map((o) => (
               <button type="button" key={o.id}
-                className={`subscription-option${selected?.id === o.id ? " is-selected" : ""}`}
-                aria-pressed={selected?.id === o.id}
+                className={`subscription-option${visible.length === 1 ? " subscription-option--single" : ""}${selected?.id === o.id && visible.length > 1 ? " is-selected" : ""}`}
+                aria-pressed={visible.length > 1 ? selected?.id === o.id : undefined}
                 disabled={busyId !== null || (!o.rubAmount && !o.starsAmount)}
                 onClick={() => setSelectedId(o.id)}>
                 <span className="subscription-option-copy">
                   <strong>{grantLabel(o)}{o.rubAmount ? ` · ${o.rubAmount} ₽` : ""}</strong>
                   <span className="text-muted">{o.starsAmount ? `${o.starsAmount} звёзд Telegram` : o.rubAmount ? "Оплата по СБП" : "Оплата недоступна"}</span>
                 </span>
-                {selected?.id === o.id && <Check size={22} aria-hidden="true" />}
+                {visible.length > 1 && selected?.id === o.id && <Check size={22} aria-hidden="true" />}
               </button>
             ))}
             </div>
@@ -242,10 +252,19 @@ export default function BuyScreen({ reason }: { reason?: string }) {
 
       {paidInvoices.length > 0 && (
         <GlassPanel className="reveal">
-          <ul className="plain-list">
+          <h2 className="screen-title">История оплат</h2>
+          <ul className="plain-list purchase-list">
             {paidInvoices.map((p) => (
-              <li key={p.id} style={{ padding: "8px 0", borderBottom: "1px solid var(--hairline)" }}>
-                Покупка №{p.id} — {p.amount} {p.asset === "XTR" ? <Star size={14} weight="fill" aria-hidden="true" /> : p.asset}
+              <li key={p.id} className="purchase-history-row">
+                <span className="purchase-history-copy">
+                  <strong>{purchaseLabel(p)}</strong>
+                  <time dateTime={new Date((p.paidAt ?? p.createdAt) * 1000).toISOString()}>
+                    {new Date((p.paidAt ?? p.createdAt) * 1000).toLocaleDateString("ru-RU")}
+                  </time>
+                </span>
+                <span className="purchase-history-price">
+                  {purchasePrice(p)} {p.asset === "XTR" && <Star size={14} weight="fill" aria-hidden="true" />}
+                </span>
               </li>
             ))}
           </ul>

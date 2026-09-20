@@ -96,7 +96,7 @@ export function AiMode({
 
       <div className="prompt-examples prompt-starters" aria-label="Примеры запросов">
         <div className="prompt-examples-head">
-          <p className="prompt-examples-label">Попробуй запрос</p>
+          <p className="prompt-examples-label">Выбери настроение</p>
           <button
             type="button"
             className="prompt-examples-refresh"

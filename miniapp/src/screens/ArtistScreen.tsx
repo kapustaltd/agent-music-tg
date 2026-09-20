@@ -108,7 +108,7 @@ export function ArtistScreen({
           <button type="button" className="action-btn action-btn--neutral" aria-label="Назад" onClick={onClose}>
             <ArrowLeft size={24} />
           </button>
-          <span className="player-screen-header-label">Исполнитель</span>
+          <span className="sr-only">Исполнитель</span>
         </div>
 
         {state.kind === "loading" && (

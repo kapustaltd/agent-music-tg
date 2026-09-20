@@ -302,11 +302,12 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
 }
 
 /** User playlists list: create (with slot limit + Stars purchase) and open a playlist's detail. */
-function PlaylistsSection({ onOpen }: { onOpen: (id: number) => void }) {
+function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => void; onNewPrompt: () => void }) {
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
+  const [showCreateChoices, setShowCreateChoices] = useState(false);
   const [limitPrompt, setLimitPrompt] = useState<{ starsPrice: number } | null>(null);
   const [buyBusy, setBuyBusy] = useState(false);
 
@@ -350,9 +351,26 @@ function PlaylistsSection({ onOpen }: { onOpen: (id: number) => void }) {
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="screen-title">Плейлисты</h1>
         {!creating && (
-          <button type="button" className="glass-button icon-only" aria-label="Создать плейлист" onClick={() => setCreating(true)}>
-            <Plus size={18} weight="bold" />
-          </button>
+          <div className="library-create-entry">
+            <button
+              type="button"
+              className="library-new-prompt"
+              aria-expanded={showCreateChoices}
+              onClick={() => setShowCreateChoices((open) => !open)}
+            >
+              <Plus size={18} weight="bold" /> Новый плейлист
+            </button>
+            {showCreateChoices && (
+              <div className="library-create-choices" role="menu" aria-label="Способ создания плейлиста">
+                <button type="button" role="menuitem" onClick={() => { setShowCreateChoices(false); onNewPrompt(); }}>
+                  По описанию
+                </button>
+                <button type="button" role="menuitem" onClick={() => { setShowCreateChoices(false); setCreating(true); }}>
+                  Вручную
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -743,10 +761,7 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
 
   return (
     <div className="stack">
-      <button type="button" className="glass-button library-new-prompt" onClick={onNewPrompt}>
-        <Plus size={20} /> Новый плейлист по описанию
-      </button>
-      <PlaylistsSection onOpen={setOpenPlaylistId} />
+      <PlaylistsSection onOpen={setOpenPlaylistId} onNewPrompt={onNewPrompt} />
 
       <GlassPanel className="reveal library-section">
         <h2 className="screen-title">Треки</h2>

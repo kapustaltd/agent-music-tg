@@ -347,7 +347,7 @@ export function SearchMode({
     <>
       {searchStatus === "loading" && !hasResults && (
         <p className="text-muted search-status" role="status">
-          <CircleNotch size={16} className="spin" /> Ищу…
+          <CircleNotch size={16} className="spin" /> Ищу подходящие треки…
         </p>
       )}
 
@@ -413,7 +413,6 @@ export function SearchMode({
                 </span>
                 <div className="search-artist-copy">
                   <p className="search-row-title">{name}</p>
-                  <p className="text-muted search-row-meta">Исполнитель</p>
                 </div>
                 <span className="search-artist-enter" aria-hidden>
                   <CaretRightIcon size={17} weight="bold" />

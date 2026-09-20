@@ -44,6 +44,8 @@ function formatGenerationReward(n: number): string {
 function formatPurchaseAmount(invoice: Invoice): string {
   return invoice.asset === "XTR"
     ? `${invoice.amount} звёзд Telegram`
+    : invoice.asset === "RUB"
+      ? `${invoice.amount} ₽`
     : `${invoice.amount} ${invoice.asset}`;
 }
 
@@ -399,16 +401,13 @@ export default function ProfileScreen({
             {purchases.map((p, i) => (
               <li key={p.id} className="purchase-item" style={{ ["--i" as string]: i }}>
                 <Receipt size={18} weight="bold" />
-                <span style={{ flex: 1 }}>
-                  Покупка №{p.id} · {formatPurchaseAmount(p)}
+                <span className="purchase-history-copy">
+                  <strong>Подписка</strong>
+                  <time dateTime={new Date(p.createdAt * 1000).toISOString()}>
+                    {new Date(p.createdAt * 1000).toLocaleDateString("ru-RU")}
+                  </time>
                 </span>
-                <time
-                  dateTime={new Date(p.createdAt * 1000).toISOString()}
-                  className="text-muted"
-                  style={{ fontSize: 12 }}
-                >
-                  {new Date(p.createdAt * 1000).toLocaleDateString("ru-RU")}
-                </time>
+                <span className="purchase-history-price">{formatPurchaseAmount(p)}</span>
               </li>
             ))}
           </ul>

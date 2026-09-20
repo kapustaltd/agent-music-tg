@@ -142,7 +142,7 @@ export function LyricsScreen({
           </button>
           <div className="lyrics-screen-context">
             <strong>{track.title}</strong>
-            <span>{track.artist} · Текст песни</span>
+            <span>{track.artist}</span>
           </div>
         </div>
 
@@ -178,7 +178,7 @@ export function LyricsScreen({
                     aria-label={l.line ? `Перейти к строке: ${l.line}` : "Перейти к музыкальной паузе"}
                     onClick={() => onSeek(duration > 0 ? l.t / duration : 0)}
                   >
-                    {l.line || <MusicNotesSimple size={14} weight="bold" aria-hidden />}
+                    {l.line || <><MusicNotesSimple size={14} weight="bold" aria-hidden /> Инструментал</>}
                   </button>
                 </li>
               ))}
