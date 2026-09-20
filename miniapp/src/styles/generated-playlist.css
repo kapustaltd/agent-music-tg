@@ -1,0 +1,113 @@
+/* Generated playlist detail ----------------------------------------------
+   Keep this screen in the same action language as the library: quiet icon
+   controls for secondary actions and one clear primary action for delivery. */
+
+.results-playlist-header {
+  align-items: center;
+  gap: var(--space-4, 16px);
+}
+
+.results-playlist-cover {
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: var(--radius-input-shared, 12px);
+  box-shadow: none;
+}
+
+.results-playlist-header-copy {
+  align-items: flex-start;
+  gap: var(--space-2, 8px);
+}
+
+.results-playlist-header .playlist-name-title,
+.results-playlist-header .playlist-name-input {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(26px, 7vw, 30px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.results-playlist-meta {
+  margin: 0;
+  font-size: var(--fs-metadata, 14px);
+  line-height: 1.3;
+}
+
+.playlist-action-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-4, 16px);
+}
+
+.playlist-action-icon {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+.playlist-action-download {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: var(--radius-compact, 8px);
+  box-shadow: none;
+}
+
+.results-track-list {
+  margin-top: var(--space-5, 24px);
+}
+
+.results-extend {
+  margin-top: var(--space-6, 32px);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.results-extend-heading h2 {
+  font-size: var(--fs-section-title, 20px);
+  line-height: 1.2;
+}
+
+.results-extend-input {
+  min-height: 50px;
+  border-radius: var(--radius-input-shared, 12px);
+}
+
+.results-extend .prompt-submit {
+  color: var(--text-muted);
+}
+
+.results-extend .prompt-submit:hover,
+.results-extend .prompt-submit:focus-visible {
+  color: var(--accent);
+}
+
+@media (max-width: 390px) {
+  .results-playlist-cover {
+    flex-basis: 104px;
+    width: 104px;
+    height: 104px;
+  }
+
+  .results-playlist-header .playlist-name-title,
+  .results-playlist-header .playlist-name-input {
+    font-size: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playlist-action-download {
+    transition: none;
+  }
+}
