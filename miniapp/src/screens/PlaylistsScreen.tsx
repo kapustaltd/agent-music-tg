@@ -149,10 +149,6 @@ function DownloadEntry({
   );
 }
 
-type LibraryItem =
-  | { kind: "download"; createdAt: number; record: DownloadRecord }
-  | { kind: "history"; createdAt: number; entry: HistoryEntry };
-
 function HistoryItem({
   entry,
   onOpen,
@@ -283,39 +279,24 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
     }
   }
 
-  const items: LibraryItem[] = useMemo(
-    () =>
-      [
-        ...downloads.map((record): LibraryItem => ({ kind: "download", createdAt: record.createdAt, record })),
-        ...history.map((entry): LibraryItem => ({ kind: "history", createdAt: entry.createdAt, entry })),
-      ].sort((a, b) => b.createdAt - a.createdAt),
-    [downloads, history],
-  );
-
   return (
     <>
       {error && <p role="alert" className="icon-row"><WarningCircle size={16} weight="bold" /> {error}</p>}
-      {notice && <p role="status" className="icon-row"><DownloadSimple size={16} weight="bold" /> {notice}</p>}
-      {items.length === 0 ? (
-        <EmptyState icon={<BookmarkSimple size={40} weight="bold" />} label="Пока пусто. Здесь появятся закладки и загрузки" />
-      ) : (
-        <ul className="plain-list plain-list--col reveal-stagger">
-          {items.map((item, i) =>
-            item.kind === "download" ? (
-              <DownloadEntry
-                key={`d-${item.record.id}`}
-                record={item.record}
-                busy={busyId?.id === item.record.id ? busyId.kind : null}
-                onResend={() => handleResend(item.record)}
-                onDelete={() => handleDelete(item.record)}
-                style={{ ["--i" as string]: i }}
-              />
-            ) : (
-              <HistoryItem key={`h-${item.entry.id}`} entry={item.entry} onOpen={onOpen} style={{ ["--i" as string]: i }} />
-            ),
-          )}
-        </ul>
-      )}
+      {notice && <p role="status" className="icon-row"><DownloadSimple size={16} /> {notice}</p>}
+      <section className="library-section">
+        <h2 className="screen-title">Сохранённые подборки</h2>
+        {history.length ? <ul className="plain-list plain-list--col">
+          {history.map((entry) => <HistoryItem key={entry.id} entry={entry} onOpen={onOpen} />)}
+        </ul> : <p className="text-muted">Сохранённые плейлисты появятся здесь.</p>}
+      </section>
+      <section className="library-section">
+        <h2 className="screen-title">Загрузки</h2>
+        {downloads.length ? <ul className="plain-list plain-list--col">
+          {downloads.map((record) => <DownloadEntry key={record.id} record={record}
+            busy={busyId?.id === record.id ? busyId.kind : null}
+            onResend={() => handleResend(record)} onDelete={() => handleDelete(record)} />)}
+        </ul> : <p className="text-muted">Здесь появятся треки, отправленные в чат.</p>}
+      </section>
     </>
   );
 }
@@ -365,7 +346,7 @@ function PlaylistsSection({ onOpen }: { onOpen: (id: number) => void }) {
   }
 
   return (
-    <GlassPanel className="reveal">
+    <GlassPanel className="reveal library-section">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="screen-title">Плейлисты</h1>
         {!creating && (
@@ -537,7 +518,7 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
   }
 
   return (
-    <GlassPanel className="reveal">
+    <GlassPanel className="reveal library-section">
       <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
         <button type="button" className="action-btn action-btn--neutral" aria-label="Назад к Музыке" onClick={onBack}>
           <ArrowLeft size={20} />
@@ -699,7 +680,7 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
   );
 }
 
-export default function PlaylistsScreen({ onOpenHistory }: { onOpenHistory: (entry: HistoryEntry) => void }) {
+export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpenHistory: (entry: HistoryEntry) => void; onNewPrompt: () => void }) {
   const player = usePlayer();
   // The full track list (title/artist/artwork) is content this screen owns —
   // the shared my-music store only tracks a uri->saved boolean, not enough to
@@ -762,10 +743,13 @@ export default function PlaylistsScreen({ onOpenHistory }: { onOpenHistory: (ent
 
   return (
     <div className="stack">
+      <button type="button" className="glass-button library-new-prompt" onClick={onNewPrompt}>
+        <Plus size={20} /> Новый плейлист по описанию
+      </button>
       <PlaylistsSection onOpen={setOpenPlaylistId} />
 
-      <GlassPanel className="reveal">
-        <h2 className="screen-title">Избранное</h2>
+      <GlassPanel className="reveal library-section">
+        <h2 className="screen-title">Треки</h2>
 
         {tracks === null && (
           <p className="text-muted search-status">
@@ -842,8 +826,7 @@ export default function PlaylistsScreen({ onOpenHistory }: { onOpenHistory: (ent
         )}
       </GlassPanel>
 
-      <GlassPanel className="reveal">
-        <h2 className="screen-title" style={{ marginBottom: 14 }}>Библиотека</h2>
+      <GlassPanel className="reveal library-section">
         <LibrarySection onOpen={onOpenHistory} />
       </GlassPanel>
     </div>

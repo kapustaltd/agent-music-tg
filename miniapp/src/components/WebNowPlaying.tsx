@@ -1,4 +1,4 @@
-import { CircleNotch, HeartStraight, Pause, Play, Queue, SkipForward, WarningCircle } from "../icons";
+import { CircleNotch, HeartStraight, Pause, Play, Queue, SkipBack, SkipForward, WarningCircle } from "../icons";
 import { useMyMusic } from "../lib/my-music";
 import { ARTWORK_FULL, artworkUrl } from "../lib/artwork";
 import { usePlayer, usePlayerTime } from "../lib/player";
@@ -79,6 +79,9 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
       </div>
 
       <div className="web-now-playing-controls">
+        <button type="button" className="web-now-playing-next" aria-label="Предыдущий трек" disabled={player.queueIndex <= 0} onClick={() => player.previousTrack()}>
+          <SkipBack size={22} weight="fill" />
+        </button>
         <button
           type="button"
           className="web-now-playing-play"

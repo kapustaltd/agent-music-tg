@@ -125,7 +125,7 @@ const finalizePlaylistSpec: ToolSpec = {
   parameters: {
     type: "object",
     properties: {
-      name: { type: "string", description: "Short evocative playlist title fitting the request." },
+      name: { type: "string", description: "Natural 2-5 word title in the request language, sentence case. No quotes, emoji, hashtags, marketing claims or poetic metaphors. Preserve proper names." },
       tracks: {
         type: "array",
         description: "Ordered track list. No more than 2-3 tracks per artist.",

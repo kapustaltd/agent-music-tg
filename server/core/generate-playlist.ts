@@ -1,3 +1,4 @@
+import { playlistNameFromPrompt } from "./playlist-name";
 import type { AgentEvent, AgentMessage, AgentProvider } from "../agent/types";
 import { MUSIC_AGENT_TOOLS, dispatchTool } from "../agent/tools";
 import { PLAYLIST_SYSTEM_PROMPT } from "../agent/prompts";
@@ -111,7 +112,7 @@ function parseFinalizeArgs(
   args: Record<string, unknown>,
   opts?: { allowEmptyName?: boolean; allowEmptyTracks?: boolean },
 ): FinalizeArgs {
-  const name = typeof args.name === "string" ? args.name : "";
+  const name = typeof args.name === "string" ? args.name.trim() : "";
   const tracksRaw = Array.isArray(args.tracks) ? args.tracks : [];
   const tracks = tracksRaw
     .filter((t): t is { artist: string; title: string } => {
@@ -378,7 +379,11 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
           onClarify: async () => {
             throw new Error("unreachable: clarify handled above");
           },
-          onTracks: (tracks) => indexTracks(trackIndex, tracks),
+          onTracks: (tracks) => {
+            indexTracks(trackIndex, tracks);
+            const preview = tracks.filter((track) => !opts.dislikedUris?.has(track.uri)).slice(0, 6);
+            if (preview.length) opts.onEvent?.({ kind: "track_preview", tracks: preview });
+          },
         });
         seenCalls.set(key, dispatchResult);
         slots[slot] = {
@@ -408,9 +413,9 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
       try {
         const args = parseFinalizeArgs(
           finalizeCall.args,
-          isExtend ? { allowEmptyName: true, allowEmptyTracks: true } : {},
+          { allowEmptyName: true, allowEmptyTracks: isExtend },
         );
-        const name = args.name || opts.baseName || "Playlist";
+        const name = args.name || opts.baseName?.trim() || playlistNameFromPrompt(opts.prompt);
         const allTracks = isExtend
           ? dedupeTracks([...baseTracks, ...addedTracks, ...args.tracks])
           : args.tracks;
@@ -457,7 +462,7 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
     try {
       const playlist = await resolveAndFinalize(
         opts.music,
-        { name: opts.baseName || "Playlist", tracks: fallbackTracks },
+        { name: opts.baseName?.trim() || playlistNameFromPrompt(opts.prompt), tracks: fallbackTracks },
         seenCalls,
         trackIndex,
         { baseProvided: isExtend && baseTracks.length > 0, dislikedUris: opts.dislikedUris },

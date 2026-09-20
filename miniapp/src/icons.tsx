@@ -1,158 +1,163 @@
-import type { LucideIcon, LucideProps } from "lucide-react";
-import {
-  AlignLeft as LucideAlignLeft,
-  ArrowLeft as LucideArrowLeft,
-  ArrowRight as LucideArrowRight,
-  ArrowUp as LucideArrowUp,
-  Ban as LucideBan,
-  Bookmark as LucideBookmark,
-  Calendar as LucideCalendar,
-  ChartBar as LucideChartBar,
-  Check as LucideCheck,
-  ChevronDown as LucideChevronDown,
-  ChevronRight as LucideChevronRight,
-  ChevronUp as LucideChevronUp,
-  Circle as LucideCircle,
-  CircleAlert as LucideCircleAlert,
-  CircleCheck as LucideCircleCheck,
-  CircleHelp as LucideCircleHelp,
-  CirclePlay as LucideCirclePlay,
-  CircleUserRound as LucideCircleUserRound,
-  CircleX as LucideCircleX,
-  Copy as LucideCopy,
-  CreditCard as LucideCreditCard,
-  Crown as LucideCrown,
-  Download as LucideDownload,
-  EllipsisVertical as LucideEllipsisVertical,
-  Eye as LucideEye,
-  ExternalLink as LucideExternalLink,
-  Gift as LucideGift,
-  Gauge as LucideGauge,
-  Heart as LucideHeart,
-  Key as LucideKey,
-  Landmark as LucideLandmark,
-  LifeBuoy as LucideLifeBuoy,
-  Link2Off as LucideLink2Off,
-  ListMusic as LucideListMusic,
-  ListPlus as LucideListPlus,
-  ListVideo as LucideListVideo,
-  LoaderCircle as LucideLoaderCircle,
-  MessageCircle as LucideMessageCircle,
-  Minus as LucideMinus,
-  Music as LucideMusic,
-  Music2 as LucideMusic2,
-  Package as LucidePackage,
-  Paperclip as LucidePaperclip,
-  Pause as LucidePause,
-  Pencil as LucidePencil,
-  Play as LucidePlay,
-  Plus as LucidePlus,
-  Receipt as LucideReceipt,
-  RefreshCw as LucideRefreshCw,
-  Search as LucideSearch,
-  Send as LucideSend,
-  Share2 as LucideShare2,
-  Shield as LucideShield,
-  SkipBack as LucideSkipBack,
-  SkipForward as LucideSkipForward,
-  SlidersHorizontal as LucideSlidersHorizontal,
-  Sparkles as LucideSparkles,
-  Star as LucideStar,
-  Store as LucideStore,
-  ThumbsDown as LucideThumbsDown,
-  Trash as LucideTrash,
-  User as LucideUser,
-  UsersRound as LucideUsersRound,
-  Volume1 as LucideVolume1,
-  Volume2 as LucideVolume2,
-  VolumeX as LucideVolumeX,
-  Wallet as LucideWallet,
-  X as LucideX,
-} from "lucide-react";
+import type { ComponentProps } from "react";
+import AlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
+import ArrowLeftIcon from "@mui/icons-material/ArrowBack";
+import ArrowRightIcon from "@mui/icons-material/ArrowForward";
+import ArrowSquareOutIcon from "@mui/icons-material/OpenInNew";
+import ArrowUpIcon from "@mui/icons-material/ArrowUpward";
+import ArrowsClockwiseIcon from "@mui/icons-material/Refresh";
+import BankIcon from "@mui/icons-material/AccountBalance";
+import BookmarkSimpleIcon from "@mui/icons-material/BookmarkBorder";
+import CalendarIcon from "@mui/icons-material/CalendarMonth";
+import CaretDownIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CaretUpIcon from "@mui/icons-material/ExpandLess";
+import ChartBarIcon from "@mui/icons-material/BarChart";
+import ChatCircleIcon from "@mui/icons-material/ChatBubbleOutlined";
+import CheckIcon from "@mui/icons-material/Check";
+import CheckCircleIcon from "@mui/icons-material/CheckCircleOutlined";
+import CircleIcon from "@mui/icons-material/RadioButtonUnchecked";
+import CircleNotchIcon from "@mui/icons-material/Loop";
+import CopyIcon from "@mui/icons-material/ContentCopy";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import CrownIcon from "@mui/icons-material/WorkspacePremium";
+import DotsThreeVerticalIcon from "@mui/icons-material/MoreHoriz";
+import DownloadSimpleIcon from "@mui/icons-material/FileDownloadOutlined";
+import EyeIcon from "@mui/icons-material/VisibilityOutlined";
+import GiftIcon from "@mui/icons-material/Redeem";
+import GaugeIcon from "@mui/icons-material/Speed";
+import HeartStraightIcon from "@mui/icons-material/FavoriteBorder";
+import KeyIcon from "@mui/icons-material/Key";
+import LifebuoyIcon from "@mui/icons-material/Support";
+import LinkBreakIcon from "@mui/icons-material/LinkOff";
+import ListPlusIcon from "@mui/icons-material/PlaylistAdd";
+import MagnifyingGlassIcon from "@mui/icons-material/Search";
+import MinusIcon from "@mui/icons-material/Remove";
+import MusicNotesIcon from "@mui/icons-material/LibraryMusicOutlined";
+import MusicNotesPlusIcon from "@mui/icons-material/LibraryAdd";
+import MusicNotesSimpleIcon from "@mui/icons-material/MusicNote";
+import PackageIcon from "@mui/icons-material/Inventory2Outlined";
+import PaperclipIcon from "@mui/icons-material/AttachFile";
+import PaperPlaneTiltIcon from "@mui/icons-material/Send";
+import PauseIcon from "@mui/icons-material/Pause";
+import PencilSimpleIcon from "@mui/icons-material/EditOutlined";
+import PlayIcon from "@mui/icons-material/PlayArrow";
+import PlayCircleIcon from "@mui/icons-material/PlayCircleOutlined";
+import PlusIcon from "@mui/icons-material/Add";
+import PlaylistIcon from "@mui/icons-material/QueueMusic";
+import ProhibitIcon from "@mui/icons-material/Block";
+import QuestionIcon from "@mui/icons-material/HelpOutlined";
+import QueueIcon from "@mui/icons-material/QueueMusic";
+import ReceiptIcon from "@mui/icons-material/ReceiptLong";
+import ShareNetworkIcon from "@mui/icons-material/Share";
+import ShieldIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import SkipBackIcon from "@mui/icons-material/SkipPrevious";
+import SkipForwardIcon from "@mui/icons-material/SkipNext";
+import SlidersHorizontalIcon from "@mui/icons-material/Tune";
+import SparkleIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import SpeakerHighIcon from "@mui/icons-material/VolumeUp";
+import SpeakerLowIcon from "@mui/icons-material/VolumeDown";
+import SpeakerXIcon from "@mui/icons-material/VolumeOff";
+import StarIcon from "@mui/icons-material/StarBorder";
+import StorefrontIcon from "@mui/icons-material/StorefrontOutlined";
+import ThumbsDownIcon from "@mui/icons-material/ThumbDownOutlined";
+import TrashIcon from "@mui/icons-material/DeleteOutlined";
+import UserIcon from "@mui/icons-material/PersonOutlined";
+import UserCircleIcon from "@mui/icons-material/AccountCircleOutlined";
+import UsersThreeIcon from "@mui/icons-material/PeopleOutlined";
+import WalletIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import WarningCircleIcon from "@mui/icons-material/ErrorOutlined";
+import XIcon from "@mui/icons-material/Close";
+import XCircleIcon from "@mui/icons-material/CancelOutlined";
+import HeartStraightFilledIcon from "@mui/icons-material/Favorite";
+import BookmarkSimpleFilledIcon from "@mui/icons-material/Bookmark";
+import StarFilledIcon from "@mui/icons-material/Star";
+import MusicNotesFilledIcon from "@mui/icons-material/LibraryMusic";
+import UserCircleFilledIcon from "@mui/icons-material/AccountCircle";
+import ShieldFilledIcon from "@mui/icons-material/AdminPanelSettings";
+import StorefrontFilledIcon from "@mui/icons-material/Storefront";
+import SparkleFilledIcon from "@mui/icons-material/AutoAwesome";
 
-/**
- * Existing components can keep their current size and aria props while the
- * rendered SVGs come from Lucide. Phosphor's `weight` is translated to a
- * slightly heavier Lucide stroke; Lucide remains stroke-based throughout.
- */
-type LegacyWeight = "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
-type IconProps = LucideProps & { weight?: LegacyWeight };
-
-function icon(Icon: LucideIcon) {
-  return function CompatibleIcon({ weight, ...props }: IconProps) {
-    const strokeWidth = props.strokeWidth ?? (weight === "bold" || weight === "fill" ? 2.25 : 2);
-    return <Icon {...props} strokeWidth={strokeWidth} />;
+/** Point imports keep unused Material icons out of the bundle. Only SvgIcon's
+ * runtime is used; the app keeps its own CSS, controls and theme. */
+type IconProps = Omit<ComponentProps<typeof AlignLeftIcon>, "color"> & {
+  color?: string;
+  size?: number | string;
+  weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
+};
+function icon(Outline: typeof AlignLeftIcon, Filled: typeof AlignLeftIcon = Outline) {
+  return function MaterialIcon({ size = 24, weight, fill: _fill, strokeWidth: _stroke, color, fontSize: _fontSize, style, ...props }: IconProps) {
+    const Icon = weight === "fill" ? Filled : Outline;
+    return <Icon {...props} style={{ width: size, height: size, fontSize: size, flexShrink: 0, color, ...style }} />;
   };
 }
-
-export const AlignLeft = icon(LucideAlignLeft);
-export const ArrowLeft = icon(LucideArrowLeft);
-export const ArrowRight = icon(LucideArrowRight);
-export const ArrowSquareOut = icon(LucideExternalLink);
-export const ArrowUp = icon(LucideArrowUp);
-export const ArrowsClockwise = icon(LucideRefreshCw);
-export const Bank = icon(LucideLandmark);
-export const BookmarkSimple = icon(LucideBookmark);
-export const Calendar = icon(LucideCalendar);
-export const CaretDown = icon(LucideChevronDown);
-export const CaretRight = icon(LucideChevronRight);
+export const AlignLeft = icon(AlignLeftIcon);
+export const ArrowLeft = icon(ArrowLeftIcon);
+export const ArrowRight = icon(ArrowRightIcon);
+export const ArrowSquareOut = icon(ArrowSquareOutIcon);
+export const ArrowUp = icon(ArrowUpIcon);
+export const ArrowsClockwise = icon(ArrowsClockwiseIcon);
+export const Bank = icon(BankIcon);
+export const BookmarkSimple = icon(BookmarkSimpleIcon, BookmarkSimpleFilledIcon);
+export const Calendar = icon(CalendarIcon);
+export const CaretDown = icon(CaretDownIcon);
+export const CaretRight = icon(ChevronRightIcon);
+export const CaretUp = icon(CaretUpIcon);
+export const ChartBar = icon(ChartBarIcon);
+export const ChatCircle = icon(ChatCircleIcon);
+export const Check = icon(CheckIcon);
+export const CheckCircle = icon(CheckCircleIcon);
+export const Circle = icon(CircleIcon);
+export const CircleNotch = icon(CircleNotchIcon);
+export const Copy = icon(CopyIcon);
+export const CreditCard = icon(CreditCardIcon);
+export const Crown = icon(CrownIcon);
+export const DotsThreeVertical = icon(DotsThreeVerticalIcon);
+export const DownloadSimple = icon(DownloadSimpleIcon);
+export const Eye = icon(EyeIcon);
+export const Gift = icon(GiftIcon);
+export const Gauge = icon(GaugeIcon);
+export const HeartStraight = icon(HeartStraightIcon, HeartStraightFilledIcon);
+export const Key = icon(KeyIcon);
+export const Lifebuoy = icon(LifebuoyIcon);
+export const LinkBreak = icon(LinkBreakIcon);
+export const ListPlus = icon(ListPlusIcon);
+export const MagnifyingGlass = icon(MagnifyingGlassIcon);
+export const Minus = icon(MinusIcon);
+export const MusicNotes = icon(MusicNotesIcon, MusicNotesFilledIcon);
+export const MusicNotesPlus = icon(MusicNotesPlusIcon);
+export const MusicNotesSimple = icon(MusicNotesSimpleIcon);
+export const Package = icon(PackageIcon);
+export const Paperclip = icon(PaperclipIcon);
+export const PaperPlaneTilt = icon(PaperPlaneTiltIcon);
+export const Pause = icon(PauseIcon);
+export const PencilSimple = icon(PencilSimpleIcon);
+export const Play = icon(PlayIcon);
+export const PlayCircle = icon(PlayCircleIcon);
+export const Plus = icon(PlusIcon);
+export const Playlist = icon(PlaylistIcon);
+export const Prohibit = icon(ProhibitIcon);
+export const Question = icon(QuestionIcon);
+export const Queue = icon(QueueIcon);
+export const Receipt = icon(ReceiptIcon);
+export const ShareNetwork = icon(ShareNetworkIcon);
+export const Shield = icon(ShieldIcon, ShieldFilledIcon);
+export const SkipBack = icon(SkipBackIcon);
+export const SkipForward = icon(SkipForwardIcon);
+export const SlidersHorizontal = icon(SlidersHorizontalIcon);
+export const Sparkle = icon(SparkleIcon, SparkleFilledIcon);
+export const SpeakerHigh = icon(SpeakerHighIcon);
+export const SpeakerLow = icon(SpeakerLowIcon);
+export const SpeakerX = icon(SpeakerXIcon);
+export const Star = icon(StarIcon, StarFilledIcon);
+export const Storefront = icon(StorefrontIcon, StorefrontFilledIcon);
+export const ThumbsDown = icon(ThumbsDownIcon);
+export const Trash = icon(TrashIcon);
+export const User = icon(UserIcon);
+export const UserCircle = icon(UserCircleIcon, UserCircleFilledIcon);
+export const UsersThree = icon(UsersThreeIcon);
+export const Wallet = icon(WalletIcon);
+export const WarningCircle = icon(WarningCircleIcon);
+export const X = icon(XIcon);
+export const XCircle = icon(XCircleIcon);
 export const CaretRightIcon = CaretRight;
-export const CaretUp = icon(LucideChevronUp);
-export const ChartBar = icon(LucideChartBar);
-export const ChatCircle = icon(LucideMessageCircle);
-export const Check = icon(LucideCheck);
-export const CheckCircle = icon(LucideCircleCheck);
-export const Circle = icon(LucideCircle);
-export const CircleNotch = icon(LucideLoaderCircle);
-export const Copy = icon(LucideCopy);
-export const CreditCard = icon(LucideCreditCard);
-export const Crown = icon(LucideCrown);
-export const DotsThreeVertical = icon(LucideEllipsisVertical);
-export const DownloadSimple = icon(LucideDownload);
-export const Eye = icon(LucideEye);
-export const Gift = icon(LucideGift);
-export const Gauge = icon(LucideGauge);
-export const HeartStraight = icon(LucideHeart);
-export const Key = icon(LucideKey);
-export const Lifebuoy = icon(LucideLifeBuoy);
-export const LinkBreak = icon(LucideLink2Off);
-export const ListPlus = icon(LucideListPlus);
-export const MagnifyingGlass = icon(LucideSearch);
-export const Minus = icon(LucideMinus);
-export const MusicNotes = icon(LucideMusic2);
-export const MusicNotesPlus = icon(LucideListMusic);
-export const MusicNotesSimple = icon(LucideMusic);
-export const Package = icon(LucidePackage);
-export const Paperclip = icon(LucidePaperclip);
-export const PaperPlaneTilt = icon(LucideSend);
-export const Pause = icon(LucidePause);
-export const PencilSimple = icon(LucidePencil);
-export const Play = icon(LucidePlay);
-export const PlayCircle = icon(LucideCirclePlay);
-export const Plus = icon(LucidePlus);
-export const Playlist = icon(LucideListMusic);
-export const Prohibit = icon(LucideBan);
-export const Question = icon(LucideCircleHelp);
-export const Queue = icon(LucideListVideo);
-export const Receipt = icon(LucideReceipt);
-export const ShareNetwork = icon(LucideShare2);
-export const Shield = icon(LucideShield);
-export const SkipBack = icon(LucideSkipBack);
-export const SkipForward = icon(LucideSkipForward);
-export const SlidersHorizontal = icon(LucideSlidersHorizontal);
-export const Sparkle = icon(LucideSparkles);
-export const SpeakerHigh = icon(LucideVolume2);
-export const SpeakerLow = icon(LucideVolume1);
-export const SpeakerX = icon(LucideVolumeX);
-export const Star = icon(LucideStar);
-export const Storefront = icon(LucideStore);
 export const TextAlignLeft = AlignLeft;
-export const ThumbsDown = icon(LucideThumbsDown);
-export const Trash = icon(LucideTrash);
-export const User = icon(LucideUser);
-export const UserCircle = icon(LucideCircleUserRound);
-export const UsersThree = icon(LucideUsersRound);
-export const Wallet = icon(LucideWallet);
-export const WarningCircle = icon(LucideCircleAlert);
-export const X = icon(LucideX);
-export const XCircle = icon(LucideCircleX);

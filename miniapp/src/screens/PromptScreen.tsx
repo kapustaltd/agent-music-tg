@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "../icons";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentProgressEvent } from "../lib/api";
-import { useTextScramble } from "../lib/useTextScramble";
 import { EMPTY_SUGGESTIONS, samplePromptExamples } from "../lib/suggestions";
 import { AiMode } from "./AiMode";
 import { SearchMode } from "./SearchMode";
@@ -10,16 +9,6 @@ import { SearchMode } from "./SearchMode";
 const MAX_INPUT_HEIGHT = 96;
 
 type Mode = "ai" | "search";
-
-type HeroPhrase = { before: string; accent: string; after: string };
-
-const HERO_PHRASES: HeroPhrase[] = [
-  { before: "Что ", accent: "слушаем", after: "?" },
-  { before: "Какой ", accent: "вайб", after: "?" },
-  { before: "Чего хочет ", accent: "душа", after: "?" },
-  { before: "Врубаем ", accent: "музыку", after: "?" },
-  { before: "Какое ", accent: "настроение", after: "?" },
-];
 
 /**
  * The create tab's shell: hero, mode toggle and the shared input. Each mode's
@@ -79,17 +68,6 @@ export function PromptScreen({
 
   const canSubmit = mode === "ai" && !busy && prompt.trim().length > 0;
 
-  const [heroIndex, setHeroIndex] = useState(0);
-  const [heroTrigger, setHeroTrigger] = useState(0);
-  const heroPhrase = HERO_PHRASES[heroIndex]!;
-  const heroFull = `${heroPhrase.before}${heroPhrase.accent}${heroPhrase.after}`;
-  const { displayText: heroDisplay, isComplete: heroComplete } = useTextScramble(heroFull, heroTrigger, 500);
-
-  useEffect(() => {
-    const t = setTimeout(() => setHeroTrigger(1), 50);
-    return () => clearTimeout(t);
-  }, []);
-
   useEffect(() => {
     if (mode !== "search") return;
     const el = inputRef.current;
@@ -107,16 +85,6 @@ export function PromptScreen({
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_HEIGHT)}px`;
   }, [initialQuery]);
-
-  function handleHeroClick() {
-    if (!heroComplete) return;
-    let next = heroIndex;
-    if (HERO_PHRASES.length > 1) {
-      while (next === heroIndex) next = Math.floor(Math.random() * HERO_PHRASES.length);
-    }
-    setHeroIndex(next);
-    setHeroTrigger((n) => n + 1);
-  }
 
   function autoGrow() {
     const el = inputRef.current;
@@ -143,30 +111,14 @@ export function PromptScreen({
   }
 
   const MODES: { id: Mode; label: string; icon: typeof Sparkle }[] = [
-    { id: "ai", label: "AI", icon: Sparkle },
-    { id: "search", label: "Поиск", icon: MagnifyingGlass },
+    { id: "ai", label: "Подобрать", icon: Sparkle },
+    { id: "search", label: "Найти", icon: MagnifyingGlass },
   ];
 
   return (
-    <div className="reveal prompt-card">
+    <div className={`reveal prompt-card${mode === "search" ? " prompt-card--search" : ""}${busy ? " prompt-card--busy" : ""}`}>
       <div className="prompt-compose">
-        <div className="prompt-hero">
-          {/* Not a heading: the phrase is playful copy that reshuffles on tap, not
-              page structure — wrapping it in <h1> made the page's one heading
-              announce a control instruction instead of readable text. */}
-          <button
-            type="button"
-            className="prompt-hero-action"
-            aria-label={`Сменить фразу. Сейчас: ${heroFull}`}
-            onClick={handleHeroClick}
-          >
-            {heroDisplay.slice(0, heroPhrase.before.length)}
-            <span className="prompt-hero-accent">
-              {heroDisplay.slice(heroPhrase.before.length, heroPhrase.before.length + heroPhrase.accent.length)}
-            </span>
-            {heroDisplay.slice(heroPhrase.before.length + heroPhrase.accent.length)}
-          </button>
-        </div>
+        <h1 className="prompt-heading">{mode === "ai" ? "Что включим?" : "Найти музыку"}</h1>
 
         <div className="prompt-modes" role="group" aria-label="Режим">
           {MODES.map((m) => {
@@ -182,7 +134,7 @@ export function PromptScreen({
                   setMode(m.id);
                 }}
               >
-                <Icon size={15} weight={mode === m.id ? "fill" : "regular"} />
+                <Icon size={20} weight={mode === m.id ? "fill" : "regular"} />
                 <span>{m.label}</span>
               </button>
             );
@@ -199,8 +151,8 @@ export function PromptScreen({
             ref={inputRef}
             className="prompt-pill-input"
             rows={1}
-            placeholder={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
-            aria-label={mode === "ai" ? "Настроение, жанр или занятие" : "Трек, исполнитель или альбом"}
+            placeholder={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
+            aria-label={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
             value={prompt}
             onChange={(e) => {
               setPrompt(e.target.value);
@@ -235,6 +187,7 @@ export function PromptScreen({
         {mode === "ai" ? (
           <AiMode
             busy={busy}
+            prompt={prompt}
             progress={progress}
             suggestions={suggestions}
             examples={promptExamples}

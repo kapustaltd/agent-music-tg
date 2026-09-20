@@ -342,7 +342,6 @@ function AppInner() {
             playlist={screen.playlist}
             generationId={screen.generationId}
             initialSaved={screen.saved}
-            onNewPrompt={() => navigate({ kind: "prompt" }, "back")}
           />
         );
       case "shared":
@@ -358,6 +357,7 @@ function AppInner() {
         return (
           <PlaylistsScreen
             onOpenHistory={(entry: HistoryEntry) => openGeneration(entry, true)}
+            onNewPrompt={() => navigate({ kind: "prompt" }, "back")}
           />
         );
       case "profile":
@@ -445,7 +445,7 @@ function AppInner() {
 
         <span className="app-top-brand" title="music agent">
           <span className="app-top-logo" aria-hidden>
-            <BrandMark size={21} />
+            <BrandMark size={26} />
           </span>
           <span className="app-top-brand-title">{shopConfig?.headerTitle || "agent music"}</span>
         </span>

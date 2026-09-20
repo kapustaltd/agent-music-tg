@@ -1,212 +1,126 @@
 ---
 name: agent-music-tg Mini App
-description: Quiet Liquid Glass UI for a Telegram Mini App that turns moods into playlists
+description: Material-like musical utility for Telegram and desktop
 colors:
   accent-teal: "#14b8a6"
-  accent-teal-deep: "#0f8f82"
-  night-bg: "#050508"
+  night-bg: "#121212"
   glass-text: "#f2f3f5"
-  glass-muted: "#f2f3f59e"
-  panel-dark: "#1a1c2466"
-  hairline: "#ffffff1a"
   day-bg: "#EEEEF3"
   ink: "#0d0d10"
 typography:
   display:
-    fontFamily: "Super Grotesk, FF Super Grotesk, Space Grotesk, -apple-system, BlinkMacSystemFont, sans-serif"
-    fontWeight: 700
-    lineHeight: 1.1
+    fontFamily: "Roboto Variable, Segoe UI, sans-serif"
+    fontWeight: 600
+    lineHeight: 1.2
   body:
-    fontFamily: "Super Grotesk, FF Super Grotesk, Space Grotesk, -apple-system, BlinkMacSystemFont, SF Pro Text, Segoe UI, system-ui, sans-serif"
+    fontFamily: "Roboto Variable, Segoe UI, sans-serif"
     fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.45
 rounded:
-  panel: "22px"
-  input: "20px"
-  block: "18px"
+  panel: "16px"
+  input: "12px"
+  block: "12px"
   surface: "16px"
-  row: "14px"
-  control: "12px"
+  row: "10px"
+  control: "10px"
   chip: "10px"
   micro: "8px"
   hair: "4px"
   pill: "999px"
 spacing:
   sm: "8px"
-  md: "12px"
-  lg: "16px"
-components:
-  button-primary:
-    backgroundColor: "{colors.accent-teal}"
-    textColor: "#ffffff"
-    rounded: "{rounded.pill}"
-  button-glass:
-    backgroundColor: "{colors.panel-dark}"
-    textColor: "{colors.glass-text}"
-    rounded: "{rounded.pill}"
-  input-glass:
-    backgroundColor: "#ffffff0d"
-    textColor: "{colors.glass-text}"
-    rounded: "{rounded.input}"
+  md: "16px"
+  lg: "24px"
 ---
 
-# Design System: agent-music-tg Mini App
+# Mini App: музыкальный сервис с подбором по описанию
 
-## 1. Overview
+Утилитарная Material-подобная иерархия поверх существующей навигации.
+Музыка, обложки и запрос важнее технологии подбора. Сохраняем пользовательский
+цвет акцента: бирюзовый по умолчанию, оранжевый и другие цвета — настройки
+профиля. Не перекрашиваем продукт по цвету референса.
 
-**Creative North Star: "Quiet Glass"**
+## Типографика
 
-Glass exists but recedes. The app is a calm, near-black room inside Telegram where frosted panels float just enough to organize content — the prompt, the tracks, the player — and never enough to become the show. Blur, specular insets, and translucency are structural material, not decoration: every glass surface earns its place by separating a layer of hierarchy. The personality is calm minimal utility: fast, direct, unceremonious, Russian-language voice.
+Roboto Variable поставляется локальными WOFF2-файлами из
+`@fontsource-variable/roboto`: Cyrillic, Latin и Latin Extended. Никаких запросов
+к Google Fonts. Оба алфавита используют одну гарнитуру и веса 400–600.
 
-The system explicitly rejects the Spotify-clone look (green-on-black, browsing-first density) and the cheap default-Telegram-bot look (unstyled lists, emoji-as-design).
+| Роль | Размер / высота строки | Вес |
+| --- | --- | --- |
+| Главная | 28 / 32px | 600 |
+| Название плейлиста | 26px mobile, 30px desktop / 1.2 | 600 |
+| Раздел | 18 / 22px | 600 |
+| Трек | 16 / 20px | 550 |
+| Основной текст и ввод | 16px / 1.45–1.5 | 400 |
+| Метаданные | 14 / 18px | 400 |
+| Навигация, время, подпись | 12px минимум | 400–500 |
+| Бренд | 17px, знак 26px | 600 |
 
-**Key Characteristics:**
-- Near-black base (`#050508`) with dual light scheme (`#EEEEF3`), driven by Telegram theme.
-- One accent — Accent Teal — reserved for primary actions and active state.
-- Glass panels with structural blur (22–24px) and specular top-edge insets.
-- Super Grotesk first for UI and display; Space Grotesk is the web fallback when a licensed Super Grotesk file is not installed.
-- Short, state-conveying motion (0.18s ease; 0.35s morph for layout shifts).
+Названия могут переноситься; длинные непрерывные слова в Results используют
+`overflow-wrap: anywhere`. Строки треков и бренд ограничены ellipsis, но не
+расширяют viewport. Поле ввода на телефоне не меньше 16px.
 
-## 2. Colors
+## Поверхности и композиция
 
-Restrained strategy: two neutral schemes plus a single teal voice.
+Отступы групп 8/16/24px; 12px допустим внутри контролов. Радиусы: самостоятельный
+контейнер 16px, поле 12px, кнопка 10px. Pills допустимы для коротких тегов.
+Подбор, уточнение, медиатека и подписка живут на фоне страницы без внешней
+карточки. Уточнение содержит вопрос и обычные строки вариантов.
 
-### Primary
-- **Accent Teal** (#14b8a6): primary buttons, active nav state, selection indicators, focus tint. Interactive-only — teal on a surface means "you can act here".
-- **Deep Teal** (#0f8f82): pressed/hover depth of the primary action.
+Исключения: поле запроса выделяется тональной поверхностью; обложка сохраняет
+квадратное соотношение сторон; мини-плеер и dock отделяют постоянные элементы
+управления от прокручиваемого контента. Dialog/sheet сохраняет собственную
+поверхность и opaque fallback. Дополнительные glass-слои внутри них не нужны.
 
-### Neutral
-- **Night** (#050508): dark-scheme app background.
-- **Day** (#EEEEF3): light-scheme app background.
-- **Glass Text** (#f2f3f5) / **Ink** (#0d0d10): body text per scheme.
-- **Muted** (62% alpha of text color): secondary labels, hints, timestamps.
-- **Panel** (rgba(26,28,36,.4) dark / rgba(255,255,255,.5) light): glass surface fill.
-- **Hairline** (rgba(255,255,255,.1) dark / rgba(13,13,16,.08) light): dividers, panel borders.
+Desktop сохраняет левую навигацию, центральную рабочую область до 780px и
+правый плеер. Поле располагается под компактным выбором режима. Artwork в
+правом плеере занимает 88% ширины; очередь остаётся вторичной.
 
-### Semantic
+На мобильном Results одна обложка 120px, затем название и равнозначные
+Save/Share/Download. Новая генерация доступна из «Музыки». Rename остаётся
+доступным с клавиатуры и на touch; карандаш на desktop проявляется при
+hover/focus. В строках сердечко — shortcut сохранённого состояния, прочие
+действия доступны через меню. Единственный playing marker заменяет badge
+проверки, а не добавляется рядом с ним.
 
-A small status layer that exists **only** to carry meaning the accent cannot: a destructive action must not look like a primary one, and an error must not look like a suggestion. Each is a token pair (`--x` + `--x-bg`) defined in both schemes, so a rule states the meaning once and the scheme resolves the value.
+## Иконки и состояния
 
-| Token | Dark | Light | Used by |
-|---|---|---|---|
-| `--danger` / `--danger-bg` | #f87171 | #d32f2f | destructive buttons, error toast detail |
-| `--warning` / `--warning-bg` | #fbbf24 | #b45309 | inline notices |
-| `--success` / `--success-bg` | #34d399 | #059669 | confirmations |
-| `--info` / `--info-bg` | #60a5fa | #1d4ed8 | neutral status |
+`src/icons.tsx` — единый mapping точечных импортов `@mui/icons-material`.
+Search, AutoAwesome, LibraryMusic, Storefront, AccountCircle и AdminPanelSettings
+обозначают поиск, подбор, музыку, подписку, профиль и админку. Filled варианты
+показывают сохранение/активность; никакого смешивания с Lucide. Брендовый PNG —
+намеренное исключение, а не UI-иконка.
 
-Never hard-code a status color. A literal red in a rule is drift from `--danger`, not a new shade — the two diverged once already (#ef4444 vs the token's #f87171) and nobody could see why.
+MUI официально требует `@mui/material` как peer для SvgIcon. Он транзитивно
+фиксируется в Bun lockfile; напрямую из Material не импортируются компоненты,
+темы или barrel. Emotion — необходимый runtime SvgIcon. Сборка tree-shake
+оставляет используемые иконки и этот runtime; размеры фиксируются в отчёте
+проверки. Это техническое уточнение к требованию «не добавлять весь MUI».
 
-### Named Rules
-**The Signal Rule.** Accent Teal appears only on interactive or active elements — never as ambient decoration, background wash, or gradient text.
-**The One Room Rule.** All *surfaces* derive from the scheme's base plus white/black alpha. No third hue family enters the neutral stack. The semantic layer above is the sole exception, and it colors icons, text, and thin fills — never a surface.
+Акцент предназначен для действия или состояния, не заголовка/loader.
+Active tab и режим получают тональную подложку и линию, а не только новый цвет.
+Pressed: 160ms, тон/углубление, translateY(1px) + scale(.98), без layout shift.
+Disabled не трансформируется. Reduced motion отключает переходы и перемещения.
+Focus-visible контрастный; все touch targets не меньше 44×44px. Для extend
+44px — hit area, сам плюс 24px. Play/pause — 56px.
 
-## 3. Typography
+## Генерация и подписка
 
-**Display Font:** Super Grotesk (with FF Super Grotesk / Space Grotesk fallback)
-**Body Font:** Super Grotesk (with FF Super Grotesk / Space Grotesk and system fallback)
+Во время подбора показываем запрос, компактную статусную строку и первые
+найденные треки. Это кандидаты, явно обозначенные как незавершённый подбор.
+SSE расширен необязательным полем `tracks`: только uri/title/artist/artwork,
+до шести треков на событие, без reasoning и сырых ответов инструментов.
+Не показываем фиктивный × отмены: сервер не имеет протокола отмены генерации.
 
-**Character:** Compact and geometric. Super Grotesk gives the interface one consistent voice; the fallback stack keeps the same grotesk direction in browsers without the licensed face.
+В подписке срок и цена в рублях — основная строка, Stars — вторичная.
+Выбор продукта и способа оплаты не создаёт счёт. Единственная purchase CTA
+открывает существующий платёжный поток после явного нажатия. При отсутствии
+одного способа оплаты автоматически используется доступный. Пробный доступ
+остаётся отдельным вторичным действием.
 
-### Hierarchy
-All sizes are fixed px (this is an app UI, not a fluid web page) and are exposed as `--fs-*` tokens in `glass.css`. Never hard-code `font-size` in TSX — use the tokens or `.fs-*` utility classes.
-
-- **Hero** (800, 32px, line-height 1.1, tracking `-0.01em`): the single screen-opening `h1` — the prompt hero and the admin header. Fixed px, never a fluid `clamp()`: this is an app UI, and the viewport range inside Telegram is too narrow for fluid type to buy anything.
-- **Display** (800, 28px, line-height 1.1, tracking `-0.01em`): hero-tier text sitting inline in a screen rather than opening it (playlist name). Cyrillic glyphs (Ч Щ Д Ж) need the relaxed `-0.01em`, not the `-0.02em` typical of Latin display type.
-- **Subdisplay** (700, 22px, tracking `-0.01em`): the full-screen player title — a rare gap filler between Display and Title.
-- **Title** (700, 19px, 1.15): panel and section titles (`.screen-title`, `h2`).
-- **Body** (400, 16px, 1.45): prompts, track titles, descriptions.
-- **Label** (500–600, 14px, tracking `0.01em`): muted metadata, nav labels, chips, inputs.
-- **Micro** (400, 12px, floor): captions, timestamps, dock tabs. Never go below 12px.
-
-### Named Rules
-**The One Headline Rule.** At most one display-size heading per screen; everything else stays in the body/title band.
-
-## 4. Elevation
-
-Structural glass layering: depth *is* hierarchy. Each surface pairs a backdrop blur with a specular inset (light top edge, dark bottom edge) and a soft drop shadow; the deeper the shadow tier, the higher the layer floats. Where `backdrop-filter` is unavailable or `prefers-reduced-transparency` is set, opaque fallback fills (`--lg-v2-fallback-*`) replace transparency.
-
-### Shadow Vocabulary
-- **sm** (`inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.2)`): chips, small controls.
-- **md** (`… 0 4px 16px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.15)`): panels, cards.
-- **lg / float** (`… 0 8px 32px rgba(0,0,0,.4)` / `0 10px 30px rgba(0,0,0,.4)`): dock, player bar, floating overlays.
-- **active** (`inset 0 1px 2px rgba(0,0,0,.25) …`): pressed state — the surface sinks.
-
-### Named Rules
-**The Three Layers Rule.** A screen has at most three depth tiers: background, panels, floating chrome (dock/player). Nothing floats above the chrome except the OS.
-
-## 5. Components
-
-Refined and restrained: controls are pills and soft panels that respond by sinking, not bouncing.
-
-### Buttons
-- **Shape:** full pill (999px).
-- **Primary:** Accent Teal fill, white text; deepens to #0f8f82 on press.
-- **Glass:** panel fill + hairline border + specular inset; text color of scheme.
-- **Focus:** visible `:focus-visible` box-shadow ring; **Active:** `--glass-shadow-active` sink.
-- **Disabled:** reduced opacity, no shadow response.
-
-### Chips (prompt suggestions, top-bar chips)
-- **Style:** `liquid-glass-v2-chip` — white 7% fill, 9% border, pill shape; hover 12% fill (hover-capable devices only).
-
-### Cards / Containers
-- **Corner Style:** `--radius-panel` (22px).
-- **Background:** glass panel fill + backdrop blur (22px) + saturation 130%.
-- **Shadow Strategy:** md tier; lg only for floating chrome.
-- **Border:** 1px hairline.
-- **Internal Padding:** 16px.
-
-The create screen is a page surface, not a glass panel. Its hierarchy comes
-from spacing and typography; glass is reserved for the prompt field, focused
-results, sheets, and floating player chrome. Do not wrap the whole workflow in
-another rounded container.
-
-### Inputs
-- **Style:** white 5% fill (60% light), `--radius-input` (20px), hairline border.
-- **Focus:** border/box-shadow shift on `:focus-visible`; no color flood.
-- **Size:** at least 16px on touch (`--fs-input`). Below that, iOS and the Telegram WebView zoom the viewport toward the focused field, which reads as the screen moving on its own.
-
-### Radius Ladder
-
-Radius encodes nesting depth, not taste. A control inside a block inside a panel reads 10 / 18 / 22 — each nested surface drops one step. Every value is a token in `glass.css`; a new literal `border-radius` means a tier is missing, not that a new number is needed.
-
-| Token | px | Used by |
-|---|---|---|
-| `--radius-panel` | 22 | glass panels, sheets, full-screen artwork |
-| `--radius-input` | 20 | text fields |
-| `--radius-block` | 18 | track rows, prompt pill, dock, tab bars |
-| `--radius-surface` | 16 | popovers, avatars, cards nested in a panel |
-| `--radius-row` | 14 | list rows, icon tiles, toasts |
-| `--radius-control` | 12 | tabs, notices, medium focus rings |
-| `--radius-chip` | 10 | small buttons, code blocks, focus rings |
-| `--radius-micro` | 8 | thumbnails, counters, close buttons |
-| `--radius-hair` | 4 | focus rings on thin or inline controls |
-| `--radius-btn` | 999 | pills |
-
-Focus rings are the one place where the radius follows the element it wraps rather than the nesting rule — a ring must trace its own control's shape.
-
-### Touch Targets
-
-Every control in the dock, the player bar, and the full player is at least 44×44, per PRODUCT.md. Where the icon should read smaller, the button keeps the 44px box and the icon is centered inside it; adjacent buttons cancel the container's flex gap with a negative margin rather than shrinking.
-
-### Navigation (bottom dock)
-- **Style:** floating glass dock (58px), active tab in Accent Teal, labels 13px.
-
-### Player Bar (signature)
-Floating mini-player above the dock: artwork thumbnail, title/artist stack, transport controls; lg-tier shadow; syncs with the full-screen player.
-
-## 6. Do's and Don'ts
-
-### Do:
-- **Do** reserve Accent Teal (#14b8a6) for interactive/active elements (The Signal Rule).
-- **Do** ship opaque fallbacks for every glass surface (`prefers-reduced-transparency`, missing `backdrop-filter`).
-- **Do** honor `prefers-reduced-motion` on every transition — crossfade or instant.
-- **Do** keep body text ≥4.5:1 against the *effective* glass background in both schemes.
-- **Do** keep transitions at 0.18s ease; 0.35s only for layout morphs.
-
-### Don't:
-- **Don't** imitate Spotify — no green-on-black identity, no browsing-first layouts.
-- **Don't** regress to a cheap Telegram bot UI — no unstyled lists, no emoji-as-design.
-- **Don't** add glass-on-glass nesting (a glass card inside a glass panel) — one glass layer per depth tier.
-- **Don't** use accent teal as ambient decoration, gradient text, or background wash.
-- **Don't** exceed three depth tiers on a screen.
+Названия от агента: 2–5 естественных слов на языке запроса без рекламных клише,
+эмодзи и псевдопоэзии. При пропуске названия — нормализованные первые пять слов
+запроса, максимум 64 Unicode code points; пустой запрос → «Мой плейлист».
+Ручные имена и существующие имена при extend не ограничиваются этим правилом.

@@ -30,6 +30,7 @@ function trackCountLabel(entry: HistoryEntry): string {
 
 export function AiMode({
   busy,
+  prompt,
   progress,
   suggestions,
   examples,
@@ -39,6 +40,7 @@ export function AiMode({
   onOpenArtist,
 }: {
   busy: boolean;
+  prompt: string;
   progress: AgentProgressEvent[];
   suggestions: SuggestionsResponse;
   examples: string[];
@@ -55,7 +57,7 @@ export function AiMode({
   useScrollFade(artistRailRef);
 
   if (busy) {
-    return <GenerationStatus progress={progress} />;
+    return <GenerationStatus progress={progress} prompt={prompt} />;
   }
 
   const feed = buildPromptFeed(suggestions, examples);
@@ -64,7 +66,7 @@ export function AiMode({
     <>
       {feed.resume.length > 0 && (
         <section className="search-section">
-          <h2 className="search-section-title">Продолжить</h2>
+          <h2 className="search-section-title">Продолжить слушать</h2>
           <div className="resume-rail" ref={resumeRailRef}>
             {feed.resume.map((entry) => {
               const covers = coversOf(entry);
@@ -94,7 +96,7 @@ export function AiMode({
 
       <div className="prompt-examples prompt-starters" aria-label="Примеры запросов">
         <div className="prompt-examples-head">
-          <p className="prompt-examples-label">Можно начать так</p>
+          <p className="prompt-examples-label">Попробуй запрос</p>
           <button
             type="button"
             className="prompt-examples-refresh"
@@ -116,7 +118,7 @@ export function AiMode({
 
       {feed.artists.length > 0 && (
         <section className="search-section">
-          <h2 className="search-section-title">Ваши исполнители</h2>
+          <h2 className="search-section-title">Исполнители</h2>
           <div className="search-artist-rail" ref={artistRailRef}>
             {feed.artists.map((artist) => (
               <button

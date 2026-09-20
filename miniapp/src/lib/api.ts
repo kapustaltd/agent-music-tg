@@ -10,7 +10,7 @@ export type AgentProgressPhase =
   | "clarifying";
 
 /** Safe, product-level progress sent by the generation SSE endpoint. */
-export type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase };
+export type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase; tracks?: Pick<Track, "uri" | "title" | "artist" | "artwork">[] };
 
 /**
  * Builds the Error for a failed response. Prefers the server's `error` field,

@@ -171,3 +171,16 @@ Set `PAYMENTS_ENABLED=false` in `/opt/agent-music-tg/.env` and restart the unit:
 
 - Default backend is `youtube-music`; `soundcloud` is also available. Neither needs credentials — no per-user account linking or OAuth.
 - The bot token was shared in plaintext during setup — rotate it via @BotFather when convenient, then update `TELEGRAM_BOT_TOKEN` in `/opt/agent-music-tg/.env` and restart.
+
+### Иерархия Mini App
+
+Mini App использует локальный Roboto с кириллицей и латиницей и точечные
+Material Icons. Правила поверхностей, состояний и responsive-композиции —
+в [DESIGN.md](DESIGN.md). В процессе генерации SSE может присылать первые
+найденные треки в необязательном `progress.tracks`; это кандидаты, итоговый
+плейлист по-прежнему приходит в `outcome`. Сырые ответы модели не публикуются.
+
+Проверки на Bun с поддержкой изоляции: `bun test --isolate`. Изоляция нужна,
+поскольку существующие `mock.module` в разных тестовых файлах изменяют одни
+и те же модули. Обычный `bun test` на Bun 1.4.2 может давать ложные падения
+`run-generation.test.ts` из-за общего реестра моков.

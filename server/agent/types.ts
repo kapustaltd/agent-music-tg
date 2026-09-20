@@ -81,6 +81,7 @@ export function parseJsonText<T>(raw: string, providerLabel: string): T {
 
 /** A structured event emitted while the agent loop runs, for live progress UI. */
 export type AgentEvent =
+  | { kind: "track_preview"; tracks: import("../music/types").Track[] }
   | { kind: "reasoning"; delta: string; adminOnly?: boolean }
   | { kind: "tool_call"; id: string; name: string; args: Record<string, unknown> }
   | { kind: "tool_result"; id: string; ok: boolean; result: unknown };

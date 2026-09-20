@@ -22,7 +22,7 @@ The fastest path from "I'm in a mood" to music playing — no accounts, no OAuth
 
 ## Brand Personality
 
-Calm minimal utility. The interface stays quiet and gets out of the way: speed and clarity over decoration. The existing Liquid Glass visual language is the substrate, not the point — glass effects should recede so the prompt, the tracks, and the player carry the screen. Russian-language voice: direct, friendly, unceremonious.
+Calm minimal utility. The interface stays quiet and gets out of the way: speed and clarity over decoration. Material-like surfaces and a clear hierarchy keep the prompt, tracks and player central; glass is reserved for persistent chrome and dialogs. Russian-language voice: direct, friendly, unceremonious.
 
 ## Anti-references
 
@@ -34,7 +34,7 @@ Calm minimal utility. The interface stays quiet and gets out of the way: speed a
 - The prompt is the product: every screen either gets the user to a playlist or back to the prompt in one tap.
 - Decoration recedes, content advances — glass and blur serve legibility and hierarchy, never spectacle.
 - One motion vocabulary: short (150–250 ms), state-conveying transitions; nothing choreographed.
-- Trust the phone: system fonts, native scrolling, Telegram theme awareness; the app should feel like it belongs in Telegram.
+- Trust the phone: bundled Cyrillic/Latin typography, native scrolling, Telegram theme awareness; the app should feel like it belongs in Telegram.
 - States are first-class: loading, empty, error, and offline are designed, not defaulted.
 
 ## Accessibility & Inclusion

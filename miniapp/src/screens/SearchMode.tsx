@@ -233,7 +233,7 @@ export function SearchMode({
               <CircleNotch size={16} className="spin" style={{ color: "var(--text-muted)" }} />
             )}
             <SaveTrackButton track={track} />
-            <TrackOverflowMenu
+            <TrackOverflowMenu track={track}
               actions={[
                 {
                   key: "download",
@@ -285,7 +285,7 @@ export function SearchMode({
 
         {feed.artists.length > 0 && (
           <section className="search-section">
-            <h2 className="search-section-title">Ваши исполнители</h2>
+            <h2 className="search-section-title">Исполнители</h2>
             <div className="search-artist-rail" ref={artistRailRef}>
               {feed.artists.map((artist) => (
                 <button
@@ -307,7 +307,7 @@ export function SearchMode({
 
         {feed.tracks.length > 0 && (
           <section className="search-section">
-            <h2 className="search-section-title">Из вашей музыки</h2>
+            <h2 className="search-section-title">Из медиатеки</h2>
             <div className="stack reveal-stagger">
               {feed.tracks.map((track, i) => (
                 <TrackRow
@@ -318,7 +318,7 @@ export function SearchMode({
                   title={track.title}
                   meta={track.artist}
                   metaClassName="search-row-meta"
-                  trailing={<SaveTrackButton track={track} />}
+                  trailing={<TrackOverflowMenu track={track} actions={[]} />}
                 />
               ))}
             </div>
@@ -511,7 +511,7 @@ export function SearchMode({
                             trailing={
                               <>
                                 <SaveTrackButton track={track} />
-                                <TrackOverflowMenu
+                                <TrackOverflowMenu track={track}
                                   actions={[
                                     {
                                       key: "add-to-playlist",

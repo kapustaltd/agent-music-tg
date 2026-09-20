@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { DotsThreeVertical } from "../icons";
+import { useMyMusic, type MyMusicTrack } from "../lib/my-music";
+import { DotsThreeVertical, HeartStraight } from "../icons";
 
 export interface TrackMenuAction {
   key: string;
@@ -11,7 +12,13 @@ export interface TrackMenuAction {
 }
 
 /** Kebab menu holding a track row's secondary actions (download, add to playlist, remove…). */
-export function TrackOverflowMenu({ actions, ariaLabel = "Действия с треком" }: { actions: TrackMenuAction[]; ariaLabel?: string }) {
+export function TrackOverflowMenu({ actions: suppliedActions, track, ariaLabel = "Действия с треком" }: { actions: TrackMenuAction[]; track?: MyMusicTrack; ariaLabel?: string }) {
+  const { isSaved, isPending, toggleSaved } = useMyMusic();
+  const actions: TrackMenuAction[] = track ? [{
+    key: "save", label: isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку",
+    icon: <HeartStraight size={20} weight={isSaved(track.uri) ? "fill" : "regular"} />,
+    disabled: isPending(track.uri), onClick: () => void toggleSaved(track),
+  }, ...suppliedActions] : suppliedActions;
   const [open, setOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

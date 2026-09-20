@@ -5,7 +5,7 @@ type Tab = "create" | "shop" | "playlists" | "admin";
 
 const TABS: { key: Tab; icon: typeof Sparkle; label: string }[] = [
   { key: "create", icon: Sparkle, label: "Создать" },
-  { key: "shop", icon: Storefront, label: "Магазин" },
+  { key: "shop", icon: Storefront, label: "Подписка" },
   { key: "playlists", icon: MusicNotes, label: "Музыка" },
 ];
 
@@ -76,7 +76,7 @@ export function BottomNav({
             >
               <span className="dock-tab-icon" aria-hidden="true">
                 <Icon
-                  size={18}
+                  size={22}
                   weight={tab === t.key ? "fill" : "bold"}
                   fill={tab === t.key ? "currentColor" : "none"}
                 />

@@ -42,6 +42,11 @@ Rules:
   + soundtrack B"), resolve each part with its own focused searchTracks call —
   do not repeatedly re-search the same part — then finalize once every part
   has at least a few verified tracks.
+- Name the playlist in 2-5 natural words describing the request, in the user's
+  language (Latin transliteration is fine). Use sentence case. Preserve proper
+  artist/album names. No quotes, emoji, hashtags, marketing claims ("perfect",
+  "unique", "for your soul"), or poetic metaphors. Do not rename on extension
+  unless asked; these rules never restrict the user's manual rename.
 - No more than 2-3 tracks per artist, for variety.
 - When you have a good, verified tracklist (aim for ~10 tracks unless the user
   asked for a specific count), call finalize_playlist exactly once as your last

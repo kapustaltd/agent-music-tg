@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ArrowUp, CaretRight, CircleNotch } from "../icons";
-import { GlassPanel } from "../components/GlassPanel";
 import { GenerationStatus } from "../components/GenerationStatus";
 import type { AgentProgressEvent } from "../lib/api";
 
@@ -27,14 +26,14 @@ export function ClarifyScreen({
   }
 
   return (
-    <GlassPanel className="reveal">
-      <h1 className="screen-title">Уточним детали</h1>
-      <p style={{ marginBottom: 16 }}>{question}</p>
+    <section className="reveal clarify-page">
+      <h1 className="screen-title">Какой плейлист собрать?</h1>
+      <p className="clarify-question">{question}</p>
       <div className="stack">
         {options.map((option) => (
           <button
             key={option}
-            className="glass-button"
+            className="clarify-option"
             disabled={busy}
             onClick={() => onAnswer(option)}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
@@ -73,6 +72,6 @@ export function ClarifyScreen({
       </div>
 
       {busy && <GenerationStatus progress={progress} />}
-    </GlassPanel>
+    </section>
   );
 }

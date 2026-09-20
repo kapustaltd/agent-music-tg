@@ -185,7 +185,7 @@ export function ArtistScreen({
                       trailing={
                         <>
                           <SaveTrackButton track={track} />
-                          <TrackOverflowMenu
+                          <TrackOverflowMenu track={track}
                             actions={[
                               {
                                 key: "add-to-playlist",
@@ -255,7 +255,7 @@ export function ArtistScreen({
                                 trailing={
                                   <>
                                     <SaveTrackButton track={track} />
-                                    <TrackOverflowMenu
+                                    <TrackOverflowMenu track={track}
                                       actions={[
                                         {
                                           key: "add-to-playlist",

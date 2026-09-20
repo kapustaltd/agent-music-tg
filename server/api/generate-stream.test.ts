@@ -12,6 +12,7 @@ mock.module("../core/run-generation", () => ({
     onEvent?.({ kind: "reasoning", delta: "private model thought", adminOnly: true });
     onEvent?.({ kind: "tool_call", id: "call-1", name: "searchTrack", args: { artist: "Burial", title: "Archangel" } });
     onEvent?.({ kind: "tool_result", id: "call-1", ok: true, result: { artist: "Burial", title: "Archangel", uri: "ytm:x" } });
+    onEvent?.({ kind: "track_preview", tracks: [{ uri: "ytm:preview", title: "Ночной джаз", artist: "Artist", artwork: "https://art.example/cover.jpg", privateField: "never-public" }] });
     return {
       status: "ok",
       playlist: { name: "Test", tracks: [{ artist: "Burial", title: "Archangel", uri: "ytm:x" }] },
@@ -91,6 +92,11 @@ describe("/generate/stream SSE payload shape", () => {
       type: "agent_progress",
       progress: { kind: "progress", phase: "found_tracks" },
     });
+    expect(frames).toContainEqual({ type: "agent_progress", progress: {
+      kind: "progress", phase: "found_tracks", tracks: [{ uri: "ytm:preview", title: "Ночной джаз", artist: "Artist", artwork: "https://art.example/cover.jpg" }],
+    } });
+    expect(body).not.toContain("never-public");
+    expect(body).not.toContain("private model thought");
     expect(frames.some((f) => f.type === "agent_event")).toBe(false);
 
     const outcomeFrame = frames.find((f) => f.type === "outcome");

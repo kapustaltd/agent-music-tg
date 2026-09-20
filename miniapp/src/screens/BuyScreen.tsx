@@ -4,7 +4,6 @@ import { GlassPanel } from "../components/GlassPanel";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { InlineNotice } from "../components/InlineNotice";
-import { IconOrEmoji } from "../components/IconOrEmoji";
 import { TrackSkeleton } from "../components/TrackSkeleton";
 import { SbpPayPopup } from "../components/SbpPayPopup";
 import { api, type Offer, type Invoice, type PaymentMethod, type TrialStatus } from "../lib/api";
@@ -31,6 +30,8 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [trial, setTrial] = useState<TrialStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [method, setMethod] = useState<PaymentMethod>("platega");
   const [busyId, setBusyId] = useState<number | null>(null);
   const [trialBusy, setTrialBusy] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -71,6 +72,10 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   const visible = useMemo(() => {
     return (offers ?? []).filter((o) => o.grantKind === "subscription");
   }, [offers]);
+
+  const selected = visible.find((offer) => offer.id === selectedId) ?? visible.find((offer) => offer.rubAmount || offer.starsAmount);
+  const selectedMethod: PaymentMethod = selected?.rubAmount && (method === "platega" || !selected.starsAmount) ? "platega" : "stars";
+  const selectedPrice = selectedMethod === "platega" ? `${selected?.rubAmount} ₽` : `${selected?.starsAmount} звёзд`;
 
   async function buy(offerId: number, method: PaymentMethod = "stars") {
     setBusyId(offerId);
@@ -154,9 +159,9 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   if (error && !offers) return <ErrorBanner message={error} onClose={() => setError(null)} onRetry={refresh} />;
 
   return (
-    <div className="stack">
+    <div className="stack subscription-page">
       <GlassPanel className="reveal">
-        <h1 className="screen-title">Магазин</h1>
+        <h1 className="screen-title">Подписка</h1>
       </GlassPanel>
 
       {reason && (
@@ -185,11 +190,11 @@ export default function BuyScreen({ reason }: { reason?: string }) {
             </span>
             <button
               type="button"
-              className="glass-button primary trial-card-btn"
+              className="glass-button trial-card-btn"
               disabled={trialBusy}
               onClick={() => void claimTrial()}
             >
-              Забрать
+              Попробовать
             </button>
           </div>
         </GlassPanel>
@@ -203,62 +208,34 @@ export default function BuyScreen({ reason }: { reason?: string }) {
           <EmptyState icon={<MagnifyingGlass size={40} weight="bold" />} label="Подписки пока недоступны" />
         ) : (
           <div className="stack reveal-stagger">
-            {visible.map((o, i) => (
-              <div className="offer-row" key={o.id} style={{ ["--i" as string]: i }}>
-                <span className="offer-identity">
-                  <IconOrEmoji icon={o.icon} size={22} />
-                  <span className="offer-info">
-                    <span className="offer-title">{o.title}</span>
-                    <span className="offer-label">{grantLabel(o)}</span>
-                  </span>
+            <div className="subscription-options" role="group" aria-label="Срок подписки">
+            {visible.map((o) => (
+              <button type="button" key={o.id}
+                className={`subscription-option${selected?.id === o.id ? " is-selected" : ""}`}
+                aria-pressed={selected?.id === o.id}
+                disabled={busyId !== null || (!o.rubAmount && !o.starsAmount)}
+                onClick={() => setSelectedId(o.id)}>
+                <span className="subscription-option-copy">
+                  <strong>{grantLabel(o)}{o.rubAmount ? ` · ${o.rubAmount} ₽` : ""}</strong>
+                  <span className="text-muted">{o.starsAmount ? `${o.starsAmount} звёзд Telegram` : o.rubAmount ? "Оплата по СБП" : "Оплата недоступна"}</span>
                 </span>
-                <span className="offer-price-wrap">
-                  {o.starsAmount && (
-                    <button
-                      type="button"
-                      className="glass-button primary offer-stars-btn"
-                      disabled={busyId === o.id}
-                      aria-busy={busyId === o.id}
-                      aria-label={`Купить «${o.title}» за ${o.starsAmount} звёзд`}
-                      onClick={() => buy(o.id, "stars")}
-                    >
-                      {busyId === o.id ? (
-                        <CircleNotch size={14} weight="bold" className="spin" aria-hidden="true" />
-                      ) : (
-                        <>
-                          {o.starsAmount} <Star size={14} weight="fill" aria-hidden="true" />
-                        </>
-                      )}
-                    </button>
-                  )}
-                  {o.rubAmount && (
-                    <button
-                      type="button"
-                      className="glass-button offer-rub-btn"
-                      disabled={busyId === o.id}
-                      aria-busy={busyId === o.id}
-                      aria-label={`Купить «${o.title}» за ${o.rubAmount} рублей по СБП`}
-                      onClick={() => buy(o.id, "platega")}
-                    >
-                      {busyId === o.id ? (
-                        <CircleNotch size={14} weight="bold" className="spin" aria-hidden="true" />
-                      ) : (
-                        `${o.rubAmount} ₽`
-                      )}
-                    </button>
-                  )}
-                </span>
-                {offerErrors[o.id] && (
-                  <InlineNotice
-                    message={offerErrors[o.id]!}
-                    onDismiss={() => clearOfferError(o.id)}
-                    onOtherOption={() => clearOfferError(o.id)}
-                    onSupport={supportContact ? () => openSupport(supportContact) : undefined}
-                    supportContact={supportContact}
-                  />
-                )}
-              </div>
+                {selected?.id === o.id && <Check size={22} aria-hidden="true" />}
+              </button>
             ))}
+            </div>
+            {selected && <div className="subscription-checkout">
+              {selected.rubAmount && selected.starsAmount ? (
+                <div className="subscription-methods" role="group" aria-label="Способ оплаты">
+                  <button type="button" aria-pressed={selectedMethod === "platega"} disabled={busyId !== null} onClick={() => setMethod("platega")}>СБП · {selected.rubAmount} ₽</button>
+                  <button type="button" aria-pressed={selectedMethod === "stars"} disabled={busyId !== null} onClick={() => setMethod("stars")}>{selected.starsAmount} <Star size={18} aria-hidden="true" /><span className="sr-only"> звёзд Telegram</span></button>
+                </div>
+              ) : null}
+              <button type="button" className="glass-button primary subscription-buy" disabled={busyId !== null} aria-busy={busyId !== null} onClick={() => void buy(selected.id, selectedMethod)}>
+                {busyId !== null && <CircleNotch size={20} className="spin" aria-hidden="true" />}
+                {busyId !== null ? "Открываю оплату…" : `Оформить за ${selectedPrice}`}
+              </button>
+              {offerErrors[selected.id] && <InlineNotice message={offerErrors[selected.id]!} onDismiss={() => clearOfferError(selected.id)} onOtherOption={() => clearOfferError(selected.id)} onSupport={supportContact ? () => openSupport(supportContact) : undefined} supportContact={supportContact} />}
+            </div>}
           </div>
         )}
       </GlassPanel>

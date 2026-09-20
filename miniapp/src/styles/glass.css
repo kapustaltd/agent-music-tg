@@ -28,16 +28,16 @@
   /* Radius ladder. Concentric: each nested surface drops one step, so a
      control inside a block inside a panel reads as 10 / 18 / 22. Pick the tier
      by nesting depth, never by eyeballing a new number. */
-  --radius-panel: 22px;    /* glass panels, sheets, full-screen artwork */
-  --radius-input: 20px;    /* text fields */
-  --radius-block: 18px;    /* track rows, prompt pill, dock, tab bars */
+  --radius-panel: 16px;    /* glass panels, sheets, full-screen artwork */
+  --radius-input: 12px;    /* text fields */
+  --radius-block: 12px;    /* track rows, prompt pill, dock, tab bars */
   --radius-surface: 16px;  /* popovers, avatars, cards nested in a panel */
-  --radius-row: 14px;      /* list rows, icon tiles, toasts */
-  --radius-control: 12px;  /* tabs, notices, medium focus rings */
+  --radius-row: 10px;      /* list rows, icon tiles, toasts */
+  --radius-control: 10px;  /* tabs, notices, medium focus rings */
   --radius-chip: 10px;     /* small buttons, code blocks, focus rings */
   --radius-micro: 8px;     /* thumbnails, counters, close buttons */
   --radius-hair: 4px;      /* focus rings on thin or inline controls */
-  --radius-btn: 999px;     /* pill */
+  --radius-btn: 10px;     /* pill */
 
   --glass-bg-opacity: 0.55;
   --glass-blur-subtle: 8px;
@@ -88,19 +88,17 @@
   --liquid-morph-duration: 0.35s;
   --liquid-morph-easing: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Super Grotesk is the intended brand face. The local names let a licensed
-     install win; Space Grotesk is the bundled web fallback for browsers that
-     do not have the commercial font available. */
-  --font-display: 'Super Grotesk', 'FF Super Grotesk', 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Super Grotesk', 'FF Super Grotesk', 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  /* Both alphabets ship as local variable WOFF2 subsets. */
+  --font-display: 'Roboto Variable', 'Segoe UI', sans-serif;
+  --font-body: 'Roboto Variable', 'Segoe UI', sans-serif;
 
   /* Type scale — fixed px (app UI, 16px = 1rem base). Cyrillic-native.
      Display tracks at -0.01em (not -0.02em): wide Cyrillic glyphs (Ч Щ Д Ж)
      crowd at the tighter value. */
-  --fs-hero: 32px;        /* the screen-opening h1 (prompt hero, admin header) */
+  --fs-hero: 28px;        /* the screen-opening h1 (prompt hero, admin header) */
   --fs-display: 28px;     /* hero-tier text inline in a screen (playlist name) */
   --fs-subdisplay: 22px;  /* full-screen player title (rare gap tier) */
-  --fs-title: 19px;       /* Title tier 17–20px: section/panel titles */
+  --fs-title: 18px;       /* Title tier 17–20px: section/panel titles */
   --fs-body: 16px;        /* body, track titles, prompts */
   --fs-label: 14px;       /* labels, chips, nav, metadata */
   --fs-micro: 12px;       /* captions, timestamps, dock tabs (>= 12 floor) */
@@ -440,7 +438,7 @@ body {
   color: var(--text-muted-dark);
   font: inherit;
   font-size: var(--fs-micro);
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: background var(--glass-transition), color var(--glass-transition), transform var(--glass-transition);
 }
@@ -484,7 +482,7 @@ body {
   grid-column: 2;
   justify-self: center;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   letter-spacing: var(--ls-tight);
   color: var(--text-dark);
@@ -785,7 +783,7 @@ body {
   background: var(--accent);
   border-color: transparent;
   color: #FFFFFF;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 :root[data-scheme="light"] .glass-button.primary {
@@ -1236,7 +1234,7 @@ textarea.glass-input {
 h1 {
   font-family: var(--font-display);
   font-size: var(--fs-display);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: var(--ls-display);
   margin: 0 0 6px;
@@ -1440,7 +1438,7 @@ h1 {
   margin: 0;
   color: var(--text-muted-dark);
   font-size: var(--fs-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .results-sidebar-summary {
@@ -1495,7 +1493,7 @@ h1 {
 .results-sidebar-kicker {
   color: var(--text-muted-dark);
   font-size: var(--fs-micro);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -1504,7 +1502,7 @@ h1 {
   margin-top: 4px;
   color: var(--text-dark);
   font-size: var(--fs-body);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.25;
   white-space: normal;
   display: -webkit-box;
@@ -1611,7 +1609,7 @@ h1 {
 
 .results-up-next-title {
   font-size: var(--fs-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .results-up-next-meta,
@@ -1667,7 +1665,7 @@ h1 {
   width: 100%;
   font-family: var(--font-display);
   font-size: var(--fs-display);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: var(--ls-display);
   margin: 0 0 6px;
@@ -1696,7 +1694,7 @@ h1 {
   display: inline-block;
   font-family: var(--font-display);
   font-size: var(--fs-hero);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.12;
   letter-spacing: var(--ls-display);
   text-align: left;
@@ -2943,7 +2941,7 @@ h2 {
 .screen-title {
   font-family: var(--font-display);
   font-size: var(--fs-title);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: var(--ls-display);
   margin: 0 0 6px;
@@ -3357,7 +3355,7 @@ a.icon-btn {
   align-items: center;
   gap: 8px;
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 600;
   font-size: var(--fs-label);
   letter-spacing: var(--ls-tight);
   color: var(--text-dark);
@@ -3613,7 +3611,7 @@ a.icon-btn {
   align-items: center;
   gap: 8px;
   font-size: var(--fs-label);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-dark);
 }
 
@@ -3837,7 +3835,7 @@ a.icon-btn {
 .admin-eyebrow {
   color: var(--accent);
   font-size: var(--fs-micro);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -4402,7 +4400,7 @@ div.player-bar-thumbnail::after {
 .player-screen-title {
   font-family: var(--font-display);
   font-size: var(--fs-subdisplay);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.15;
   letter-spacing: var(--ls-display);
   margin: 0;
@@ -4695,7 +4693,7 @@ div.player-bar-thumbnail::after {
 }
 
 .offer-title {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   white-space: nowrap;
   overflow: hidden;
@@ -4734,7 +4732,7 @@ div.player-bar-thumbnail::after {
 }
 
 .offer-price-amount {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   color: var(--text-dark);
 }
@@ -4758,7 +4756,7 @@ div.player-bar-thumbnail::after {
 .offer-stars-btn {
   height: 40px;
   padding: 0 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   display: inline-flex;
   align-items: center;
@@ -4768,7 +4766,7 @@ div.player-bar-thumbnail::after {
 .offer-rub-btn {
   height: 40px;
   padding: 0 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   display: inline-flex;
   align-items: center;
@@ -4823,7 +4821,7 @@ div.player-bar-thumbnail::after {
   margin: 0;
   font-family: var(--font-body);
   font-size: var(--fs-title);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -4869,7 +4867,7 @@ div.player-bar-thumbnail::after {
 .profile-balance-value {
   font-family: var(--font-body);
   font-size: var(--fs-subdisplay);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -4896,7 +4894,7 @@ div.player-bar-thumbnail::after {
 }
 
 .profile-fact-value {
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
 }
 
@@ -5342,7 +5340,7 @@ div.player-bar-thumbnail::after {
   background: var(--accent-bg);
   color: var(--accent);
   font-size: var(--fs-label);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .help-steps p {
@@ -5519,7 +5517,7 @@ div.player-bar-thumbnail::after {
 }
 
 .stat-row-value {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   font-variant-numeric: tabular-nums;
   color: var(--text-dark);
@@ -5741,14 +5739,14 @@ div.player-bar-thumbnail::after {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   color: var(--text-dark);
 }
 
 .trial-card-btn {
   padding: 8px 14px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-label);
   flex-shrink: 0;
 }
@@ -6086,7 +6084,7 @@ div.player-bar-thumbnail::after {
 .fs-label { font-size: var(--fs-label); }
 .fs-micro { font-size: var(--fs-micro); }
 .fs-title { font-size: var(--fs-title); font-family: var(--font-display); font-weight: 600; }
-.fs-subdisplay { font-size: var(--fs-subdisplay); font-family: var(--font-display); font-weight: 700; }
+.fs-subdisplay { font-size: var(--fs-subdisplay); font-family: var(--font-display); font-weight: 600; }
 /* status/error row text inside search & results */
 .search-status,
 .error-row { font-size: var(--fs-label); }
@@ -6265,7 +6263,7 @@ div.player-bar-thumbnail::after {
   font-family: inherit;
   text-align: left;
   font-size: var(--fs-subdisplay);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
   color: color-mix(in srgb, var(--text-dark) 55%, transparent);
   cursor: pointer;
@@ -6346,7 +6344,7 @@ div.player-bar-thumbnail::after {
 .artist-screen-name {
   font-family: var(--font-display);
   font-size: var(--fs-subdisplay);
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   margin: 0;
   color: var(--text-dark);
@@ -7197,7 +7195,7 @@ div.player-bar-thumbnail::after {
 .subscription-gate-title {
   font-family: var(--font-display);
   font-size: var(--fs-display);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.01em;
   margin: 0;
@@ -8319,7 +8317,7 @@ div.player-bar-thumbnail::after {
   .web-now-playing-section-title {
     color: var(--text-dark);
     font-size: var(--fs-label);
-    font-weight: 700;
+    font-weight: 600;
   }
 
   :root[data-scheme="light"] .web-now-playing-label,
@@ -8908,7 +8906,7 @@ div.player-bar-thumbnail::after {
 .results-playlist-kicker {
   margin: 0;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
 }
@@ -8922,7 +8920,7 @@ div.player-bar-thumbnail::after {
   width: 100%;
   margin: 0;
   font-size: var(--fs-display);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.15;
   text-wrap: balance;
 }
@@ -8976,7 +8974,7 @@ div.player-bar-thumbnail::after {
 .lyrics-screen-context strong {
   color: var(--text-dark);
   font-size: var(--fs-label);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .lyrics-screen-context span {
@@ -9362,7 +9360,7 @@ div.player-bar-thumbnail::after {
   padding-inline: 11px;
   background: var(--accent);
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .results-action.is-active,
@@ -9934,3 +9932,177 @@ div.player-bar-thumbnail::after {
     font-size: 36px;
   }
 }
+
+/* Material hierarchy: page content stays flat; only persistent chrome and
+   dialogs float. Accent follows the user's existing palette. */
+:root {
+  --press-duration: 160ms;
+  --state-tonal: color-mix(in srgb, var(--text-dark) 8%, transparent);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+}
+button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--press-duration) ease-out,
+    color var(--press-duration) ease-out, box-shadow var(--press-duration) ease-out,
+    transform var(--press-duration) ease-out;
+}
+button:not(:disabled):active, [role="button"]:not([aria-disabled="true"]):active {
+  transform: translateY(1px) scale(.98);
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--text-dark) 16%, transparent);
+}
+button:disabled:active { transform: none; box-shadow: none; }
+button:focus-visible, [role="slider"]:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--text-dark);
+  outline-offset: 3px;
+}
+button { touch-action: manipulation; }
+.icon-btn, .action-btn, .results-action, .playlist-name-edit-btn,
+.prompt-mode-seg-btn, .prompt-examples-refresh, .search-recent-chip {
+  min-width: 44px;
+  min-height: 44px;
+}
+::selection { background: var(--accent); color: #101012; }
+input, textarea { caret-color: var(--accent); }
+.app-top-bar, .app-shell > .app-top-bar, .app-sidebar .app-top-bar {
+  min-height: 56px;
+  border-radius: var(--radius-panel);
+  box-shadow: none;
+}
+.app-top-brand-title, .app-shell > .app-top-bar .app-top-brand-title,
+.app-sidebar .app-top-bar .app-top-brand-title { font-size: 17px; font-weight: 600; }
+.app-top-brand { min-width: 0; }
+.prompt-compose { gap: 8px; }
+.prompt-heading { margin: 0 0 8px; font: 600 var(--fs-hero)/32px var(--font-display); color: var(--text-dark); }
+.prompt-card { gap: 24px; }
+.prompt-modes, :root[data-scheme="light"] .prompt-modes {
+  align-self: flex-start;
+  width: auto;
+  max-width: 100%;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.prompt-mode-seg-btn { padding-inline: 16px; color: var(--text-muted); font-weight: 500; }
+.prompt-mode-seg-btn.active, :root[data-scheme="light"] .prompt-mode-seg-btn.active {
+  background: var(--state-tonal);
+  color: var(--text-dark);
+  box-shadow: inset 0 -2px 0 var(--text-dark);
+}
+.prompt-pill, :root[data-scheme="light"] .prompt-pill {
+  border-radius: var(--radius-input);
+  box-shadow: none;
+  background: var(--lg-v2-input-bg);
+}
+.prompt-pill-input { font-size: var(--fs-body); font-weight: 400; line-height: 1.5; }
+.prompt-submit { width: 44px; height: 44px; }
+.prompt-card--busy .prompt-compose { display: none; }
+.search-section-title, :root[data-scheme="light"] .search-section-title,
+.prompt-examples-label { font-size: var(--fs-title); line-height: 22px; font-weight: 600; text-transform: none; color: var(--text-dark); }
+.prompt-examples-head { margin-bottom: 8px; }
+.prompt-suggestion, :root[data-scheme="light"] .prompt-suggestion {
+  box-shadow: none; border: 0; border-radius: var(--radius-control);
+  background: var(--state-tonal); font-size: var(--fs-body); font-weight: 400;
+}
+.resume-rail, .search-artist-rail, .prompt-starters .prompt-suggestions { gap: 16px; }
+.resume-card-title, .search-artist-tile-name, .search-row-title { font-size: var(--fs-body); line-height: 20px; font-weight: 550; }
+.resume-card-meta, .search-row-meta { font-size: var(--fs-label); line-height: 18px; font-weight: 400; }
+.search-best-row, .prompt-card .track-row.is-active:not(.search-best-row) {
+  background: var(--state-tonal); border-color: var(--hairline); box-shadow: none;
+}
+.dock-tab.active, :root[data-scheme="light"] .dock-tab.active {
+  color: var(--text-dark); background: var(--state-tonal); box-shadow: inset 0 -2px 0 var(--accent);
+}
+.dock-tab-label { font-size: 12px; font-weight: 500; }
+.generation-preview { display: grid; gap: 16px; min-width: 0; }
+.generation-query { margin: 0; padding: 8px 12px; width: fit-content; max-width: 100%; overflow-wrap: anywhere; border-radius: var(--radius-control); background: var(--state-tonal); }
+.generation-status { padding: 0; border: 0; background: none; box-shadow: none; font-size: var(--fs-body); font-weight: 400; gap: 8px; }
+.generation-status-icon { color: var(--text-muted); }
+.generation-tracks { min-width: 0; }
+.clarify-page { padding-block: 16px; }
+.clarify-question { margin: 8px 0 24px; font-size: var(--fs-body); color: var(--text-muted); }
+.clarify-option { min-height: 56px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--hairline); background: transparent; color: var(--text-dark); font: 400 var(--fs-body)/1.5 var(--font-body); text-align: left; gap: 16px; }
+.clarify-option:hover { background: var(--state-tonal); }
+.library-section.glass-surface, .subscription-page > .glass-surface {
+  padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.library-section.glass-surface::before, .subscription-page > .glass-surface::before { display: none; }
+.library-section + .library-section { margin-top: 24px; }
+.subscription-page { gap: 24px; }
+.subscription-options { display: grid; gap: 8px; }
+.subscription-option { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 72px; width: 100%; padding: 16px; border: 1px solid var(--hairline); border-radius: var(--radius-input); background: transparent; color: var(--text-dark); text-align: left; font: inherit; }
+.subscription-option.is-selected { border-color: var(--text-dark); background: var(--state-tonal); }
+.subscription-option-copy { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.subscription-option-copy strong { font-size: var(--fs-body); font-weight: 600; }
+.subscription-option-copy > span { font-size: var(--fs-label); }
+.subscription-checkout { display: grid; gap: 16px; margin-top: 16px; }
+.subscription-methods { display: flex; gap: 8px; flex-wrap: wrap; }
+.subscription-methods button { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 8px 12px; border: 1px solid var(--hairline); border-radius: var(--radius-control); background: transparent; color: var(--text-muted); font: inherit; }
+.subscription-methods button[aria-pressed="true"] { background: var(--state-tonal); color: var(--text-dark); border-color: var(--text-dark); }
+.subscription-buy { min-height: 48px; justify-content: center; }
+.results-playlist-cover { display: block; }
+.results-playlist-cover img:only-child { width: 100%; height: 100%; object-fit: cover; }
+.results-playlist-kicker { font-size: var(--fs-micro); text-transform: none; letter-spacing: 0; font-weight: 400; }
+.results-playlist-header .playlist-name-title, .playlist-name-input { font-size: 28px; line-height: 1.2; font-weight: 600; overflow-wrap: anywhere; }
+.results-actions { display: flex; justify-content: flex-start; gap: 8px; margin-top: 16px; }
+.results-action, .results-action--icon, .results-action--download { width: auto; min-width: 44px; min-height: 44px; padding: 0 12px; background: var(--state-tonal); color: var(--text-dark); font-weight: 500; }
+.results-action--icon { width: 44px; padding: 0; }
+.results-extend .prompt-submit { width: 44px; height: 44px; background: transparent; color: var(--text-dark); }
+.results-extend .prompt-submit svg { width: 24px; height: 24px; }
+.playlist-name-edit-btn { vertical-align: middle; }
+@media (hover: hover) {
+  .playlist-name-edit-icon { opacity: 0; }
+  .playlist-name-title:hover .playlist-name-edit-icon, .playlist-name-edit-btn:focus-visible .playlist-name-edit-icon { opacity: 1; }
+}
+.player-screen-play-btn, :root[data-scheme="light"] .player-screen-play-btn { width: 56px; height: 56px; min-width: 56px; min-height: 56px; }
+.player-screen-secondary-row { justify-content: center; gap: 16px; }
+.lyrics-screen-line, .lyrics-screen-line.is-next, .lyrics-screen-line.is-past,
+:root[data-scheme="light"] .lyrics-screen-line, :root[data-scheme="light"] .lyrics-screen-line.is-next, :root[data-scheme="light"] .lyrics-screen-line.is-past { color: var(--text-muted); font-weight: 500; line-height: 1.4; opacity: 1; text-shadow: none; }
+.lyrics-screen-line.active, :root[data-scheme="light"] .lyrics-screen-line.active { color: var(--text-dark); font-weight: 600; text-shadow: none; transform: none; }
+.web-now-playing-artwork { width: 88%; align-self: center; margin-inline: auto; }
+.web-now-playing-controls { justify-content: center; }
+@media (max-width: 839px) {
+  .results-playlist-cover { width: 120px; height: 120px; }
+  .results-playlist-header .playlist-name-title, .playlist-name-input { font-size: 26px; }
+  .player-screen-artwork { width: min(100%, 380px, max(120px, calc(100svh - 396px))); }
+  .player-bar { left: 8px; right: 8px; width: auto; bottom: calc(var(--dock-height) + 24px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 840px) {
+  .prompt-card--search { max-width: 780px; display: flex; flex-direction: column; }
+  .prompt-card--search .prompt-compose, .prompt-card--search .prompt-body { width: 100%; }
+  .results-playlist-header .playlist-name-title { font-size: 30px; }
+  .results-playlist-cover { width: 120px; height: 120px; flex-basis: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; animation-iteration-count: 1 !important; }
+  button:not(:disabled):active, [role="button"]:active { transform: none; }
+}
+
+/* Final responsive reconciliation with the older desktop composer rules. */
+.prompt-compose .prompt-heading { font-size: 28px; line-height: 32px; font-weight: 600; }
+.subscription-page > .glass-surface, :root[data-scheme="light"] .subscription-page > .glass-surface,
+.library-section.glass-surface, :root[data-scheme="light"] .library-section.glass-surface {
+  background: transparent; border: 0; box-shadow: none; border-radius: 0;
+}
+.glass-button.primary, :root[data-scheme="light"] .glass-button.primary,
+.player-screen-play-btn, :root[data-scheme="light"] .player-screen-play-btn,
+.player-bar-play-btn, .web-now-playing-play, .prompt-submit {
+  color: #101012;
+}
+.results-extend .prompt-submit { color: var(--text-dark); }
+.dock-tab.active .dock-tab-icon, :root[data-scheme="light"] .dock-tab.active .dock-tab-icon { color: var(--text-dark); }
+.prompt-pill:focus-within { outline: 2px solid var(--text-dark); outline-offset: 2px; box-shadow: none; }
+.prompt-pill .prompt-pill-input:focus-visible { outline: none; box-shadow: none; }
+@media (min-width: 840px) {
+  .prompt-card { display: flex; flex-direction: column; max-width: 780px; }
+  .prompt-card .prompt-compose { display: flex; flex-direction: column; width: 100%; gap: 8px; }
+  .prompt-card .prompt-body { width: 100%; }
+  .prompt-card .prompt-modes { width: auto; align-self: flex-start; }
+}
+.player-screen-reaction-btn, .player-screen-lyrics-btn, .lyrics-screen-line,
+.web-now-playing-queue, .web-now-playing-like, .web-now-playing-next { min-width: 44px; min-height: 44px; }
+.web-now-playing-play { width: 56px; height: 56px; min-width: 56px; min-height: 56px; }
+.library-new-prompt { align-self: flex-start; min-height: 44px; text-align: left; }

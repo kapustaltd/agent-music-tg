@@ -1,19 +1,14 @@
 import { HeartStraight } from "../icons";
 import { useMyMusic, type MyMusicTrack } from "../lib/my-music";
 
-/**
- * The one save/like affordance for a track row, shared by every screen that
- * lists tracks (artist, search, results, playlists, the mini player). Always
- * renders — a saved track fills accent, an unsaved one stays a plain
- * outline — so "not saved" reads as a real state instead of a missing icon.
- * Previously each screen had its own mix of a clickable heart, a
- * non-interactive one, or none at all (see ArtistScreen/SearchMode history).
- */
+/** Saved-state shortcut; unsaved tracks expose saving in the overflow menu. */
 export function SaveTrackButton({ track, className }: { track: MyMusicTrack; className?: string }) {
   const { isSaved, isPending, toggleSaved } = useMyMusic();
   const saved = isSaved(track.uri);
   const pending = isPending(track.uri);
   const label = saved ? "Убрать из моей музыки" : "Добавить в мою музыку";
+
+  if (!saved) return null;
 
   return (
     <button

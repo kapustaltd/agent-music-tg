@@ -20,7 +20,8 @@ type AgentProgressPhase =
   | "adding_tracks"
   | "clarifying";
 
-type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase };
+type TrackPreview = { uri: string; title: string; artist: string; artwork?: string };
+type AgentProgressEvent = { kind: "progress"; phase: AgentProgressPhase; tracks?: TrackPreview[] };
 
 function progressForToolCall(name: string): AgentProgressPhase {
   switch (name) {
@@ -72,7 +73,13 @@ function createProgressWriter(stream: SSEStreamingApi): (event: AgentEvent) => v
   };
 
   return (event) => {
-    if (event.kind === "tool_call") {
+    if (event.kind === "track_preview") {
+      // Whitelist display fields only: no tool payloads, model text or audio URLs.
+      const tracks = event.tracks.slice(0, 6).map(({ uri, title, artist, artwork }) => ({
+        uri, title, artist, ...(artwork ? { artwork } : {}),
+      }));
+      if (tracks.length) write({ kind: "progress", phase: "found_tracks", tracks });
+    } else if (event.kind === "tool_call") {
       calls.set(event.id, event.name);
       write({ kind: "progress", phase: progressForToolCall(event.name) });
     } else if (event.kind === "tool_result") {

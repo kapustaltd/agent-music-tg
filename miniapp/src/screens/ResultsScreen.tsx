@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, PencilSimple, Plus, ShareNetwork, WarningCircle } from "../icons";
+import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, Pause, PencilSimple, Plus, ShareNetwork, WarningCircle } from "../icons";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
 import { SaveTrackButton } from "../components/SaveTrackButton";
@@ -25,12 +25,10 @@ export function ResultsScreen({
   playlist,
   generationId,
   initialSaved = false,
-  onNewPrompt,
 }: {
   playlist: FinalizedPlaylist;
   generationId: number;
   initialSaved?: boolean;
-  onNewPrompt: () => void;
 }) {
   const player = usePlayer();
   const [current, setCurrent] = useState<FinalizedPlaylist>(playlist);
@@ -53,7 +51,7 @@ export function ResultsScreen({
 
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
-  const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 4);
+  const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 1);
 
   // The server resolves the URL in the background, while the browser starts
   // buffering the first likely choice. PlayerProvider keeps this one audio
@@ -123,7 +121,7 @@ export function ResultsScreen({
     const s = verification[uri];
     if (!s || s === "pending") return null;
     if (s === "checking") return <CircleNotch size={14} className="spin" style={{ color: "var(--text-muted)" }} />;
-    if (s === "verified") return <CheckCircle size={14} weight="fill" style={{ color: "var(--accent)" }} />;
+    if (s === "verified") return null;
     return <WarningCircle size={14} weight="fill" style={{ color: "var(--danger)" }} />;
   }
 
@@ -310,10 +308,6 @@ export function ResultsScreen({
         </header>
 
         <div className="results-actions" aria-label="Действия с плейлистом">
-          <button type="button" className="results-action results-action--new" onClick={onNewPrompt} title="Создать новый плейлист">
-            <Plus size={18} />
-            <span>Новый плейлист</span>
-          </button>
           <button type="button" className={`results-action results-action--icon${saved ? " is-active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
             {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
           </button>
@@ -322,7 +316,7 @@ export function ResultsScreen({
           </button>
           <button
             type="button"
-            className="results-action results-action--primary"
+            className="results-action results-action--download"
             onClick={handleDownload}
             disabled={download.kind === "sending"}
             aria-label={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать плейлист"}
@@ -357,7 +351,7 @@ export function ResultsScreen({
         <section className="results-extend" aria-labelledby="results-extend-title">
           <div className="results-extend-heading">
             <div>
-              <h2 id="results-extend-title">Добавить треки</h2>
+              <h2 id="results-extend-title">Добавить по описанию</h2>
             </div>
           </div>
           <div className="prompt-pill results-extend-input">
@@ -392,14 +386,20 @@ export function ResultsScreen({
             style={{ ["--i" as string]: i }}
             onClick={() => handleTrackClick(track)}
             artwork={track.artwork}
-            artworkBadge={verificationIcon(track.uri)}
+            artworkBadge={player.track?.uri === track.uri && player.status === "playing" ? <Pause size={16} aria-label="Сейчас играет" /> : verificationIcon(track.uri)}
             title={track.title}
             meta={track.artist}
             trailing={
               <>
-                <SaveTrackButton track={track} />
+                {isSaved(track.uri) && <SaveTrackButton track={track} />}
                 <TrackOverflowMenu
                   actions={[
+                    {
+                      key: "save",
+                      label: isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку",
+                      icon: <BookmarkSimple size={18} />,
+                      onClick: () => void toggleSaved(track),
+                    },
                     {
                       key: "download",
                       label:

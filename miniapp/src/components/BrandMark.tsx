@@ -4,7 +4,7 @@ interface BrandMarkProps {
 }
 
 /** The supplied halftone mark, cropped by CSS to hide the source image's margin. */
-export function BrandMark({ size = 18, className }: BrandMarkProps) {
+export function BrandMark({ size = 26, className }: BrandMarkProps) {
   return (
     <span
       className={`brand-mark${className ? ` ${className}` : ""}`}

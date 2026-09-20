@@ -478,3 +478,25 @@ describe("withTimeout", () => {
     expect(await withTimeout(Promise.resolve("fast"), 100, "fallback")).toBe("fast");
   });
 });
+
+
+test("missing or blank model title falls back to the original request", async () => {
+  for (const name of ["", "   "]) {
+    const provider = fakeProvider([finalizeResult(name, [{ artist: "A", title: "One" }])]);
+    const { playlist } = await generatePlaylist({ provider, music: fakeMusic({ remotePlaylists: false }), prompt: "Ночной джаз" });
+    expect(playlist.name).toBe("Ночной джаз");
+  }
+});
+
+test("search previews arrive before finalization and exclude disliked tracks", async () => {
+  const events: import("../agent/types").AgentEvent[] = [];
+  const provider = fakeProvider([searchTracksResult("preview", "jazz"), finalizeResult("Jazz", [{ artist: "Q", title: "jazz" }])]);
+  await generatePlaylist({ provider, music: fakeMusic({ remotePlaylists: false }), prompt: "jazz", onEvent: (event) => events.push(event) });
+  const previewIndex = events.findIndex((event) => event.kind === "track_preview");
+  const finalIndex = events.findIndex((event) => event.kind === "tool_call" && event.name === "finalize_playlist");
+  expect(previewIndex).toBeGreaterThan(-1);
+  expect(previewIndex).toBeLessThan(finalIndex);
+  const excludedEvents: import("../agent/types").AgentEvent[] = [];
+  await generatePlaylist({ provider: fakeProvider([searchTracksResult("preview", "jazz"), finalizeResult("Other", [{ artist: "A", title: "One" }])]), music: fakeMusic({ remotePlaylists: false }), prompt: "jazz", dislikedUris: new Set(["ytm:q-jazz"]), onEvent: (event) => excludedEvents.push(event) });
+  expect(excludedEvents.some((event) => event.kind === "track_preview")).toBe(false);
+});
