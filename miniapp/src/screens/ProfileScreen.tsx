@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Package, Plus, Wallet, Calendar, Receipt, User,
+  Package, Plus, Wallet, Calendar, User,
   CircleNotch, WarningCircle, Gift,
   MusicNotes,
   ChartBar,
@@ -11,8 +11,9 @@ import { GlassPanel } from "../components/GlassPanel";
 import { Segmented } from "../components/Segmented";
 import { EmptyState } from "../components/EmptyState";
 import { getTelegramUserFirstName, getTelegramWebApp } from "../lib/telegram";
-import { api, type MeResponse, type Invoice } from "../lib/api";
+import { api, type MeResponse, type Invoice, type Offer } from "../lib/api";
 import { ACCENT_PRESETS } from "../lib/accent";
+import { purchaseLabel, purchasePrice, purchaseTimestamp } from "../lib/purchase";
 
 function formatSubscription(until: number | null): string {
   if (!until) return "Не подключена";
@@ -39,14 +40,6 @@ function formatGenerationCount(n: number): string {
 
 function formatGenerationReward(n: number): string {
   return `${n} ${pluralRu(n, ["генерацию", "генерации", "генераций"])}`;
-}
-
-function formatPurchaseAmount(invoice: Invoice): string {
-  return invoice.asset === "XTR"
-    ? `${invoice.amount} звёзд Telegram`
-    : invoice.asset === "RUB"
-      ? `${invoice.amount} ₽`
-    : `${invoice.amount} ${invoice.asset}`;
 }
 
 function displayName(me: MeResponse | null): string {
@@ -272,6 +265,7 @@ export default function ProfileScreen({
 }) {
   const firstName = getTelegramUserFirstName();
   const [purchases, setPurchases] = useState<Invoice[]>([]);
+  const [offers, setOffers] = useState<Offer[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
   const [purchasesError, setPurchasesError] = useState(false);
 
@@ -279,8 +273,12 @@ export default function ProfileScreen({
     setPurchasesLoading(true);
     setPurchasesError(false);
     try {
-      const response = await api.purchases();
+      const [response, offerResponse] = await Promise.all([
+        api.purchases(),
+        api.offers().catch(() => ({ offers: [] as Offer[] })),
+      ]);
       setPurchases(response.purchases.filter((invoice) => invoice.status === "paid"));
+      setOffers(offerResponse.offers);
     } catch {
       setPurchasesError(true);
     } finally {
@@ -400,14 +398,13 @@ export default function ProfileScreen({
           <ul className="plain-list plain-list--col-gap reveal-stagger">
             {purchases.map((p, i) => (
               <li key={p.id} className="purchase-item" style={{ ["--i" as string]: i }}>
-                <Receipt size={18} weight="bold" />
                 <span className="purchase-history-copy">
-                  <strong>Подписка</strong>
-                  <time dateTime={new Date(p.createdAt * 1000).toISOString()}>
-                    {new Date(p.createdAt * 1000).toLocaleDateString("ru-RU")}
+                  <strong>{purchaseLabel(p, offers)}</strong>
+                  <time dateTime={new Date(purchaseTimestamp(p) * 1000).toISOString()}>
+                    {new Date(purchaseTimestamp(p) * 1000).toLocaleDateString("ru-RU")}
                   </time>
                 </span>
-                <span className="purchase-history-price">{formatPurchaseAmount(p)}</span>
+                <span className="purchase-history-price">{purchasePrice(p)}</span>
               </li>
             ))}
           </ul>

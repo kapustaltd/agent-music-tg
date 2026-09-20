@@ -10612,3 +10612,1578 @@ input, textarea { caret-color: var(--accent); }
     flex-basis: 104px;
   }
 }
+
+/* ============================================================================
+   Anti-slop music system
+   --------------------------------------------------------------------------
+   Content screens use the canvas as their primary surface. The rules below
+   intentionally finish the older material/glass layers in one place so the
+   interaction states stay compatible while artwork and track rows become the
+   visual hierarchy.
+   ============================================================================ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-circle: 999px;
+  --type-h1: 28px;
+  --type-section: 20px;
+  --type-list: 16px;
+  --type-body: 16px;
+  --type-meta: 14px;
+  --type-nav: 12px;
+  --hit-area: 44px;
+  --canvas-light: #f7f6f3;
+  --surface-light: #ffffff;
+  --ink-light: #2f3437;
+  --muted-light: #787774;
+  --canvas-dark: #181a19;
+  --surface-dark: #222522;
+  --ink-dark: #f1f2ed;
+  --muted-dark: #a8ada6;
+  --canvas: var(--canvas-dark);
+  --surface: var(--surface-dark);
+  --text-primary: var(--ink-dark);
+  --text-secondary: var(--muted-dark);
+  --border-subtle: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+:root[data-scheme="light"] {
+  --canvas: var(--canvas-light);
+  --surface: var(--surface-light);
+  --text-primary: var(--ink-light);
+  --text-secondary: var(--muted-light);
+  --border-subtle: rgba(47, 52, 55, 0.1);
+  --lyrics-past: #646766;
+  --lyrics-upcoming: #494c4a;
+}
+
+html,
+body {
+  background: var(--canvas);
+  color: var(--text-primary);
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+/* Content panels are layout helpers, not decoration. Popovers and playback
+   surfaces opt back into separation below because they need protected focus. */
+.glass-surface:not(.track-menu-popover),
+.glass-panel:not(.track-menu-popover),
+.glass-regular:not(.track-menu-popover),
+.glass-subtle:not(.track-menu-popover),
+.glass-prominent:not(.track-menu-popover),
+.glass-tinted:not(.track-menu-popover),
+.liquid-glass-v2:not(.track-menu-popover) {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.glass-surface::before,
+.glass-panel::before,
+.liquid-glass-v2::before,
+.glass-tinted::after {
+  display: none;
+}
+
+.app-top-bar {
+  top: 0;
+  min-height: var(--hit-area);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.app-top-search,
+.app-top-account {
+  min-width: var(--hit-area);
+  min-height: var(--hit-area);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.app-top-search:hover,
+.app-top-account:hover {
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+  color: var(--text-primary);
+}
+
+.app-top-brand {
+  color: var(--text-primary);
+  font-size: var(--type-list);
+}
+
+.app-top-logo {
+  border: 0;
+  background: transparent;
+}
+
+.screen-title,
+.search-section-title {
+  color: var(--text-primary);
+}
+
+.screen-title {
+  font-size: var(--type-section);
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.search-section-title {
+  font-size: var(--type-section);
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.search-row-title,
+.track-row-copy .search-row-title {
+  font-size: var(--type-list);
+  line-height: 1.3;
+  font-weight: 550;
+}
+
+.search-row-meta,
+.track-row-copy .text-muted,
+.text-muted.fs-label {
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+.fs-title,
+.fs-subdisplay,
+.fs-body,
+.fs-label {
+  font-family: var(--font-body);
+}
+
+.fs-title {
+  font-size: var(--type-section);
+}
+
+.fs-body {
+  font-size: var(--type-body);
+}
+
+.fs-label {
+  font-size: var(--type-meta);
+}
+
+.stack {
+  gap: var(--space-4);
+}
+
+.row {
+  gap: var(--space-3);
+}
+
+.mt-12 {
+  margin-top: var(--space-3);
+}
+
+.mt-16 {
+  margin-top: var(--space-4);
+}
+
+.library-section {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.library-section + .library-section {
+  margin-top: var(--space-8);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.library-section-head {
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--hit-area);
+}
+
+.library-detail-actions {
+  gap: var(--space-1);
+}
+
+.library-list,
+.playlist-list,
+.playlist-track-list,
+.saved-track-list,
+.results-track-list {
+  gap: 0;
+}
+
+.track-row {
+  min-height: 60px;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-2) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.track-row + .track-row {
+  margin-top: var(--space-1);
+}
+
+.track-row:hover {
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
+}
+
+.track-row:active {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.track-row.is-active {
+  margin-inline: calc(var(--space-2) * -1);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: none;
+}
+
+.track-artwork,
+.track-artwork-wrap {
+  width: 48px;
+  height: 48px;
+}
+
+.track-artwork {
+  border-radius: var(--radius-sm);
+  outline: 0;
+}
+
+.track-artwork-badge {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--canvas);
+  border-radius: 50%;
+  background: var(--canvas);
+}
+
+.track-row-main,
+.track-menu,
+.track-row > .icon-btn,
+.track-row > .track-menu .icon-btn {
+  min-height: var(--hit-area);
+}
+
+.icon-btn,
+.action-btn {
+  min-width: var(--hit-area);
+  min-height: var(--hit-area);
+  padding: 0;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.icon-btn:hover,
+.action-btn:hover {
+  background: color-mix(in srgb, var(--text-primary) 7%, transparent);
+}
+
+.action-btn {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.track-menu-popover {
+  padding: var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.track-menu-item {
+  min-height: var(--hit-area);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.search-section {
+  gap: var(--space-3);
+  margin-top: 0;
+}
+
+.search-section + .search-section {
+  margin-top: var(--space-8);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prompt-card {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.prompt-compose {
+  gap: var(--space-4);
+}
+
+.prompt-body {
+  margin-top: var(--space-8);
+}
+
+.prompt-modes {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+
+.prompt-mode-seg-btn {
+  min-height: var(--hit-area);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.prompt-mode-seg-btn.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.prompt-pill {
+  min-height: 56px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.prompt-pill:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--border-subtle));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.prompt-suggestion,
+.search-recent-chip {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.prompt-suggestion {
+  min-height: var(--hit-area);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.prompt-suggestion:hover,
+.search-recent-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border-subtle));
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--text-primary);
+}
+
+.prompt-request-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--hit-area);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.prompt-request-summary-copy {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.prompt-request-summary-label {
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.prompt-request-summary strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: var(--type-list);
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-request-summary-edit,
+.library-new-prompt {
+  min-height: var(--hit-area);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--accent);
+  font: 500 var(--type-meta)/1.3 var(--font-body);
+  white-space: nowrap;
+}
+
+.prompt-request-summary-edit:hover,
+.library-new-prompt:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.generation-status {
+  min-height: var(--hit-area);
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--type-meta);
+  box-shadow: none;
+}
+
+.generation-query {
+  margin: 0 0 var(--space-3);
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.dock-inner {
+  padding: var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dock-tab {
+  min-height: var(--hit-area);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--type-nav);
+  font-weight: 550;
+}
+
+.dock-tab.active,
+.dock-tab.active .dock-tab-label,
+.dock-tab.active .dock-tab-icon {
+  color: var(--accent);
+}
+
+.dock-tab.active {
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+
+.results-actions {
+  gap: var(--space-2);
+}
+
+.results-action {
+  min-height: var(--hit-area);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+}
+
+.results-action--download {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  color: var(--accent);
+}
+
+.results-extend {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.results-extend-heading h2 {
+  font-size: var(--type-section);
+  font-weight: 650;
+}
+
+.subscription-page {
+  gap: var(--space-8);
+}
+
+.subscription-header {
+  min-height: var(--hit-area);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.subscription-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.trial-card {
+  padding: var(--space-4) 0;
+  border-block: 1px solid var(--border-subtle);
+}
+
+.subscription-options {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.subscription-option {
+  min-height: 64px;
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+
+.subscription-option--single {
+  min-height: 0;
+  padding-block: var(--space-2);
+  border: 0;
+}
+
+.subscription-option.is-selected {
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.subscription-checkout {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.subscription-buy {
+  min-height: 52px;
+  border-radius: var(--radius-sm);
+}
+
+.subscription-history {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.purchase-history-row {
+  min-height: 60px;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.purchase-history-copy strong {
+  font-size: var(--type-list);
+  font-weight: 550;
+}
+
+.purchase-history-copy time,
+.purchase-history-price {
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.lyrics-screen-context strong {
+  font-size: var(--type-list);
+  font-weight: 550;
+}
+
+.lyrics-screen-context span {
+  color: var(--text-secondary);
+  font-size: var(--type-meta);
+}
+
+.lyrics-screen-line {
+  font-size: 22px;
+  line-height: 1.45;
+}
+
+.lyrics-screen-line.active {
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.lyrics-screen-line.is-past,
+.lyrics-screen-line.is-next {
+  color: var(--text-secondary);
+}
+
+.player-screen-play-btn,
+.player-bar-play-btn,
+.web-now-playing-play {
+  background: var(--accent);
+  color: #101212;
+  box-shadow: none;
+}
+
+.player-bar.glass,
+.player-screen.glass,
+.artist-screen.glass,
+.lyrics-screen.glass {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.player-bar-btn,
+.player-screen-reaction-btn,
+.player-screen-skip-btn {
+  min-width: var(--hit-area);
+  min-height: var(--hit-area);
+  border-radius: var(--radius-sm);
+}
+
+.web-now-playing {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.web-now-playing-artwork {
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 839px) {
+  .app-shell {
+    gap: var(--space-6);
+  }
+
+  .prompt-body {
+    margin-top: var(--space-6);
+  }
+
+  .search-artist-rail,
+  .resume-rail,
+  .prompt-suggestions {
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
+
+@media (min-width: 840px) {
+  .app-sidebar .dock-inner {
+    border-radius: var(--radius-md);
+  }
+
+  .app-sidebar .dock-tab.active {
+    background: color-mix(in srgb, var(--accent) 11%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-tab,
+  .icon-btn,
+  .action-btn,
+  .glass-button,
+  .prompt-submit {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* OpenSpec anti-slop pass --------------------------------------------------
+   Content owns the page. Surfaces are reserved for inputs, menus and modal
+   controls; artwork, typography and list rhythm carry ordinary music views. */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-compact: 8px;
+  --radius-input-shared: 12px;
+  --radius-surface-shared: 16px;
+  --radius-circle: 999px;
+  --fs-screen-title: 28px;
+  --fs-section-title: 20px;
+  --fs-track-title: 16px;
+  --fs-metadata: 14px;
+  --fs-nav-label: 12px;
+  --lyrics-past: color-mix(in srgb, var(--text-primary) 58%, var(--canvas));
+  --lyrics-upcoming: color-mix(in srgb, var(--text-primary) 78%, var(--canvas));
+}
+
+h1.screen-title {
+  font-size: var(--fs-screen-title);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h2.screen-title,
+.search-section-title,
+.prompt-examples-label {
+  font-size: var(--fs-section-title);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.search-row-title,
+.resume-card-title {
+  font-size: var(--fs-track-title);
+  line-height: 1.25;
+  font-weight: 550;
+}
+
+.search-row-meta,
+.resume-card-meta,
+.purchase-history-copy time,
+.purchase-history-price {
+  font-size: var(--fs-metadata);
+  line-height: 1.3;
+}
+
+.dock-tab-label {
+  font-size: var(--fs-nav-label);
+  font-weight: 500;
+}
+
+.prompt-pill,
+.results-extend .prompt-pill {
+  min-height: 50px;
+  border-radius: var(--radius-input-shared);
+}
+
+.results-extend .prompt-pill {
+  min-height: 50px;
+}
+
+.prompt-request-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.prompt-request-summary-copy {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.prompt-request-summary-label {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+}
+
+.prompt-request-summary-copy strong {
+  overflow: hidden;
+  color: var(--text-dark);
+  font-size: var(--fs-track-title);
+  font-weight: 550;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-request-summary-edit {
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 auto;
+  padding: 8px 0 8px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: 500 var(--fs-metadata)/1.3 var(--font-body);
+  cursor: pointer;
+}
+
+.prompt-request-summary-edit:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-compact);
+}
+
+.prompt-validation {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-metadata);
+  line-height: 1.4;
+}
+
+.generation-preview {
+  gap: var(--space-4);
+}
+
+.generation-status {
+  min-height: 44px;
+  color: var(--text-dark);
+}
+
+.generation-status-icon {
+  color: var(--accent);
+}
+
+.track-row {
+  min-height: 68px;
+  gap: var(--space-3);
+  padding-block: 10px;
+  border-radius: 0;
+}
+
+.track-artwork,
+.track-artwork-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-compact);
+}
+
+.track-menu-item,
+.library-create-choices button {
+  min-height: 44px;
+  border-radius: var(--radius-compact);
+}
+
+.dock-tab.active,
+:root[data-scheme="light"] .dock-tab.active {
+  border-radius: var(--radius-compact);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.dock-tab.active .dock-tab-icon,
+:root[data-scheme="light"] .dock-tab.active .dock-tab-icon {
+  color: var(--accent);
+}
+
+.prompt-suggestions,
+.resume-rail,
+.search-artist-rail {
+  padding-inline: var(--space-2);
+  scroll-padding-inline: var(--space-2);
+}
+
+.search-artist-tile {
+  width: 100px;
+}
+
+.search-artist-tile-name {
+  display: -webkit-box;
+  width: 100%;
+  overflow: hidden;
+  font-size: var(--fs-metadata);
+  line-height: 1.25;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.results-actions {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.results-action--icon,
+.results-action--new {
+  background: transparent;
+}
+
+.results-action--download {
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+  color: #101012;
+}
+
+.results-track-list {
+  margin-top: var(--space-5);
+}
+
+.library-section.glass-surface,
+.subscription-page > .glass-surface {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.library-section.glass-surface::before,
+.subscription-page > .glass-surface::before {
+  display: none;
+}
+
+.library-section + .library-section {
+  margin-top: var(--space-6);
+}
+
+.subscription-page {
+  gap: var(--space-6);
+}
+
+.subscription-option--single {
+  min-height: 48px;
+  padding-block: 6px;
+  border: 0;
+  background: transparent;
+}
+
+.subscription-buy {
+  min-height: 52px;
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+}
+
+.purchase-history-row {
+  padding-block: var(--space-3);
+}
+
+.player-screen-play-btn,
+:root[data-scheme="light"] .player-screen-play-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: var(--radius-circle);
+  background: var(--accent);
+  color: #101012;
+  box-shadow: none;
+}
+
+.player-screen-skip-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.player-screen-reaction-btn,
+.player-screen-lyrics-btn {
+  border-radius: var(--radius-compact);
+  background: transparent;
+}
+
+.player-screen-lyrics-btn {
+  color: var(--text-muted);
+}
+
+.lyrics-screen-line,
+.lyrics-screen-line.is-next,
+.lyrics-screen-line.is-past,
+:root[data-scheme="light"] .lyrics-screen-line,
+:root[data-scheme="light"] .lyrics-screen-line.is-next,
+:root[data-scheme="light"] .lyrics-screen-line.is-past {
+  font-size: 22px;
+  line-height: 1.45;
+  text-shadow: none;
+  transform: none;
+}
+
+.lyrics-screen-line.active,
+:root[data-scheme="light"] .lyrics-screen-line.active {
+  color: var(--text-dark);
+  font-weight: 600;
+  text-shadow: none;
+}
+
+@media (max-width: 839px) {
+  .prompt-request-summary {
+    padding-block: 6px;
+  }
+
+  .prompt-request-summary-copy strong {
+    max-width: min(68vw, 320px);
+  }
+
+  .results-playlist-header .playlist-name-title,
+  .playlist-name-input {
+    font-size: 26px;
+    line-height: 1.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-request-summary-edit,
+  .track-row,
+  .dock-tab {
+    transition: none;
+  }
+}
+
+/* Identity-first detail pass ---------------------------------------------
+   The artist surface keeps its compact app bar in place while only the music
+   content scrolls. Albums use the same flat row rhythm as tracks; the expand
+   affordance is part of the primary row target rather than a second action. */
+.artist-screen {
+  overflow: hidden;
+}
+
+.artist-screen-appbar {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  min-height: 44px;
+  background: color-mix(in srgb, var(--lg-v2-bg) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.artist-screen-appbar-title {
+  position: absolute;
+  inset-inline: 56px;
+  overflow: hidden;
+  color: var(--text-dark);
+  font: 550 var(--fs-body)/1.25 var(--font-display);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity var(--glass-transition), transform var(--glass-transition);
+}
+
+.artist-screen-appbar-title.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+:root[data-scheme="light"] .artist-screen-appbar-title {
+  color: var(--text-light);
+}
+
+.artist-screen-body {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.artist-screen-head {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-4);
+  margin-block: var(--space-3) var(--space-6);
+  text-align: left;
+}
+
+.artist-screen-avatar,
+.artist-screen-avatar-skeleton {
+  width: 112px;
+  height: 112px;
+  flex-basis: 112px;
+}
+
+.artist-screen-identity {
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.artist-screen-name {
+  max-width: 100%;
+  font-size: clamp(26px, 7vw, 32px);
+  line-height: 1.15;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.artist-screen-bio {
+  font-size: var(--fs-body);
+}
+
+.album-block {
+  overflow: visible;
+  border-radius: 0;
+  background: transparent;
+}
+
+.album-head {
+  border-radius: 0;
+}
+
+.album-head .track-row-main {
+  min-height: 48px;
+}
+
+.album-head .album-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  min-width: 32px;
+  min-height: 44px;
+  margin-inline-start: auto;
+}
+
+.album-tracks {
+  padding-block: var(--space-1) var(--space-2);
+}
+
+.track-sub {
+  padding-inline-start: var(--space-4);
+}
+
+/* Lyrics are a reading surface: keep the artwork out of the chrome and make
+   every line a comfortable seek target. */
+.lyrics-screen {
+  background: var(--lg-v2-bg);
+}
+
+.lyrics-screen-body {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.lyrics-screen-line {
+  min-height: 44px;
+  padding-block: var(--space-2);
+}
+
+/* Content rows carry hierarchy through type and rhythm, not decorative cards. */
+.track-row {
+  border-radius: 0;
+}
+
+.track-row-main > .album-chevron {
+  flex: 0 0 auto;
+}
+
+.track-menu-item {
+  background: transparent;
+}
+
+.subscription-page > .glass-surface {
+  padding-inline: 0;
+}
+
+@media (max-width: 430px) {
+  .artist-screen-head {
+    align-items: flex-start;
+  }
+
+  .artist-screen-avatar,
+  .artist-screen-avatar-skeleton {
+    width: 104px;
+    height: 104px;
+    flex-basis: 104px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artist-screen-appbar-title {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Prompt state refinement: suggestions stay lightweight and the composer
+   keeps one quiet trailing action instead of a large circular CTA inside the
+   input surface. */
+.prompt-starters .prompt-suggestions {
+  gap: var(--space-2);
+}
+
+/* Ordinary GlassPanel content is a layout group, not an elevation layer. Keep
+   the historical class names for behavior and make only regular panels flat;
+   tinted/subtle panels remain available for status and control surfaces. */
+.glass-panel-content {
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.glass-panel-content::before,
+.track-menu-popover::before {
+  display: none;
+}
+
+.glass-tinted {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.playlist-cover-art {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--cover-c);
+  box-shadow: none;
+}
+
+.playlist-cover-art::before,
+.playlist-cover-art::after {
+  display: none;
+}
+
+.playlist-cover-art > span {
+  min-width: 0;
+  min-height: 0;
+}
+
+.lyrics-screen {
+  background: var(--lg-v2-bg);
+}
+
+@media (min-width: 840px) {
+  .lyrics-screen {
+    background: var(--lg-v2-panel);
+    border: 1px solid var(--hairline);
+    box-shadow: none;
+  }
+}
+
+.prompt-starters .prompt-suggestion,
+:root[data-scheme="light"] .prompt-starters .prompt-suggestion {
+  flex: 0 0 auto;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-compact);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.prompt-submit,
+.results-extend .prompt-submit {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--accent);
+}
+
+@media (min-width: 840px) {
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .prompt-card > .prompt-body .prompt-starters .prompt-suggestion {
+    min-height: 44px;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 1000px) {
+  .prompt-card {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .prompt-card > .prompt-body {
+    height: auto;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+}
+
+/* OpenSpec final pass: one compact visual vocabulary for every music surface.
+   Keep the older class names for compatibility, but make the shared tokens
+   and the content-first exceptions explicit at the end of the cascade. */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-panel: 16px;
+  --radius-surface: 16px;
+  --radius-input: 12px;
+  --radius-block: 12px;
+  --radius-row: 8px;
+  --radius-control: 8px;
+  --radius-chip: 8px;
+  --radius-micro: 8px;
+  --radius-circle: 999px;
+  --fs-screen-title: 28px;
+  --fs-section-title: 20px;
+  --fs-track-title: 16px;
+  --fs-metadata: 14px;
+  --fs-nav-label: 12px;
+}
+
+.app-shell {
+  scroll-padding-top: 72px;
+  scroll-padding-bottom: calc(var(--player-height) + 164px + env(safe-area-inset-bottom, 0px));
+}
+
+.screen-stack {
+  min-width: 0;
+  scroll-margin-top: 72px;
+  scroll-margin-bottom: calc(var(--player-height) + 164px + env(safe-area-inset-bottom, 0px));
+}
+
+.prompt-heading {
+  margin: 0 0 var(--space-2);
+  color: var(--text-dark);
+  font: 600 var(--fs-screen-title)/1.15 var(--font-display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.prompt-card > .prompt-body {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.prompt-suggestions,
+.resume-rail,
+.search-artist-rail {
+  padding-inline: var(--space-2);
+  scroll-padding-inline: var(--space-2);
+}
+
+.prompt-suggestion,
+:root[data-scheme="light"] .prompt-suggestion,
+.search-recent-chip,
+:root[data-scheme="light"] .search-recent-chip {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--text-dark);
+  font-size: var(--fs-metadata);
+  font-weight: 400;
+}
+
+.prompt-suggestion:hover,
+.search-recent-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--hairline));
+  background: var(--accent-bg);
+  color: var(--text-dark);
+}
+
+.resume-cover {
+  border: 0;
+  border-radius: var(--radius-input);
+  aspect-ratio: 1;
+}
+
+.resume-card {
+  width: 132px;
+}
+
+.resume-cover {
+  width: 132px;
+  height: 132px;
+}
+
+.resume-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--fs-track-title);
+  font-weight: 550;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.resume-card-meta,
+.search-row-meta {
+  font-size: var(--fs-metadata);
+  line-height: 1.3;
+}
+
+.search-artist-tile {
+  width: 112px;
+}
+
+.search-artist-tile-name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--fs-metadata);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.search-artist-card {
+  padding-inline: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--hairline);
+  background: transparent;
+}
+
+.search-artist-card:hover,
+.search-artist-card:active {
+  background: color-mix(in srgb, var(--text-dark) 5%, transparent);
+}
+
+.search-artist-enter {
+  display: none;
+}
+
+.album-block {
+  border-radius: 0;
+  background: transparent;
+}
+
+.album-head {
+  border-radius: 0;
+}
+
+.subscription-header,
+.subscription-offers,
+.subscription-history {
+  width: 100%;
+}
+
+.subscription-header .screen-title,
+.subscription-history .screen-title {
+  margin: 0;
+}
+
+.subscription-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  min-height: 44px;
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+}
+
+.trial-card {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  background: transparent;
+}
+
+.subscription-offers,
+.subscription-history {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.subscription-offers > .stack {
+  gap: var(--space-4);
+}
+
+.lyrics-screen-line:empty {
+  min-height: 28px;
+}
+
+.artist-screen-head {
+  align-items: center;
+}
+
+.track-row-main:focus-visible,
+.search-artist-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (min-width: 1000px) {
+  .prompt-card > .prompt-body {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .prompt-heading {
+    font-size: 26px;
+  }
+
+  .resume-card,
+  .resume-cover {
+    width: 120px;
+  }
+
+  .resume-cover {
+    height: 120px;
+  }
+}
+
+/* Lyrics hierarchy: current content is strongest, upcoming content stays
+   readable, and passed lines recede without becoming placeholder text. */
+.lyrics-screen-line {
+  color: var(--lyrics-upcoming);
+  font-weight: 450;
+}
+
+.lyrics-screen-line.is-past {
+  color: var(--lyrics-past);
+  font-weight: 400;
+}
+
+.lyrics-screen-line.is-next {
+  color: var(--lyrics-upcoming);
+  font-weight: 450;
+}
+
+.lyrics-screen-line.active {
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.lyrics-screen-line.is-instrumental {
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyrics-screen-line {
+    transition: none;
+  }
+}

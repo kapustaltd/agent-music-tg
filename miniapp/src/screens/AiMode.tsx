@@ -30,7 +30,6 @@ function trackCountLabel(entry: HistoryEntry): string {
 
 export function AiMode({
   busy,
-  prompt,
   progress,
   suggestions,
   examples,
@@ -40,7 +39,6 @@ export function AiMode({
   onOpenArtist,
 }: {
   busy: boolean;
-  prompt: string;
   progress: AgentProgressEvent[];
   suggestions: SuggestionsResponse;
   examples: string[];
@@ -57,7 +55,7 @@ export function AiMode({
   useScrollFade(artistRailRef);
 
   if (busy) {
-    return <GenerationStatus progress={progress} prompt={prompt} />;
+    return <GenerationStatus progress={progress} />;
   }
 
   const feed = buildPromptFeed(suggestions, examples);

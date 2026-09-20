@@ -1,0 +1,592 @@
+/* Agent Music visual system completion.
+   Ordinary music content stays on the page surface. Elevation is reserved for
+   controls, popovers, sheets and modal player surfaces. This file is imported
+   after the legacy glass stylesheet so these rules are the final contract. */
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --radius-compact: 8px;
+  --radius-input-shared: 12px;
+  --radius-surface-shared: 16px;
+  --radius-circle: 999px;
+  --fs-screen-title: 28px;
+  --fs-section-title: 20px;
+  --fs-track-title: 16px;
+  --fs-metadata: 14px;
+  --fs-nav-label: 12px;
+  --content-hairline: rgba(255, 255, 255, 0.1);
+  --control-surface: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-scheme="light"] {
+  --content-hairline: rgba(13, 13, 16, 0.1);
+  --control-surface: rgba(13, 13, 16, 0.05);
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-body);
+}
+
+h1.screen-title {
+  font-size: var(--fs-screen-title);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+h2.screen-title,
+.search-section-title,
+.prompt-examples-label {
+  font-size: var(--fs-section-title);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.search-row-title,
+.resume-card-title,
+.track-row-copy .search-row-title {
+  font-size: var(--fs-track-title);
+  line-height: 1.25;
+  font-weight: 550;
+}
+
+.search-row-meta,
+.resume-card-meta,
+.purchase-history-copy time,
+.purchase-history-price {
+  font-size: var(--fs-metadata);
+  line-height: 1.3;
+}
+
+/* The header is an app bar, not a card around the app bar. */
+.app-top-bar,
+.app-shell > .app-sidebar .app-top-bar,
+.app-sidebar .app-top-bar {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.app-top-logo {
+  background: transparent;
+  border: 0;
+}
+
+/* Flat list rhythm: artwork and typography provide hierarchy. */
+.track-row,
+.search-artist-card,
+.album-block,
+.playlist-list .track-row,
+.playlist-track-list .track-row,
+.saved-track-list .track-row {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.track-row {
+  min-height: 68px;
+  padding: 10px 0;
+  border-bottom-color: var(--content-hairline);
+}
+
+.track-row:hover,
+.track-row:active,
+.search-artist-card:hover,
+.search-artist-card:active {
+  background: var(--control-surface);
+}
+
+.track-artwork,
+.track-artwork-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-compact);
+}
+
+.track-row-copy .text-muted {
+  font-size: var(--fs-metadata);
+}
+
+.library-section.glass-surface,
+.subscription-page > .glass-surface {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.library-section.glass-surface::before,
+.subscription-page > .glass-surface::before {
+  display: none;
+}
+
+.library-section + .library-section {
+  margin-top: var(--space-6);
+}
+
+/* Prompt: visible hierarchy before submission, compact context while busy. */
+.prompt-card {
+  gap: var(--space-4);
+}
+
+.prompt-heading,
+.prompt-screen-title {
+  margin: 0 0 var(--space-2);
+  color: var(--text-dark);
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+:root[data-scheme="light"] .prompt-heading,
+:root[data-scheme="light"] .prompt-screen-title {
+  color: var(--text-light);
+}
+
+.prompt-compose {
+  gap: var(--space-2);
+}
+
+.prompt-modes {
+  width: min(100%, 232px);
+  min-height: 44px;
+  padding: 2px;
+  border: 1px solid var(--content-hairline);
+  border-radius: var(--radius-compact);
+  background: transparent;
+}
+
+.prompt-mode-seg-btn {
+  min-height: 38px;
+  border-radius: var(--radius-compact);
+}
+
+.prompt-mode-seg-btn.active {
+  color: var(--text-dark);
+  background: var(--control-surface);
+  box-shadow: none;
+}
+
+.prompt-pill,
+.results-extend .prompt-pill {
+  min-height: 52px;
+  border-radius: var(--radius-input-shared);
+}
+
+.prompt-request-summary {
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--content-hairline);
+}
+
+.prompt-request-summary-copy strong {
+  font-size: var(--fs-track-title);
+  font-weight: 550;
+}
+
+.prompt-request-summary-edit {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.prompt-validation {
+  margin: 0;
+  color: var(--danger);
+  font-size: var(--fs-metadata);
+}
+
+.generation-preview {
+  gap: var(--space-4);
+}
+
+.generation-status {
+  min-height: 44px;
+}
+
+.generation-status-icon {
+  color: var(--accent);
+}
+
+/* Generated playlist: one artwork-led header and three understandable actions. */
+.results-playlist-cover {
+  border: 0;
+  border-radius: var(--radius-input-shared);
+  box-shadow: none;
+}
+
+.results-playlist-header .playlist-name-title,
+.playlist-name-input {
+  overflow-wrap: anywhere;
+}
+
+.results-actions {
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.results-action--icon {
+  background: transparent;
+}
+
+.results-action--download {
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+  color: #101012;
+}
+
+.results-action-text {
+  white-space: nowrap;
+}
+
+.results-track-list {
+  margin-top: var(--space-5);
+}
+
+.results-track-list .track-row {
+  margin-inline: 0;
+}
+
+/* Track menus are one popover surface; rows are not nested cards. */
+.track-menu-popover {
+  min-width: 220px;
+  padding: 4px 0;
+  border: 1px solid var(--content-hairline);
+  border-radius: var(--radius-input-shared);
+  background: #1c1c1f;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.track-menu-popover::before {
+  display: none;
+}
+
+:root[data-scheme="light"] .track-menu-popover {
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(30, 20, 70, 0.16);
+}
+
+.track-menu-item {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 0;
+  color: var(--text-dark);
+}
+
+.track-menu-item:hover,
+.track-menu-item:active {
+  background: var(--control-surface);
+}
+
+.track-menu-item.destructive {
+  color: var(--danger);
+}
+
+/* Subscription and history are content sections, with one plan as one row. */
+.subscription-page {
+  gap: var(--space-6);
+}
+
+.subscription-option {
+  min-height: 64px;
+  border-radius: var(--radius-input-shared);
+}
+
+.subscription-option--single {
+  min-height: 48px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.subscription-option--single:hover,
+.subscription-option--single:active {
+  background: var(--control-surface);
+}
+
+.subscription-buy {
+  min-height: 52px;
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+}
+
+.purchase-history-row {
+  padding-block: var(--space-3);
+  border-bottom-color: var(--content-hairline);
+}
+
+/* Artist identity leads; album expansion remains the only necessary affordance. */
+.artist-screen-head {
+  align-items: flex-start;
+}
+
+.artist-screen-identity {
+  align-items: flex-start;
+}
+
+.artist-screen-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.artist-screen-bio {
+  max-width: 65ch;
+}
+
+.artist-screen .search-section + .search-section {
+  border-top-color: var(--content-hairline);
+}
+
+/* Player and lyrics are modal surfaces, so their separation is intentional. */
+.player-screen-play-btn,
+:root[data-scheme="light"] .player-screen-play-btn {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  border-radius: var(--radius-circle);
+  background: var(--accent);
+  color: #101012;
+  box-shadow: none;
+}
+
+.player-screen-skip-btn,
+.player-screen-reaction-btn,
+.player-screen-lyrics-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.player-screen-lyrics-btn,
+.player-screen-reaction-btn {
+  border-radius: var(--radius-compact);
+  background: transparent;
+}
+
+.player-screen-skip-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.player-screen-progress,
+.volume-slider::-webkit-slider-runnable-track {
+  background: color-mix(in srgb, var(--text-dark) 24%, transparent);
+}
+
+.volume-slider::-moz-range-track {
+  background: color-mix(in srgb, var(--text-dark) 24%, transparent);
+}
+
+.volume-slider::-webkit-slider-thumb,
+.volume-slider::-moz-range-thumb {
+  background: var(--accent);
+}
+
+.volume-icon {
+  color: var(--text-muted);
+}
+
+.lyrics-screen-line,
+.lyrics-screen-line.is-next,
+.lyrics-screen-line.is-past,
+:root[data-scheme="light"] .lyrics-screen-line,
+:root[data-scheme="light"] .lyrics-screen-line.is-next,
+:root[data-scheme="light"] .lyrics-screen-line.is-past {
+  min-height: 44px;
+  padding-block: 4px;
+  color: var(--text-muted);
+  font-size: 22px;
+  line-height: 1.45;
+  text-shadow: none;
+  transform: none;
+}
+
+.lyrics-screen-line.active,
+:root[data-scheme="light"] .lyrics-screen-line.active {
+  color: var(--text-dark);
+  font-weight: 600;
+  text-shadow: none;
+}
+
+/* Shared dock state: same tonal active treatment on phone and desktop rail. */
+.dock-tab.active,
+:root[data-scheme="light"] .dock-tab.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.dock-tab.active .dock-tab-icon,
+.dock-tab.active .dock-tab-label,
+:root[data-scheme="light"] .dock-tab.active .dock-tab-icon,
+:root[data-scheme="light"] .dock-tab.active .dock-tab-label {
+  color: var(--accent);
+}
+
+.dock-tab-label {
+  font-size: var(--fs-nav-label);
+  font-weight: 500;
+}
+
+@media (max-width: 839px) {
+  .app-top-bar {
+    top: 0;
+    min-height: 52px;
+    padding: 4px 0 8px;
+  }
+
+  .results-playlist-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .results-playlist-cover {
+    width: 120px;
+    height: 120px;
+    flex-basis: 120px;
+  }
+
+  .results-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .results-action,
+  .results-action--icon,
+  .results-action--download {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: 8px;
+    gap: 5px;
+    font-size: 12px;
+  }
+
+  .results-action--icon {
+    background: var(--control-surface);
+  }
+
+  .results-action--download {
+    justify-content: center;
+  }
+
+  .dock-inner {
+    border-top-color: var(--content-hairline);
+    background: color-mix(in srgb, var(--lg-v2-bg) 94%, transparent);
+  }
+}
+
+@media (min-width: 840px) {
+  .results-action-text {
+    display: none;
+  }
+
+  .results-action--download {
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .prompt-heading,
+  .prompt-screen-title {
+    font-size: 26px;
+  }
+
+  .results-playlist-cover {
+    width: 112px;
+    height: 112px;
+    flex-basis: 112px;
+  }
+
+  .results-action,
+  .results-action--icon,
+  .results-action--download {
+    padding-inline: 5px;
+    gap: 3px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track-row,
+  .dock-tab,
+  .prompt-request-summary-edit {
+    transition: none;
+  }
+}
+
+/* ResultsScreen keeps its action names intentionally specific so the same
+   controls are reused by older shared styles. Finish that action bar here. */
+.playlist-action-bar {
+  display: flex;
+}
+
+.playlist-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 8px;
+  gap: 5px;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-dark);
+}
+
+.playlist-action-download {
+  min-height: 44px;
+  border-radius: var(--radius-compact);
+  background: var(--accent);
+  color: #101012;
+}
+
+@media (max-width: 839px) {
+  .playlist-action-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .playlist-action-icon,
+  .playlist-action-download {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+
+  .playlist-action-icon {
+    background: var(--control-surface);
+  }
+}
+
+@media (min-width: 840px) {
+  .playlist-action-icon .results-action-text {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .playlist-action-icon,
+  .playlist-action-download {
+    padding-inline: 5px;
+    gap: 3px;
+    font-size: 11px;
+  }
+}

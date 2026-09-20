@@ -6,6 +6,7 @@ import "./styles/fonts.css";
 
 import "./styles/glass.css";
 import "./styles/generated-playlist.css";
+import "./styles/anti-slop.css";
 
 const storedScheme = typeof localStorage !== "undefined" ? localStorage.getItem("miniapp-scheme") : null;
 document.documentElement.setAttribute(

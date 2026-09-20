@@ -50,6 +50,7 @@ export function ArtistScreen({
   const [state, setState] = useState<LoadState>({ kind: "loading" });
   const [expanded, setExpanded] = useState<Record<string, AlbumState>>({});
   const [bioOpen, setBioOpen] = useState(false);
+  const [artistScrolled, setArtistScrolled] = useState(false);
   // Non-nested (opened from a main screen): only the screen content goes
   // inert, so the dock/top-bar/player-bar stay reachable behind this card —
   // matching its own z-index comment (below the dock, above plain content).
@@ -103,12 +104,20 @@ export function ArtistScreen({
 
   return (
     <div className={`player-screen-overlay artist-screen-overlay${nested ? " artist-screen-overlay--nested" : ""}`}>
-      <div className="player-screen glass artist-screen" ref={dialogRef} role="dialog" aria-modal="true" aria-label="Исполнитель">
-        <div className="player-screen-header">
+      <div
+        className="player-screen glass artist-screen"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={state.kind === "ok" ? state.data.name : "Страница исполнителя"}
+      >
+        <div className="player-screen-header artist-screen-appbar">
           <button type="button" className="action-btn action-btn--neutral" aria-label="Назад" onClick={onClose}>
             <ArrowLeft size={24} />
           </button>
-          <span className="sr-only">Исполнитель</span>
+          <span className={`artist-screen-appbar-title${artistScrolled ? " is-visible" : ""}`} aria-hidden={!artistScrolled}>
+            {state.kind === "ok" ? state.data.name : ""}
+          </span>
         </div>
 
         {state.kind === "loading" && (
@@ -132,7 +141,7 @@ export function ArtistScreen({
         )}
 
         {state.kind === "ok" && (
-          <div className="artist-screen-body">
+          <div className="artist-screen-body" onScroll={(event) => setArtistScrolled(event.currentTarget.scrollTop > 96)}>
             <div className="artist-screen-head">
               <span className="artist-screen-avatar" aria-hidden>
                 {state.data.artwork ? <img src={state.data.artwork} alt="" /> : <User size={32} weight="bold" />}
@@ -216,9 +225,10 @@ export function ArtistScreen({
                           onClick={() => void toggleAlbum(album)}
                           artwork={album.artwork}
                           title={album.title}
-                          meta={album.artist}
+                          meta={`Альбом · ${album.artist}`}
                           metaClassName="search-row-meta"
-                          trailing={
+                          ariaExpanded={Boolean(open)}
+                          mainTrailing={
                             <span className={`album-chevron${open ? " open" : ""}`} aria-hidden>
                               <CaretRightIcon size={16} />
                             </span>

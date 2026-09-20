@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useRef } from "react";
 import { Sparkle, Storefront, MusicNotes, Shield } from "../icons";
 
 type Tab = "create" | "shop" | "playlists" | "admin";
@@ -22,54 +21,15 @@ export function BottomNav({
     ? [...TABS, { key: "admin" as const, icon: Shield, label: "Админ" }]
     : TABS;
 
-  const indicatorRef = useRef<HTMLDivElement>(null);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  tabRefs.current.length = tabs.length;
-
-  // Measures horizontally (offsetLeft/offsetWidth) for the floating bottom
-  // dock. .dock-indicator is currently display:none (glass.css) so this is
-  // dead output either way, but on the desktop (>= 840px) vertical rail
-  // layout the tabs stack top-to-bottom — reviving the indicator there would
-  // need top/height instead.
-  const updateIndicator = useCallback(() => {
-    const idx = tabs.findIndex((t) => t.key === tab);
-    const btn = tabRefs.current[idx];
-    const indicator = indicatorRef.current;
-    const parent = btn?.parentElement;
-    if (!btn || !indicator || !parent) return;
-    const maxX = parent.clientWidth - btn.offsetWidth;
-    const x = Math.min(Math.max(btn.offsetLeft, 0), Math.max(maxX, 0));
-    indicator.style.width = `${btn.offsetWidth}px`;
-    indicator.style.transform = `translateX(${x}px)`;
-  }, [tab, tabs]);
-
-  useEffect(() => {
-    updateIndicator();
-  }, [updateIndicator]);
-
-  useEffect(() => {
-    const ro = new ResizeObserver(() => updateIndicator());
-    const parent = tabRefs.current[0]?.parentElement;
-    if (parent) ro.observe(parent);
-    return () => ro.disconnect();
-  }, [updateIndicator]);
-
-  useEffect(() => {
-    if (typeof document === "undefined" || !document.fonts?.ready) return;
-    document.fonts.ready.then(updateIndicator);
-  }, [updateIndicator]);
-
   return (
     <nav className="dock" aria-label="Главное меню">
       <div className="dock-inner">
-        <div className="dock-indicator" ref={indicatorRef} />
-        {tabs.map((t, i) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <button
               key={t.key}
               type="button"
-              ref={(el) => { tabRefs.current[i] = el; }}
               className={`dock-tab${tab === t.key ? " active" : ""}`}
               aria-current={tab === t.key ? "page" : undefined}
               onClick={() => onTab(t.key)}

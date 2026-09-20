@@ -38,6 +38,8 @@ export function PromptScreen({
   );
   const [suggestions, setSuggestions] = useState<SuggestionsResponse>(EMPTY_SUGGESTIONS);
   const [promptExamples, setPromptExamples] = useState(() => samplePromptExamples());
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [requestCollapsed, setRequestCollapsed] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // The header can navigate to the existing prompt screen without remounting
@@ -45,6 +47,13 @@ export function PromptScreen({
   useEffect(() => {
     if (initialMode) setMode(initialMode);
   }, [initialMode]);
+
+  useEffect(() => {
+    // A failed request returns to the composer so the user can correct it.
+    // The successful path collapses synchronously in submit() before the
+    // parent flips busy, avoiding a frame with two activity indicators.
+    if (!busy) setRequestCollapsed(false);
+  }, [busy]);
 
   // One SQLite-backed call, so it is cheap enough to fetch on mount and lets
   // both modes fill their empty state without a spinner.
@@ -95,7 +104,18 @@ export function PromptScreen({
 
   function submit() {
     if (!canSubmit) return;
-    onSubmit(prompt.trim());
+    const value = prompt.trim();
+    if (value.length < 2 || !/[\p{L}\p{N}]/u.test(value)) {
+      setValidationError("Не понял запрос. Выбери настроение или опиши музыку своими словами.");
+      return;
+    }
+    setValidationError(null);
+    // Commit the compact state before notifying the parent. React may render
+    // once with busy=true before the parent's state update reaches this tree;
+    // setting this here keeps the composer from briefly showing its spinner
+    // next to GenerationStatus' single progress indicator.
+    setRequestCollapsed(true);
+    onSubmit(value);
   }
 
   function fillInput(value: string) {
@@ -116,69 +136,86 @@ export function PromptScreen({
   ];
 
   return (
-    <div className={`reveal prompt-card${mode === "search" ? " prompt-card--search" : ""}${busy ? " prompt-card--busy" : ""}`}>
-      <div className="prompt-compose">
-        <h1 className="sr-only">{mode === "ai" ? "Подобрать музыку" : "Найти музыку"}</h1>
+    <div
+      className={`reveal prompt-card${mode === "search" ? " prompt-card--search" : ""}${busy && requestCollapsed ? " prompt-card--busy" : ""}`}
+      aria-busy={busy}
+    >
+      {busy && requestCollapsed ? (
+        <div className="prompt-request-summary" aria-label="Текущий запрос">
+          <span className="prompt-request-summary-copy">
+            <span className="prompt-request-summary-label">Запрос</span>
+            <strong>{prompt}</strong>
+          </span>
+          <button type="button" className="prompt-request-summary-edit" onClick={() => setRequestCollapsed(false)}>
+            Изменить
+          </button>
+        </div>
+      ) : (
+        <div className="prompt-compose">
+          <h1 className="prompt-heading">{mode === "ai" ? "Что хочется послушать?" : "Найти музыку"}</h1>
 
-        <div className="prompt-modes" role="group" aria-label="Режим">
-          {MODES.map((m) => {
-            const Icon = m.icon;
-            return (
+          <div className="prompt-modes" role="group" aria-label="Режим">
+            {MODES.map((m) => {
+              const Icon = m.icon;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`prompt-mode-seg-btn${mode === m.id ? " active" : ""}`}
+                  aria-pressed={mode === m.id}
+                  onClick={() => {
+                    if (m.id === "ai" && !prompt.trim()) refreshPromptExamples();
+                    setMode(m.id);
+                  }}
+                >
+                  <Icon size={20} weight={mode === m.id ? "fill" : "regular"} />
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={`prompt-pill${mode === "search" ? " prompt-pill--search" : ""}`}>
+            {mode === "search" && (
+              <span className="prompt-pill-icon" aria-hidden>
+                <MagnifyingGlass size={18} weight="bold" />
+              </span>
+            )}
+            <textarea
+              ref={inputRef}
+              className="prompt-pill-input"
+              rows={1}
+              placeholder={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
+              aria-label={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
+              aria-invalid={validationError ? true : undefined}
+              value={prompt}
+              onChange={(e) => {
+                setPrompt(e.target.value);
+                if (validationError) setValidationError(null);
+                autoGrow();
+              }}
+              onKeyDown={(e) => {
+                if (mode === "ai" && e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                }
+              }}
+            />
+            {mode === "ai" && (
               <button
-                key={m.id}
                 type="button"
-                className={`prompt-mode-seg-btn${mode === m.id ? " active" : ""}`}
-                aria-pressed={mode === m.id}
-                onClick={() => {
-                  if (m.id === "ai" && !prompt.trim()) refreshPromptExamples();
-                  setMode(m.id);
-                }}
+                className="prompt-submit"
+                aria-label="Собрать плейлист"
+                disabled={!canSubmit}
+                onClick={submit}
               >
-                <Icon size={20} weight={mode === m.id ? "fill" : "regular"} />
-                <span>{m.label}</span>
+                {busy ? <CircleNotch size={18} weight="bold" className="spin" /> : <ArrowUp size={18} weight="bold" />}
               </button>
-            );
-          })}
+            )}
+          </div>
+          {validationError && <p className="prompt-validation" role="alert">{validationError}</p>}
         </div>
-
-        <div className={`prompt-pill${mode === "search" ? " prompt-pill--search" : ""}`}>
-          {mode === "search" && (
-            <span className="prompt-pill-icon" aria-hidden>
-              <MagnifyingGlass size={18} weight="bold" />
-            </span>
-          )}
-          <textarea
-            ref={inputRef}
-            className="prompt-pill-input"
-            rows={1}
-            placeholder={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
-            aria-label={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
-            value={prompt}
-            onChange={(e) => {
-              setPrompt(e.target.value);
-              autoGrow();
-            }}
-            onKeyDown={(e) => {
-              if (mode === "ai" && e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            disabled={busy}
-          />
-          {mode === "ai" && (
-            <button
-              type="button"
-              className="prompt-submit"
-              aria-label="Собрать плейлист"
-              disabled={!canSubmit}
-              onClick={submit}
-            >
-              {busy ? <CircleNotch size={18} weight="bold" className="spin" /> : <ArrowUp size={18} weight="bold" />}
-            </button>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Wraps the mode body (both return fragments) so the desktop 2-column
           grid has one spanning element for the right column instead of N
@@ -187,7 +224,6 @@ export function PromptScreen({
         {mode === "ai" ? (
           <AiMode
             busy={busy}
-            prompt={prompt}
             progress={progress}
             suggestions={suggestions}
             examples={promptExamples}

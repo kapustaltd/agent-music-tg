@@ -24,6 +24,7 @@ import { env } from "../env";
 import { appendGenreHint, resolveGenreContext } from "../recommendation/genre-knowledge";
 import { buildPreferenceSnapshot } from "../recommendation/preferences";
 import { createTrackRanker } from "../recommendation/ranker";
+import { productClarifyMessage } from "./generation-copy";
 
 export type GenerationOutcome =
   | { status: "ok"; playlist: FinalizedPlaylist; generationId: number }
@@ -93,7 +94,13 @@ async function toOutcome(run: () => Promise<GeneratePlaylistResult>): Promise<Ru
     return { status: "ok", playlist };
   } catch (e) {
     if (e instanceof ClarifyNeededError) {
-      return { status: "clarify", question: e.question, options: e.options, messages: e.messages, round: e.round };
+      return {
+        status: "clarify",
+        question: productClarifyMessage(e.question),
+        options: e.options,
+        messages: e.messages,
+        round: e.round,
+      };
     }
     if (e instanceof MaxIterationsExceededError) {
       return { status: "error", message: "Не удалось подобрать плейлист вовремя. Уточните запрос." };

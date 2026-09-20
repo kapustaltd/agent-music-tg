@@ -22,6 +22,7 @@ export function GlassPanel({
   const cls = [
     "glass-surface",
     tone === "v2" ? "liquid-glass-v2" : tone === "v2-float" ? "liquid-glass-v2 liquid-glass-v2-float" : `glass-${tone}`,
+    tone === "regular" ? "glass-panel-content" : "",
     interactive ? "glass-interactive" : "",
     className ?? "",
   ]

@@ -3,10 +3,9 @@ import {
   MusicNotes, Trash, CircleNotch,
   Play, Pause, WarningCircle, ListPlus,
   ArrowsClockwise, CaretDown, CaretUp, DownloadSimple,
-  Check, X, BookmarkSimple, ArrowLeft, Plus, PencilSimple, Playlist as PlaylistIcon, Sparkle,
+  Check, X, BookmarkSimple, ArrowLeft, PencilSimple, Playlist as PlaylistIcon, Sparkle,
   ShareNetwork,
 } from "../icons";
-import { GlassPanel } from "../components/GlassPanel";
 import { EmptyState } from "../components/EmptyState";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
@@ -33,6 +32,14 @@ const DOWNLOAD_STATUS_LABEL: Record<DownloadStatus, string> = {
   partial: "частично",
   failed: "ошибка",
 };
+
+function trackCountLabel(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${count} трек`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${count} трека`;
+  return `${count} треков`;
+}
 
 function DownloadEntry({
   record,
@@ -63,7 +70,7 @@ function DownloadEntry({
         metaClassName="search-row-meta"
         meta={
           <>
-            {new Date(record.createdAt * 1000).toLocaleDateString("ru-RU")} · {record.tracks.length} тр. ·{" "}
+            Загрузка · {new Date(record.createdAt * 1000).toLocaleDateString("ru-RU")} · {trackCountLabel(record.tracks.length)} ·{" "}
             <span
               className={
                 record.status === "failed"
@@ -168,7 +175,7 @@ function HistoryItem({
         fallbackIcon={<BookmarkSimple size={20} weight="bold" />}
         title={entry.playlistName ?? entry.prompt}
         metaClassName="search-row-meta"
-        meta={`${new Date(entry.createdAt * 1000).toLocaleDateString("ru-RU")} · ${entry.trackCount ?? entry.tracks.length} тр.`}
+        meta={`Плейлист · ${new Date(entry.createdAt * 1000).toLocaleDateString("ru-RU")} · ${trackCountLabel(entry.trackCount ?? entry.tracks.length)}`}
       />
     </li>
   );
@@ -192,7 +199,12 @@ function PlaylistCover({ playlistId }: { playlistId: number }) {
         ["--cover-b" as string]: palette[1],
         ["--cover-c" as string]: palette[2],
       }}
-    />
+    >
+      <span aria-hidden="true" style={{ background: palette[0] }} />
+      <span aria-hidden="true" style={{ background: palette[1] }} />
+      <span aria-hidden="true" style={{ background: palette[2] }} />
+      <span aria-hidden="true" style={{ background: palette[0] }} />
+    </span>
   );
 }
 
@@ -307,7 +319,6 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
-  const [showCreateChoices, setShowCreateChoices] = useState(false);
   const [limitPrompt, setLimitPrompt] = useState<{ starsPrice: number } | null>(null);
   const [buyBusy, setBuyBusy] = useState(false);
 
@@ -347,30 +358,13 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
   }
 
   return (
-    <GlassPanel className="reveal library-section">
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+    <section className="reveal library-section library-playlists">
+      <div className="row library-section-head">
         <h1 className="screen-title">Плейлисты</h1>
         {!creating && (
-          <div className="library-create-entry">
-            <button
-              type="button"
-              className="library-new-prompt"
-              aria-expanded={showCreateChoices}
-              onClick={() => setShowCreateChoices((open) => !open)}
-            >
-              <Plus size={18} weight="bold" /> Новый плейлист
-            </button>
-            {showCreateChoices && (
-              <div className="library-create-choices" role="menu" aria-label="Способ создания плейлиста">
-                <button type="button" role="menuitem" onClick={() => { setShowCreateChoices(false); onNewPrompt(); }}>
-                  По описанию
-                </button>
-                <button type="button" role="menuitem" onClick={() => { setShowCreateChoices(false); setCreating(true); }}>
-                  Вручную
-                </button>
-              </div>
-            )}
-          </div>
+          <button type="button" className="library-new-prompt" onClick={onNewPrompt}>
+            <Sparkle size={18} weight="fill" /> Подобрать музыку
+          </button>
         )}
       </div>
 
@@ -423,13 +417,13 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
               <PlaylistCover playlistId={p.id} />
               <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                 <p className="search-row-title">{p.name}</p>
-                <p className="text-muted search-row-meta">{p.trackCount} тр.</p>
+                <p className="text-muted search-row-meta">Плейлист · {trackCountLabel(p.trackCount)}</p>
               </div>
             </button>
           ))}
         </div>
       )}
-    </GlassPanel>
+    </section>
   );
 }
 
@@ -536,13 +530,13 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
   }
 
   return (
-    <GlassPanel className="reveal library-section">
-      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+    <section className="reveal library-section playlist-detail">
+      <div className="row library-section-head">
         <button type="button" className="action-btn action-btn--neutral" aria-label="Назад к Музыке" onClick={onBack}>
           <ArrowLeft size={20} />
         </button>
         {playlist && !confirmDelete && (
-          <div className="row" style={{ gap: 6 }}>
+          <div className="row library-detail-actions">
             {playlist.tracks.length > 0 && (
               <button
                 type="button"
@@ -573,7 +567,7 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
           </div>
         )}
         {confirmDelete && (
-          <div className="row" style={{ gap: 6 }}>
+          <div className="row library-detail-actions">
             <button type="button" className="action-btn action-btn--destructive" aria-label="Подтвердить удаление" onClick={() => void handleDelete()}>
               <Check size={18} weight="bold" />
             </button>
@@ -694,7 +688,7 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
           )}
         </>
       )}
-    </GlassPanel>
+    </section>
   );
 }
 
@@ -763,7 +757,7 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
     <div className="stack">
       <PlaylistsSection onOpen={setOpenPlaylistId} onNewPrompt={onNewPrompt} />
 
-      <GlassPanel className="reveal library-section">
+      <section className="reveal library-section library-tracks">
         <h2 className="screen-title">Треки</h2>
 
         {tracks === null && (
@@ -839,11 +833,9 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
             ))}
           </div>
         )}
-      </GlassPanel>
+      </section>
 
-      <GlassPanel className="reveal library-section">
-        <LibrarySection onOpen={onOpenHistory} />
-      </GlassPanel>
+      <LibrarySection onOpen={onOpenHistory} />
     </div>
   );
 }

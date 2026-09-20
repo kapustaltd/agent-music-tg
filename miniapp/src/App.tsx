@@ -47,7 +47,7 @@ const AdminScreen = lazy(() => import("./screens/AdminScreen"));
 type Screen =
   | { kind: "prompt"; initialMode?: "ai" | "search"; initialQuery?: string }
   | { kind: "clarify"; question: string; options: string[] }
-  | { kind: "results"; playlist: FinalizedPlaylist; generationId: number; saved?: boolean }
+  | { kind: "results"; playlist: FinalizedPlaylist; generationId: number; saved?: boolean; request?: string }
   | { kind: "shared"; token: string }
   | { kind: "buy"; reason?: string }
   | { kind: "playlists" }
@@ -288,7 +288,12 @@ function AppInner() {
       navigate({ kind: "clarify", question: outcome.question, options: outcome.options });
     } else if (outcome.status === "ok") {
       window.dispatchEvent(new CustomEvent("balance-changed"));
-      navigate({ kind: "results", playlist: outcome.playlist, generationId: outcome.generationId });
+      navigate({
+        kind: "results",
+        playlist: outcome.playlist,
+        generationId: outcome.generationId,
+        request: lastGenerate?.prompt,
+      });
     } else if (outcome.status === "needs_purchase") {
       navigate({ kind: "buy", reason: "Генерации закончились. Выберите пакет, чтобы продолжить." });
     } else if (outcome.status === "rate_limited") {
@@ -308,6 +313,7 @@ function AppInner() {
       kind: "results",
       generationId: entry.id,
       saved,
+      request: entry.prompt,
       playlist: { name: entry.playlistName ?? entry.prompt, tracks: entry.tracks },
     });
   }
@@ -342,6 +348,8 @@ function AppInner() {
             playlist={screen.playlist}
             generationId={screen.generationId}
             initialSaved={screen.saved}
+            requestSummary={screen.request}
+            onEditRequest={screen.request ? () => navigate({ kind: "prompt", initialQuery: screen.request }, "back") : undefined}
           />
         );
       case "shared":
@@ -430,7 +438,7 @@ function AppInner() {
 
   return (
     <ErrorBoundary onReset={handleReset}>
-    <main className="app-shell">
+    <main className={`app-shell app-shell--${screen.kind}`}>
       <aside className="app-sidebar" aria-label="Навигация приложения">
         <header className="app-top-bar">
           <button

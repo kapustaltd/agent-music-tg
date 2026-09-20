@@ -414,9 +414,6 @@ export function SearchMode({
                 <div className="search-artist-copy">
                   <p className="search-row-title">{name}</p>
                 </div>
-                <span className="search-artist-enter" aria-hidden>
-                  <CaretRightIcon size={17} weight="bold" />
-                </span>
               </button>
             ))}
           </div>
@@ -442,8 +439,9 @@ export function SearchMode({
                     // borrow a cover from the tracks once they are loaded.
                     artwork={album.artwork ?? open?.tracks.find((t) => t.artwork)?.artwork}
                     title={album.title}
-                    meta={album.artist}
+                    meta={`Альбом · ${album.artist}`}
                     metaClassName="search-row-meta"
+                    ariaExpanded={Boolean(open)}
                     trailing={
                       <>
                         <button
@@ -465,10 +463,12 @@ export function SearchMode({
                             <DownloadSimple size={18} />
                           )}
                         </button>
-                        <span className={`album-chevron${open ? " open" : ""}`} aria-hidden>
-                          <CaretRightIcon size={16} />
-                        </span>
                       </>
+                    }
+                    mainTrailing={
+                      <span className={`album-chevron${open ? " open" : ""}`} aria-hidden>
+                        <CaretRightIcon size={16} />
+                      </span>
                     }
                   />
                   {open && (

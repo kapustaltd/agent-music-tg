@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUp, CaretRight, CircleNotch } from "../icons";
+import { ArrowUp, CaretRight } from "../icons";
 import { GenerationStatus } from "../components/GenerationStatus";
 import type { AgentProgressEvent } from "../lib/api";
 
@@ -26,7 +26,7 @@ export function ClarifyScreen({
   }
 
   return (
-    <section className="reveal clarify-page">
+    <section className="reveal clarify-page" aria-busy={busy}>
       <h1 className="screen-title">Какой плейлист собрать?</h1>
       <p className="clarify-question">{question}</p>
       <div className="stack">
@@ -39,7 +39,7 @@ export function ClarifyScreen({
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}
           >
             <span>{option}</span>
-            {busy ? <CircleNotch size={16} className="spin" /> : <CaretRight size={18} weight="bold" className="chevron" />}
+            <CaretRight size={18} weight="bold" className="chevron" />
           </button>
         ))}
       </div>
@@ -67,7 +67,7 @@ export function ClarifyScreen({
           disabled={!canSubmitCustom}
           onClick={submitCustom}
         >
-          {busy ? <CircleNotch size={20} weight="bold" className="spin" /> : <ArrowUp size={20} weight="bold" />}
+          <ArrowUp size={20} weight="bold" />
         </button>
       </div>
 

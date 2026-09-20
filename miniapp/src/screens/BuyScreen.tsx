@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleNotch, MagnifyingGlass, Check, CreditCard, Gift, Star } from "../icons";
-import { GlassPanel } from "../components/GlassPanel";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { InlineNotice } from "../components/InlineNotice";
@@ -8,6 +7,7 @@ import { TrackSkeleton } from "../components/TrackSkeleton";
 import { SbpPayPopup } from "../components/SbpPayPopup";
 import { api, type Offer, type Invoice, type PaymentMethod, type TrialStatus } from "../lib/api";
 import { openPayUrl, openStarsInvoice, openSupport } from "../lib/telegram";
+import { purchaseLabel, purchasePrice, purchaseTimestamp } from "../lib/purchase";
 
 // Russian plural forms: 1 генерация / 2 генерации / 5 генераций.
 function pluralRu(n: number, [one, few, many]: [string, string, string]): string {
@@ -76,16 +76,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   const selected = visible.find((offer) => offer.id === selectedId) ?? visible.find((offer) => offer.rubAmount || offer.starsAmount);
   const selectedMethod: PaymentMethod = selected?.rubAmount && (method === "platega" || !selected.starsAmount) ? "platega" : "stars";
   const selectedPrice = selectedMethod === "platega" ? `${selected?.rubAmount} ₽` : `${selected?.starsAmount} звёзд`;
-
-  function purchaseLabel(invoice: Invoice) {
-    const offer = visible.find((item) => item.id === invoice.offerId);
-    return offer ? grantLabel(offer) : "Подписка";
-  }
-
-  function purchasePrice(invoice: Invoice) {
-    const unit = invoice.asset === "XTR" ? "звёзд" : invoice.asset === "RUB" ? "₽" : invoice.asset;
-    return `${invoice.amount} ${unit}`;
-  }
 
   async function buy(offerId: number, method: PaymentMethod = "stars") {
     setBusyId(offerId);
@@ -170,12 +160,12 @@ export default function BuyScreen({ reason }: { reason?: string }) {
 
   return (
     <div className="stack subscription-page">
-      <GlassPanel className="reveal">
+      <header className="subscription-header reveal">
         <h1 className="screen-title">Подписка</h1>
-      </GlassPanel>
+      </header>
 
       {reason && (
-        <GlassPanel role="status"><CreditCard size={18} weight="bold" /> {reason}</GlassPanel>
+        <p className="subscription-notice" role="status"><CreditCard size={18} weight="bold" /> {reason}</p>
       )}
 
       {showSuccess && (
@@ -188,11 +178,11 @@ export default function BuyScreen({ reason }: { reason?: string }) {
       )}
 
       {trialSuccess && (
-        <GlassPanel role="status"><Gift size={18} weight="bold" /> Бесплатный пакет активирован: 10 генераций на 3 дня.</GlassPanel>
+        <p className="subscription-notice" role="status"><Gift size={18} weight="bold" /> Бесплатный пакет активирован: 10 генераций на 3 дня.</p>
       )}
 
       {trial && !trial.claimed && (
-        <GlassPanel className="reveal trial-card" tone="tinted">
+        <section className="reveal trial-card">
           <div className="trial-card-row">
             <span className="trial-card-info">
               <span className="trial-card-title"><Gift size={16} weight="bold" /> Пробный доступ</span>
@@ -207,10 +197,10 @@ export default function BuyScreen({ reason }: { reason?: string }) {
               Попробовать
             </button>
           </div>
-        </GlassPanel>
+        </section>
       )}
 
-      <GlassPanel className="reveal">
+      <section className="reveal subscription-offers">
         {error && <ErrorBanner message={error} onClose={() => setError(null)} />}
         {offers === null ? (
           <TrackSkeleton rows={3} />
@@ -220,17 +210,26 @@ export default function BuyScreen({ reason }: { reason?: string }) {
           <div className="stack reveal-stagger">
             <div className="subscription-options" role="group" aria-label="Срок подписки">
             {visible.map((o) => (
-              <button type="button" key={o.id}
-                className={`subscription-option${visible.length === 1 ? " subscription-option--single" : ""}${selected?.id === o.id && visible.length > 1 ? " is-selected" : ""}`}
-                aria-pressed={visible.length > 1 ? selected?.id === o.id : undefined}
-                disabled={busyId !== null || (!o.rubAmount && !o.starsAmount)}
-                onClick={() => setSelectedId(o.id)}>
-                <span className="subscription-option-copy">
-                  <strong>{grantLabel(o)}{o.rubAmount ? ` · ${o.rubAmount} ₽` : ""}</strong>
-                  <span className="text-muted">{o.starsAmount ? `${o.starsAmount} звёзд Telegram` : o.rubAmount ? "Оплата по СБП" : "Оплата недоступна"}</span>
-                </span>
-                {visible.length > 1 && selected?.id === o.id && <Check size={22} aria-hidden="true" />}
-              </button>
+              visible.length === 1 ? (
+                <div key={o.id} className="subscription-option subscription-option--single">
+                  <span className="subscription-option-copy">
+                    <strong>{grantLabel(o)}{o.rubAmount ? ` · ${o.rubAmount} ₽` : ""}</strong>
+                    <span className="text-muted">{o.starsAmount ? `${o.starsAmount} звёзд Telegram` : o.rubAmount ? "Оплата по СБП" : "Оплата недоступна"}</span>
+                  </span>
+                </div>
+              ) : (
+                <button type="button" key={o.id}
+                  className={`subscription-option${selected?.id === o.id ? " is-selected" : ""}`}
+                  aria-pressed={selected?.id === o.id}
+                  disabled={busyId !== null || (!o.rubAmount && !o.starsAmount)}
+                  onClick={() => setSelectedId(o.id)}>
+                  <span className="subscription-option-copy">
+                    <strong>{grantLabel(o)}{o.rubAmount ? ` · ${o.rubAmount} ₽` : ""}</strong>
+                    <span className="text-muted">{o.starsAmount ? `${o.starsAmount} звёзд Telegram` : o.rubAmount ? "Оплата по СБП" : "Оплата недоступна"}</span>
+                  </span>
+                  {selected?.id === o.id && <Check size={22} aria-hidden="true" />}
+                </button>
+              )
             ))}
             </div>
             {selected && <div className="subscription-checkout">
@@ -248,18 +247,18 @@ export default function BuyScreen({ reason }: { reason?: string }) {
             </div>}
           </div>
         )}
-      </GlassPanel>
+      </section>
 
       {paidInvoices.length > 0 && (
-        <GlassPanel className="reveal">
+        <section className="reveal subscription-history">
           <h2 className="screen-title">История оплат</h2>
           <ul className="plain-list purchase-list">
             {paidInvoices.map((p) => (
               <li key={p.id} className="purchase-history-row">
                 <span className="purchase-history-copy">
-                  <strong>{purchaseLabel(p)}</strong>
-                  <time dateTime={new Date((p.paidAt ?? p.createdAt) * 1000).toISOString()}>
-                    {new Date((p.paidAt ?? p.createdAt) * 1000).toLocaleDateString("ru-RU")}
+                  <strong>{purchaseLabel(p, visible)}</strong>
+                  <time dateTime={new Date(purchaseTimestamp(p) * 1000).toISOString()}>
+                    {new Date(purchaseTimestamp(p) * 1000).toLocaleDateString("ru-RU")}
                   </time>
                 </span>
                 <span className="purchase-history-price">
@@ -268,7 +267,7 @@ export default function BuyScreen({ reason }: { reason?: string }) {
               </li>
             ))}
           </ul>
-        </GlassPanel>
+        </section>
       )}
 
       {sbpInvoice && (

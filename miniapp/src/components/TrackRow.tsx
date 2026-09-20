@@ -22,6 +22,7 @@ export function TrackRow({
   meta,
   metaClassName = "fs-label",
   artworkBadge,
+  mainTrailing,
   trailing,
   ariaExpanded,
 }: {
@@ -34,6 +35,8 @@ export function TrackRow({
   meta: ReactNode;
   metaClassName?: string;
   artworkBadge?: ReactNode;
+  /** Optional affordance that belongs to the primary row target (e.g. album expand). */
+  mainTrailing?: ReactNode;
   trailing?: ReactNode;
   ariaExpanded?: boolean;
 }) {
@@ -59,6 +62,7 @@ export function TrackRow({
           <p className={`text-muted ${metaClassName}`}>{meta}</p>
         )}
       </div>
+      {mainTrailing}
     </>
   );
 
