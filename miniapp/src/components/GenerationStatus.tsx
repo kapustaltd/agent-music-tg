@@ -29,7 +29,7 @@ export function GenerationStatus({ progress, prompt }: { progress: AgentProgress
       <span>{label}…</span>
     </div>
       {tracks.length > 0 && <div className="generation-tracks">
-        <p className="text-muted fs-label">Найденные треки — подбор ещё идёт</p>
+        <p className="text-muted fs-label">Почти нашёл… Часть треков ниже</p>
         {tracks.map((track) => <TrackRow key={track.uri} artwork={track.artwork} title={track.title} meta={track.artist} onClick={() => player.toggle(track, tracks)} />)}
       </div>}
     </section>

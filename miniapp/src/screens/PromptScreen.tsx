@@ -118,7 +118,7 @@ export function PromptScreen({
   return (
     <div className={`reveal prompt-card${mode === "search" ? " prompt-card--search" : ""}${busy ? " prompt-card--busy" : ""}`}>
       <div className="prompt-compose">
-        <h1 className="prompt-heading">{mode === "ai" ? "Что включим?" : "Найти музыку"}</h1>
+        <h1 className="sr-only">{mode === "ai" ? "Подобрать музыку" : "Найти музыку"}</h1>
 
         <div className="prompt-modes" role="group" aria-label="Режим">
           {MODES.map((m) => {

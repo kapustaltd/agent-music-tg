@@ -128,7 +128,7 @@ export function WebNowPlaying({ onOpen }: { onOpen?: () => void }) {
             ))}
           </div>
         ) : (
-          <p className="web-now-playing-empty">Добавьте треки в очередь из поиска или плейлиста.</p>
+          <p className="web-now-playing-empty">Кажется, дальше песен нет…</p>
         )}
       </div>
     </aside>

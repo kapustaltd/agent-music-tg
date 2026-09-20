@@ -269,7 +269,6 @@ export function ResultsScreen({
             )) : <MusicNotes className="results-playlist-cover-fallback" size={28} weight="duotone" />}
           </div>
           <div className="results-playlist-header-copy">
-            <p className="results-playlist-kicker">Плейлист</p>
             {editingName ? (
         <input
           className="playlist-name-input"

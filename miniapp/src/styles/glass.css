@@ -10106,3 +10106,70 @@ input, textarea { caret-color: var(--accent); }
 .web-now-playing-queue, .web-now-playing-like, .web-now-playing-next { min-width: 44px; min-height: 44px; }
 .web-now-playing-play { width: 56px; height: 56px; min-width: 56px; min-height: 56px; }
 .library-new-prompt { align-self: flex-start; min-height: 44px; text-align: left; }
+
+/* Final visual cleanup from the compact mobile pass. Keep the tab and mode
+   controls as quiet segmented surfaces instead of drawing a bright underline
+   along the active item. */
+.dock-tab.active,
+:root[data-scheme="light"] .dock-tab.active {
+  background: transparent;
+  box-shadow: none;
+}
+
+.prompt-modes,
+:root[data-scheme="light"] .prompt-modes {
+  align-self: flex-start;
+  width: min(100%, 360px);
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--lg-v2-chip-border);
+  border-radius: var(--radius-btn);
+  background: var(--lg-v2-input-bg);
+}
+
+:root[data-scheme="light"] .prompt-modes {
+  border-color: var(--glass-border-light);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.prompt-mode-seg-btn,
+.prompt-mode-seg-btn.active,
+:root[data-scheme="light"] .prompt-mode-seg-btn.active {
+  min-height: 44px;
+  border-radius: var(--radius-btn);
+  box-shadow: none;
+}
+
+.prompt-mode-seg-btn.active,
+:root[data-scheme="light"] .prompt-mode-seg-btn.active {
+  background: color-mix(in srgb, var(--text-dark) 10%, transparent);
+  color: var(--text-dark);
+}
+
+.prompt-pill:focus-within,
+:root[data-scheme="light"] .prompt-pill:focus-within,
+.results-extend .prompt-pill:focus-within {
+  outline: none;
+  outline-offset: 0;
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--lg-v2-chip-border));
+  box-shadow: none;
+}
+
+@media (max-width: 839px) {
+  .results-actions {
+    grid-template-columns: 44px 44px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .results-action,
+  .results-action--icon,
+  .results-action--download {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .results-action--download {
+    width: 100%;
+    padding-inline: 16px;
+  }
+}
