@@ -1,5 +1,4 @@
 import { Sparkle, Storefront, MusicNotes, Shield } from "../icons";
-import { useDockVisibility } from "../lib/useDockVisibility";
 
 type Tab = "create" | "shop" | "playlists" | "admin";
 
@@ -18,13 +17,12 @@ export function BottomNav({
   isAdmin: boolean;
   onTab: (tab: Tab) => void;
 }) {
-  const dockVisible = useDockVisibility();
   const tabs = isAdmin
     ? [...TABS, { key: "admin" as const, icon: Shield, label: "Админ" }]
     : TABS;
 
   return (
-    <nav className={`dock${dockVisible ? "" : " dock--hidden"}`} aria-label="Главное меню">
+    <nav className="dock" aria-label="Главное меню">
       <div className="dock-inner">
         {tabs.map((t) => {
           const Icon = t.icon;
