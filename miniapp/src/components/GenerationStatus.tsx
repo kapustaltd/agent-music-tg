@@ -5,9 +5,9 @@ import type { AgentProgressEvent, AgentProgressPhase } from "../lib/api";
 
 const STATUS_LABELS: Record<AgentProgressPhase, string> = {
   searching_tracks: "Ищу подходящие треки",
-  searching_artist: "Ищу исполнителя",
-  found_tracks: "Проверяю найденное",
-  found_artist: "Проверяю исполнителя",
+  searching_artist: "Сверяю исполнителей",
+  found_tracks: "Проверяю найденные треки",
+  found_artist: "Проверяю исполнителей",
   building_playlist: "Собираю плейлист",
   adding_tracks: "Добавляю треки",
   clarifying: "Уточняю запрос",
@@ -26,10 +26,8 @@ export function GenerationStatus({ progress }: { progress: AgentProgressEvent[] 
   const player = usePlayer();
   const tracks = [...new Map(progress.flatMap((event) => event.tracks ?? []).map((track) => [track.uri, track])).values()].slice(0, 6);
   const latest = progress.at(-1);
-  const resultLabel = foundLabel(tracks.length);
-  const label = tracks.length > 0
-    ? `${resultLabel} · ${(latest ? STATUS_LABELS[latest.phase] : "Подбираю ещё").toLowerCase()}`
-    : latest ? STATUS_LABELS[latest.phase] : "Ищу подходящие треки";
+  const title = latest ? STATUS_LABELS[latest.phase] : "Ищу подходящие треки";
+  const detail = tracks.length > 0 ? foundLabel(tracks.length) : "Подбор начался";
 
   return (
     <section className="generation-preview" aria-label="Подбор музыки" aria-busy="true">
@@ -37,9 +35,12 @@ export function GenerationStatus({ progress }: { progress: AgentProgressEvent[] 
         <span className="generation-status-icon" aria-hidden="true">
           <CircleNotch size={17} weight="bold" className="spin" />
         </span>
-        <span>{label}…</span>
+        <span className="generation-status-copy">
+          <strong className="generation-status-title">{title}</strong>
+          <span className="generation-status-detail">{detail}</span>
+        </span>
       </div>
-      {tracks.length > 0 && <div className="generation-tracks">
+      {tracks.length > 0 && <div className="generation-tracks" aria-label="Уже найденные треки">
         {tracks.map((track) => <TrackRow key={track.uri} artwork={track.artwork} title={track.title} meta={track.artist} onClick={() => player.toggle(track, tracks)} />)}
       </div>}
     </section>

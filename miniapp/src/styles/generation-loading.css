@@ -1,0 +1,86 @@
+/* Generation loading: status explains the work; preview rows stay content.
+   No divider rails, nested cards or fake percentage bars in this state. */
+.prompt-card--busy .prompt-request-summary {
+  margin-bottom: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 0;
+}
+
+.generation-preview {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.generation-status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-1) 0 var(--space-2);
+  border: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.generation-status-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.generation-status-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.generation-status-title {
+  color: var(--text-dark);
+  font-size: clamp(18px, 4.8vw, 21px);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.generation-status-detail {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+  line-height: 1.35;
+}
+
+.generation-tracks {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.generation-tracks .track-row,
+.prompt-card--busy .generation-tracks .track-row {
+  min-height: 68px;
+  margin: 0;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 0;
+  border-radius: var(--radius-compact);
+  background: transparent;
+  box-shadow: none;
+}
+
+.generation-tracks .track-row:hover,
+.generation-tracks .track-row:active {
+  background: var(--control-surface);
+}
+
+.generation-tracks .track-row:last-child {
+  border-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generation-status-icon .spin {
+    animation: none;
+  }
+}

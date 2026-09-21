@@ -359,41 +359,6 @@ export function ResultsScreen({
             <button className="glass-button" onClick={() => void handleShare()}>Повторить</button>
           </div>
         )}
-        {extendError && (
-          <div className="error-row mt-12">
-            <span className="error-row-icon"><WarningCircle size={16} weight="bold" /></span>
-            <p role="alert" className="error-row-message">{extendError}</p>
-          </div>
-        )}
-
-        <section className="results-extend" aria-labelledby="results-extend-title">
-          <div className="results-extend-heading">
-            <div>
-              <h2 id="results-extend-title">Добавить по описанию</h2>
-            </div>
-          </div>
-          <div className="prompt-pill results-extend-input">
-            <textarea
-              className="prompt-pill-input"
-              rows={1}
-              value={extendPrompt}
-              onChange={(e) => setExtendPrompt(e.target.value)}
-              placeholder="Например: больше инди или джаза"
-              aria-label="Какие треки добавить?"
-              disabled={extendBusy}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void handleExtend();
-                }
-              }}
-            />
-            <button type="button" className="prompt-submit" aria-label="Добавить треки в плейлист" title="Добавить треки" disabled={extendBusy || extendPrompt.trim().length === 0} onClick={() => void handleExtend()}>
-              {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
-            </button>
-          </div>
-        </section>
-
       {done.current && visibleTracks.length === 0 ? (
         <p className="text-muted mt-16">Все треки недоступны</p>
       ) : (
@@ -452,6 +417,41 @@ export function ResultsScreen({
         ))}
         </div>
       )}
+
+      {extendError && (
+        <div className="error-row mt-12">
+          <span className="error-row-icon"><WarningCircle size={16} weight="bold" /></span>
+          <p role="alert" className="error-row-message">{extendError}</p>
+        </div>
+      )}
+
+      <section className="results-extend" aria-labelledby="results-extend-title">
+        <div className="results-extend-heading">
+          <div>
+            <h2 id="results-extend-title">Добавить в плейлист</h2>
+          </div>
+        </div>
+        <div className="prompt-pill results-extend-input">
+          <textarea
+            className="prompt-pill-input"
+            rows={1}
+            value={extendPrompt}
+            onChange={(e) => setExtendPrompt(e.target.value)}
+            placeholder="Например: больше инди или джаза"
+            aria-label="Какие треки добавить?"
+            disabled={extendBusy}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleExtend();
+              }
+            }}
+          />
+          <button type="button" className="prompt-submit" aria-label="Добавить треки в плейлист" title="Добавить треки" disabled={extendBusy || extendPrompt.trim().length === 0} onClick={() => void handleExtend()}>
+            {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
+          </button>
+        </div>
+      </section>
       </div>
     </div>
   );
