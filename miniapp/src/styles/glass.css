@@ -6702,7 +6702,7 @@ div.player-bar-thumbnail::after {
   }
 
   .app-shell > .dock .dock-tab.active {
-    background: var(--accent-bg);
+    background: transparent;
   }
 
   @media (hover: hover) {
@@ -7674,7 +7674,7 @@ div.player-bar-thumbnail::after {
   }
 
   .app-sidebar .dock-tab.active {
-    background: var(--accent-bg);
+    background: transparent;
   }
 
   .app-shell > .screen-stack {
@@ -7818,7 +7818,7 @@ div.player-bar-thumbnail::after {
     font-size: var(--fs-label);
   }
 
-  .app-sidebar .dock-tab.active { background: var(--accent-bg); }
+  .app-sidebar .dock-tab.active { background: transparent; }
 
   .app-shell > .screen-stack {
     grid-column: content;
@@ -8014,7 +8014,7 @@ div.player-bar-thumbnail::after {
   }
 
   .app-sidebar .dock-tab.active {
-    background: var(--accent-bg);
+    background: transparent;
   }
 
   .app-shell > .screen-stack {
@@ -8705,7 +8705,7 @@ div.player-bar-thumbnail::after {
     font-size: var(--fs-label);
   }
 
-  .app-sidebar .dock-tab.active { background: var(--accent-bg); }
+  .app-sidebar .dock-tab.active { background: transparent; }
 
   .app-shell > .screen-stack {
     grid-column: content;
