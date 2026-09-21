@@ -938,8 +938,11 @@ h2.screen-title,
     line-height: 1.2;
   }
 
+  /* The app shell already reserves room for the fixed dock/player. Keeping
+     that reserve on the track list puts an unrelated blank block before the
+     next action section instead of at the end of the page. */
   .results-track-list {
-    padding-bottom: calc(var(--dock-height) + 24px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
   }
 }
 
