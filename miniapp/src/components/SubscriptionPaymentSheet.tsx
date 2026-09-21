@@ -14,16 +14,27 @@ const METHOD_ARTWORK: Record<PaymentMethod, string> = {
   stars: "/payment-stars-icon.webp",
 };
 
+function durationLabel(days: number): string {
+  if (days === 30) return "30 дней";
+  if (days === 90) return "90 дней";
+  if (days === 180) return "180 дней";
+  return `${days} дней`;
+}
+
+function starsLabel(amount: number): string {
+  return `${amount} ${amount === 1 ? "звезда" : "звёзд"}`;
+}
+
 function priceLabel(offer: Offer, method: PaymentMethod): string {
   return method === "platega"
     ? `${offer.rubAmount ?? "—"} ₽`
-    : `${offer.starsAmount ?? "—"} звёзд`;
+    : starsLabel(offer.starsAmount ?? 0);
 }
 
-function methodDescription(offer: Offer, method: PaymentMethod): string {
+function methodDescription(method: PaymentMethod): string {
   return method === "platega"
-    ? `От ${offer.rubAmount ?? "—"} ₽`
-    : "1 звезда = 1 ₽";
+    ? "Через банковское приложение"
+    : "Встроенная оплата Telegram";
 }
 
 function PaymentMethodArtwork({ method }: { method: PaymentMethod }) {
@@ -68,8 +79,8 @@ export function SubscriptionPaymentSheet({
       <div className="payment-method-sheet" ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="payment-method-title">
         <div className="payment-method-head">
           <div>
-            <p className="payment-method-kicker">Подписка</p>
-            <h2 id="payment-method-title">{offer.title || `${offer.grantAmount} дней доступа`}</h2>
+            <h2 id="payment-method-title">Оплата</h2>
+            <p className="payment-method-term">{durationLabel(offer.grantAmount)} доступа</p>
           </div>
           <button type="button" className="payment-method-close" aria-label="Закрыть" onClick={onClose}>
             <X size={20} weight="bold" aria-hidden="true" />
@@ -77,9 +88,11 @@ export function SubscriptionPaymentSheet({
         </div>
 
         <div className="payment-method-summary">
-          <span>{offer.grantAmount === 30 ? "1 месяц" : offer.grantAmount === 90 ? "3 месяца" : "6 месяцев"}</span>
-          <strong>Выберите способ оплаты</strong>
+          <span>Срок</span>
+          <strong>{durationLabel(offer.grantAmount)} доступа</strong>
         </div>
+
+        <h3 className="payment-method-section-title">Способ оплаты</h3>
 
         <div className="payment-method-options" role="radiogroup" aria-label="Способ оплаты">
           {methods.map((option) => {
@@ -97,8 +110,9 @@ export function SubscriptionPaymentSheet({
                 <PaymentMethodArtwork method={option} />
                 <span className="payment-method-option-copy">
                   <strong>{METHOD_LABELS[option]}</strong>
-                  <small>{methodDescription(offer, option)}</small>
+                  <small>{methodDescription(option)}</small>
                 </span>
+                <strong className="payment-method-option-price">{priceLabel(offer, option)}</strong>
                 <span className="payment-method-option-check" aria-hidden="true">
                   {selected ? <Check size={18} weight="bold" /> : null}
                 </span>
@@ -116,6 +130,11 @@ export function SubscriptionPaymentSheet({
             )}
           </div>
         )}
+
+        <div className="payment-method-total">
+          <span>Итого</span>
+          <strong>{priceLabel(offer, method)}</strong>
+        </div>
 
         <button
           type="button"

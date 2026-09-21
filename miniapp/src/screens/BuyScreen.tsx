@@ -12,9 +12,9 @@ import { purchaseLabel, purchasePrice, purchaseTimestamp } from "../lib/purchase
 const SUBSCRIPTION_DAYS = [30, 90, 180] as const;
 const PAYMENT_METHODS = ["platega", "stars"] as const satisfies readonly PaymentMethod[];
 function planLabel(days: number): string {
-  if (days === 30) return "1 месяц";
-  if (days === 90) return "3 месяца";
-  if (days === 180) return "6 месяцев";
+  if (days === 30) return "30 дней";
+  if (days === 90) return "90 дней";
+  if (days === 180) return "180 дней";
   return `${days} дней`;
 }
 
@@ -22,12 +22,8 @@ function isSubscriptionPlan(days: number): boolean {
   return SUBSCRIPTION_DAYS.includes(days as (typeof SUBSCRIPTION_DAYS)[number]);
 }
 
-function planPriceLabel(o: Offer): string {
-  const prices = [
-    o.rubAmount ? `${o.rubAmount} ₽` : null,
-    o.starsAmount ? `${o.starsAmount} звёзд Telegram` : null,
-  ].filter((price): price is string => price !== null);
-  return prices.join(" · ") || "Оплата недоступна";
+function starsLabel(amount: number): string {
+  return `${amount} ${amount === 1 ? "звезда" : "звёзд"}`;
 }
 
 export default function BuyScreen({ reason }: { reason?: string }) {
@@ -184,6 +180,7 @@ export default function BuyScreen({ reason }: { reason?: string }) {
       <header className="subscription-header reveal">
         <div className="subscription-heading">
           <h1 className="screen-title">Подписка</h1>
+          <p>Генерация плейлистов без списания кредитов.</p>
         </div>
       </header>
 
@@ -232,7 +229,7 @@ export default function BuyScreen({ reason }: { reason?: string }) {
         ) : (
           <div className="stack reveal-stagger">
             <div className="subscription-section-heading">
-              <h2>Выбери срок</h2>
+              <h2>Выберите срок</h2>
             </div>
             <div className="subscription-plans" role="group" aria-label="Срок подписки">
               {visible.map((o) => (
@@ -245,8 +242,21 @@ export default function BuyScreen({ reason }: { reason?: string }) {
                   onClick={() => openPaymentSheet(o)}
                 >
                   <span className="subscription-plan-duration">{planLabel(o.grantAmount)}</span>
-                  <span className="subscription-plan-days">{o.grantAmount} дней доступа</span>
-                  <span className="subscription-plan-prices">{planPriceLabel(o)}</span>
+                  <span className="subscription-plan-days">Доступ к генерации</span>
+                  <span className="subscription-plan-prices" aria-label="Варианты оплаты">
+                    {o.rubAmount && (
+                      <span className="subscription-plan-price">
+                        <strong>{o.rubAmount} ₽</strong>
+                        <small>СБП</small>
+                      </span>
+                    )}
+                    {o.starsAmount && (
+                      <span className="subscription-plan-price">
+                        <strong>{starsLabel(o.starsAmount)}</strong>
+                        <small>Telegram</small>
+                      </span>
+                    )}
+                  </span>
                   <span className="subscription-plan-check" aria-hidden="true">
                     {selected?.id === o.id ? <Check size={18} weight="bold" /> : null}
                   </span>

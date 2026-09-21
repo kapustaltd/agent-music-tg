@@ -21,6 +21,7 @@
   --fs-nav-label: 12px;
   --content-hairline: rgba(255, 255, 255, 0.1);
   --control-surface: rgba(255, 255, 255, 0.06);
+  --subscription-accent: #ef5350;
 }
 
 :root[data-scheme="light"] {
@@ -35,10 +36,9 @@ select {
   font-family: var(--font-body);
 }
 
-/* The halftone artwork stays behind the app chrome and content. The fixed
-   layer gets a small scroll offset from App.tsx for a restrained parallax
-   effect and never intercepts taps. Screen blend preserves the white pattern
-   on the dark theme; light mode uses a restrained multiply treatment. */
+/* The halftone artwork is a header accent, not a texture for every surface.
+   Its clipped fixed layer gets a small scroll offset from App.tsx for a
+   restrained parallax effect and never intercepts taps. */
 body {
   isolation: isolate;
 }
@@ -46,12 +46,15 @@ body {
 body::before {
   position: fixed;
   z-index: 0;
-  inset: 0;
+  inset: 0 0 auto;
+  height: min(48svh, 460px);
   display: block;
-  background: url("/miniapp-wallpaper.webp") center / cover no-repeat;
+  background: url("/miniapp-wallpaper.webp") center top / cover no-repeat;
   content: "";
   opacity: 0.12;
   mix-blend-mode: screen;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
   pointer-events: none;
   transform: translate3d(0, var(--wallpaper-offset, 0px), 0) scale(1.04);
   transform-origin: center top;
@@ -1649,5 +1652,320 @@ h2.screen-title,
     width: 80px;
     height: 80px;
     flex-basis: 80px;
+  }
+}
+
+/* Final subscription pass: the shop remains branded, but purchase choices
+   read as a calm, opaque surface instead of a transparent poster. */
+.subscription-page {
+  gap: var(--space-6);
+  padding-bottom: calc(var(--space-6) + var(--dock-height) + 56px + env(safe-area-inset-bottom, 0px));
+}
+
+.subscription-heading {
+  gap: var(--space-2);
+}
+
+.subscription-heading p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+  line-height: 1.4;
+}
+
+.subscription-plans {
+  display: grid;
+  gap: var(--space-2);
+  overflow: visible;
+}
+
+.subscription-plan {
+  min-height: 132px;
+  padding: var(--space-4);
+  background: var(--surface);
+  border-color: var(--content-hairline);
+}
+
+.subscription-plan:hover {
+  background: color-mix(in srgb, var(--surface) 92%, var(--text-primary) 8%);
+}
+
+.subscription-plan.is-selected {
+  border-color: var(--subscription-accent);
+  background: color-mix(in srgb, var(--surface) 88%, var(--subscription-accent) 12%);
+}
+
+.subscription-plan-check,
+.app-shell--buy .dock-tab.active .dock-tab-icon {
+  color: var(--subscription-accent);
+}
+
+.subscription-plan-duration {
+  font-weight: 650;
+}
+
+.subscription-plan-days {
+  line-height: 1.3;
+}
+
+.subscription-plan-prices {
+  display: grid;
+  gap: 3px;
+  padding-top: var(--space-3);
+}
+
+.subscription-plan-price {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.subscription-plan-price strong {
+  font-size: var(--fs-metadata);
+  font-weight: 650;
+}
+
+.subscription-plan-price small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.payment-method-overlay,
+.sbp-overlay {
+  background: rgba(0, 0, 0, 0.72);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+}
+
+.payment-method-sheet,
+.sbp-sheet {
+  background: var(--surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.payment-method-sheet {
+  padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.payment-method-head h2 {
+  font-size: var(--fs-screen-title);
+  font-weight: 650;
+}
+
+.payment-method-term {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.payment-method-summary {
+  gap: 4px;
+  margin-top: var(--space-5);
+  padding: 0;
+}
+
+.payment-method-summary span {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+}
+
+.payment-method-summary strong {
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.payment-method-section-title {
+  margin: var(--space-5) 0 var(--space-3);
+  color: var(--text-dark);
+  font-size: var(--fs-title);
+  font-weight: 650;
+}
+
+.payment-method-options {
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+.payment-method-option {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto 24px;
+  align-items: center;
+  min-height: 76px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--text-primary) 8%);
+  border-color: var(--content-hairline);
+}
+
+.payment-method-option:hover {
+  background: color-mix(in srgb, var(--surface) 86%, var(--text-primary) 14%);
+}
+
+.payment-method-option--platega {
+  border-color: var(--content-hairline);
+}
+
+.payment-method-option--platega.is-selected {
+  background: color-mix(in srgb, var(--surface) 88%, #ed4c5c 12%);
+}
+
+.payment-method-option--stars.is-selected {
+  background: color-mix(in srgb, var(--surface) 88%, #f0c51b 12%);
+}
+
+.payment-method-option-copy {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-height: 0;
+  max-width: none;
+  padding-inline: var(--space-3);
+}
+
+.payment-method-option-copy strong {
+  font-size: var(--fs-body);
+  line-height: 1.2;
+}
+
+.payment-method-option-copy small {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+  line-height: 1.25;
+}
+
+.payment-method-option-price {
+  padding-inline-start: var(--space-2);
+  color: var(--text-dark);
+  font-size: var(--fs-body);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.payment-method-art,
+.payment-method-art--platega,
+.payment-method-art--stars {
+  position: relative;
+  inset: auto;
+  width: 48px;
+  height: 48px;
+}
+
+.payment-method-art img {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-control);
+  object-fit: contain;
+  outline: 1px solid oklch(1 0 0 / 0.1);
+}
+
+.payment-method-art--platega img,
+.payment-method-art--stars img,
+:root[data-scheme="light"] .payment-method-art--platega img,
+:root[data-scheme="light"] .payment-method-art--stars img {
+  filter: none;
+  mix-blend-mode: normal;
+}
+
+.payment-method-option-check {
+  position: relative;
+  inset: auto;
+  width: 24px;
+  height: 24px;
+  color: var(--subscription-accent);
+}
+
+.payment-method-option--stars.is-selected .payment-method-option-check {
+  color: #f0c51b;
+}
+
+.payment-method-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.payment-method-total strong {
+  color: var(--text-dark);
+  font-size: var(--fs-title);
+  font-weight: 650;
+}
+
+.glass-button.primary.payment-method-submit,
+.glass-button.primary.sbp-pay-btn,
+:root[data-scheme="light"] .glass-button.primary.payment-method-submit,
+:root[data-scheme="light"] .glass-button.primary.sbp-pay-btn {
+  margin-top: var(--space-4);
+  background: var(--subscription-accent);
+  color: #101012;
+}
+
+@media (max-width: 560px) {
+  .subscription-plans {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-plan {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    min-height: 76px;
+    padding: 14px 16px;
+  }
+
+  .subscription-plan-duration {
+    grid-column: 1;
+    grid-row: 1;
+    padding-inline-end: 0;
+  }
+
+  .subscription-plan-days {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .subscription-plan-prices {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    padding: 0 28px 0 12px;
+  }
+
+  .subscription-plan-check {
+    inset-block-start: 12px;
+    inset-inline-end: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .payment-method-option {
+    grid-template-columns: 44px minmax(0, 1fr) 24px;
+  }
+
+  .payment-method-option-price {
+    grid-column: 2;
+    grid-row: 2;
+    padding-inline-start: 12px;
+    font-size: var(--fs-metadata);
+  }
+
+  .payment-method-option-check {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .payment-method-art,
+  .payment-method-art--platega,
+  .payment-method-art--stars,
+  .payment-method-art img {
+    width: 44px;
+    height: 44px;
   }
 }
