@@ -5,7 +5,7 @@ import {
   MusicNotes,
   ChartBar,
   UsersThree, Copy, Check,
-  Question, CaretRight,
+  Question, CaretRight, Shield,
 } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { Segmented } from "../components/Segmented";
@@ -254,12 +254,14 @@ export default function ProfileScreen({
   me,
   onGoShop,
   onOpenHelp,
+  onOpenAdmin,
   accent,
   onChangeAccent,
 }: {
   me: MeResponse | null;
   onGoShop: () => void;
   onOpenHelp: () => void;
+  onOpenAdmin: () => void;
   accent: string;
   onChangeAccent: (value: string) => void;
 }) {
@@ -371,6 +373,21 @@ export default function ProfileScreen({
           <CaretRight size={18} weight="bold" aria-hidden="true" />
         </button>
       </GlassPanel>
+
+      {me?.isAdmin && (
+        <GlassPanel className="reveal profile-help-panel">
+          <button type="button" className="profile-help-link" onClick={onOpenAdmin}>
+            <span className="profile-help-icon" aria-hidden="true">
+              <Shield size={20} weight="bold" />
+            </span>
+            <span>
+              <strong>Админ-панель</strong>
+              <small>Служебные настройки</small>
+            </span>
+            <CaretRight size={18} weight="bold" aria-hidden="true" />
+          </button>
+        </GlassPanel>
+      )}
 
       <GlassPanel className="reveal">
         <h2 className="screen-title" style={{ marginBottom: 14 }}>История покупок</h2>

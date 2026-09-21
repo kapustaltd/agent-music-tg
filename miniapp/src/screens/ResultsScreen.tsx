@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, Pause, PencilSimple, Plus, ShareNetwork, WarningCircle } from "../icons";
+import { BookmarkSimple, CheckCircle, CircleNotch, DownloadSimple, ListPlus, MusicNotes, Pause, PencilSimple, Play, Plus, ShareNetwork, WarningCircle } from "../icons";
 import { TrackRow } from "../components/TrackRow";
 import { TrackOverflowMenu } from "../components/TrackOverflowMenu";
 import { SaveTrackButton } from "../components/SaveTrackButton";
@@ -52,6 +52,12 @@ export function ResultsScreen({
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
   const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 1);
+  const firstVisibleTrack = visibleTracks[0];
+  const isFirstTrackPlaying = firstVisibleTrack !== undefined
+    && player.track?.uri === firstVisibleTrack.uri
+    && player.status === "playing";
+  const downloadTrackCount = current.tracks.length;
+  const downloadActionLabel = `Скачать ${trackCountLabel(downloadTrackCount)} в чат`;
 
   // The server resolves the URL in the background, while the browser starts
   // buffering the first likely choice. PlayerProvider keeps this one audio
@@ -111,9 +117,31 @@ export function ResultsScreen({
   }, [uris.join(",")]);
 
   function handleTrackClick(track: typeof current.tracks[0]) {
+    const queueTracks = visibleTracks.length > 0 ? visibleTracks : current.tracks;
     player.toggle(
       { uri: track.uri, title: track.title, artist: track.artist, artwork: track.artwork },
-      current.tracks.map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork })),
+      queueTracks.map((t) => ({ uri: t.uri, title: t.title, artist: t.artist, artwork: t.artwork, durationMs: t.durationMs })),
+    );
+  }
+
+  function handlePlayPlaylist() {
+    if (!firstVisibleTrack) return;
+    const queueTracks = (visibleTracks.length > 0 ? visibleTracks : current.tracks).map((track) => ({
+      uri: track.uri,
+      title: track.title,
+      artist: track.artist,
+      artwork: track.artwork,
+      durationMs: track.durationMs,
+    }));
+    player.toggle(
+      {
+        uri: firstVisibleTrack.uri,
+        title: firstVisibleTrack.title,
+        artist: firstVisibleTrack.artist,
+        artwork: firstVisibleTrack.artwork,
+        durationMs: firstVisibleTrack.durationMs,
+      },
+      queueTracks,
     );
   }
 
@@ -291,7 +319,7 @@ export function ResultsScreen({
         />
             ) : (
         <h1 className="playlist-name-title">
-          {current.name}
+          <span className="playlist-name-text">{current.name}</span>
           <button
             type="button"
             className="playlist-name-edit-btn"
@@ -309,22 +337,32 @@ export function ResultsScreen({
         <div className="results-actions playlist-action-bar" aria-label="Действия с плейлистом">
           <button
             type="button"
-            className="glass-button primary playlist-action-download"
+            className="glass-button primary playlist-action-listen"
+            onClick={handlePlayPlaylist}
+            disabled={!firstVisibleTrack}
+            aria-label={isFirstTrackPlaying ? "Пауза" : "Слушать"}
+          >
+            {isFirstTrackPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
+            <span>{isFirstTrackPlaying ? "Пауза" : "Слушать"}</span>
+          </button>
+          <button
+            type="button"
+            className="icon-btn playlist-action-icon playlist-action-download"
             onClick={handleDownload}
             disabled={download.kind === "sending"}
-            aria-label={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать плейлист"}
-            title={download.kind === "sending" ? "Отправляю в чат…" : download.kind === "sent" ? "Отправлено в чат" : "Скачать плейлист"}
+            aria-label={download.kind === "sending" ? `Отправляю ${trackCountLabel(downloadTrackCount)} в чат…` : download.kind === "sent" ? `Отправлено: ${trackCountLabel(downloadTrackCount)} в чат` : downloadActionLabel}
+            title={download.kind === "sending" ? `Отправляю ${trackCountLabel(downloadTrackCount)} в чат…` : download.kind === "sent" ? `Отправлено: ${trackCountLabel(downloadTrackCount)} в чат` : downloadActionLabel}
           >
             {download.kind === "sending" ? <CircleNotch size={18} className="spin" /> : download.kind === "sent" ? <CheckCircle size={18} weight="fill" /> : <DownloadSimple size={18} />}
-            <span>{download.kind === "sent" ? "Отправлено" : "Скачать"}</span>
+            <span className="results-action-text sr-only">{downloadActionLabel}</span>
           </button>
-          <button type="button" className={`icon-btn playlist-action-icon${saved ? " active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-pressed={saved} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
+          <button type="button" className={`icon-btn playlist-action-icon${saved ? " active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-pressed={saved} aria-label={saved ? "Убрать из медиатеки" : "Сохранить в медиатеку"} title={saved ? "Убрать из медиатеки" : "Сохранить в медиатеку"}>
             {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
-            <span className="results-action-text">{saved ? "Сохранено" : "Сохранить"}</span>
+            <span className="results-action-text sr-only">{saved ? "Сохранено в медиатеке" : "Сохранить в медиатеку"}</span>
           </button>
           <button type="button" className="icon-btn playlist-action-icon" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
             {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
-            <span className="results-action-text">Поделиться</span>
+            <span className="results-action-text sr-only">Поделиться</span>
           </button>
         </div>
 

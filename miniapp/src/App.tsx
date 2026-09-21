@@ -55,7 +55,7 @@ type Screen =
   | { kind: "help" }
   | { kind: "admin" };
 
-function activeTab(screen: Screen): "create" | "shop" | "playlists" | "admin" | null {
+function activeTab(screen: Screen): "create" | "shop" | "playlists" | null {
   switch (screen.kind) {
     case "prompt":
     case "clarify":
@@ -70,9 +70,8 @@ function activeTab(screen: Screen): "create" | "shop" | "playlists" | "admin" | 
       return "playlists";
     case "profile":
     case "help":
-      return null;
     case "admin":
-      return "admin";
+      return null;
   }
 }
 
@@ -372,6 +371,7 @@ function AppInner() {
             me={me}
             onGoShop={() => navigate({ kind: "buy" })}
             onOpenHelp={() => navigate({ kind: "help" })}
+            onOpenAdmin={() => navigate({ kind: "admin" })}
             accent={accent}
             onChangeAccent={changeAccent}
           />
@@ -471,16 +471,13 @@ function AppInner() {
 
         <BottomNav
           tab={tab}
-          isAdmin={isAdmin}
           onTab={(t) => {
             navigate(
                 t === "shop"
                 ? { kind: "buy" }
                 : t === "create"
                   ? lastCreateScreen
-                  : t === "playlists"
-                    ? { kind: "playlists" }
-                    : { kind: "admin" },
+                  : { kind: "playlists" },
             );
           }}
         />

@@ -1,6 +1,6 @@
-import { Sparkle, Storefront, MusicNotes, Shield } from "../icons";
+import { Sparkle, Storefront, MusicNotes } from "../icons";
 
-type Tab = "create" | "shop" | "playlists" | "admin";
+type Tab = "create" | "shop" | "playlists";
 
 const TABS: { key: Tab; icon: typeof Sparkle; label: string }[] = [
   { key: "create", icon: Sparkle, label: "Создать" },
@@ -10,21 +10,15 @@ const TABS: { key: Tab; icon: typeof Sparkle; label: string }[] = [
 
 export function BottomNav({
   tab,
-  isAdmin,
   onTab,
 }: {
   tab: Tab | null;
-  isAdmin: boolean;
   onTab: (tab: Tab) => void;
 }) {
-  const tabs = isAdmin
-    ? [...TABS, { key: "admin" as const, icon: Shield, label: "Админ" }]
-    : TABS;
-
   return (
     <nav className="dock" aria-label="Главное меню">
       <div className="dock-inner">
-        {tabs.map((t) => {
+        {TABS.map((t) => {
           const Icon = t.icon;
           return (
             <button
