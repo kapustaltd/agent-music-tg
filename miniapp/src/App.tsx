@@ -120,6 +120,28 @@ function AppInner() {
   useKeyboardInset();
 
   useEffect(() => {
+    const root = document.documentElement;
+    let frame = 0;
+
+    function updateWallpaper() {
+      frame = 0;
+      root.style.setProperty("--wallpaper-offset", `${Math.round(window.scrollY * -0.12)}px`);
+    }
+
+    function onScroll() {
+      if (frame === 0) frame = window.requestAnimationFrame(updateWallpaper);
+    }
+
+    updateWallpaper();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== 0) window.cancelAnimationFrame(frame);
+      root.style.removeProperty("--wallpaper-offset");
+    };
+  }, []);
+
+  useEffect(() => {
     const webApp = getTelegramWebApp();
     webApp?.ready();
     // Keep the regular expanded Mini App viewport, but do not request

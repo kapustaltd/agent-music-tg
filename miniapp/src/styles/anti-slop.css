@@ -35,10 +35,10 @@ select {
   font-family: var(--font-body);
 }
 
-/* The halftone artwork stays behind the app chrome and content. A fixed layer
-   keeps the wallpaper still while the Mini App scrolls and never intercepts
-   taps. Screen blend preserves the white pattern on the dark theme; light
-   mode uses a restrained multiply treatment so the canvas stays readable. */
+/* The halftone artwork stays behind the app chrome and content. The fixed
+   layer gets a small scroll offset from App.tsx for a restrained parallax
+   effect and never intercepts taps. Screen blend preserves the white pattern
+   on the dark theme; light mode uses a restrained multiply treatment. */
 body {
   isolation: isolate;
 }
@@ -53,6 +53,9 @@ body::before {
   opacity: 0.12;
   mix-blend-mode: screen;
   pointer-events: none;
+  transform: translate3d(0, var(--wallpaper-offset, 0px), 0) scale(1.04);
+  transform-origin: center top;
+  will-change: transform;
 }
 
 #root {
@@ -63,6 +66,13 @@ body::before {
 :root[data-scheme="light"] body::before {
   opacity: 0.045;
   mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    transform: scale(1.04);
+    will-change: auto;
+  }
 }
 
 h1.screen-title {
