@@ -110,7 +110,9 @@ const clarifySpec: ToolSpec = {
         items: { type: "string" },
         minItems: 3,
         maxItems: 3,
-        description: "Exactly 3 short, concrete, mutually distinct options.",
+        description:
+          "Exactly 3 short, concrete, mutually distinct music directions in natural user-facing language. " +
+          "Avoid explanations, model commentary, abstract adjectives, and awkward literal phrases.",
       },
     },
     required: ["question", "options"],

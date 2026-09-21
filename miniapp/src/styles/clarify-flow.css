@@ -1,0 +1,97 @@
+/* Clarification is a decision surface, not a second prompt card. Keep the
+   copy close, give the rows enough room to tap, and reserve the only raised
+   surface for the free-form input. */
+.clarify-page {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-2) var(--space-6);
+}
+
+.clarify-page > .screen-title {
+  margin: 0;
+}
+
+.clarify-question {
+  margin: calc(var(--space-1) * -1) 0 var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+}
+
+.clarify-option-list {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.clarify-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: calc(100% + var(--space-4));
+  min-width: 0;
+  min-height: 48px;
+  margin-inline: calc(var(--space-2) * -1);
+  padding: 10px var(--space-2);
+  border: 0;
+  border-bottom: 1px solid var(--content-hairline);
+  border-radius: var(--radius-compact);
+  background: transparent;
+  color: var(--text-dark);
+  font: 400 var(--fs-body)/1.35 var(--font-body);
+  text-align: start;
+}
+
+.clarify-option:first-child {
+  border-top: 1px solid var(--content-hairline);
+}
+
+.clarify-option > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.clarify-option:hover,
+.clarify-option:active {
+  background: var(--control-surface);
+}
+
+.clarify-own {
+  margin-top: var(--space-2);
+}
+
+.clarify-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 48px;
+  padding: var(--space-1) 0 var(--space-3);
+  border-bottom: 1px solid var(--content-hairline);
+}
+
+.clarify-selection-value {
+  min-width: 0;
+  color: var(--text-dark);
+  font-size: var(--fs-track-title);
+  font-weight: 550;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.clarify-selection-edit {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 var(--fs-metadata)/1.2 var(--font-body);
+  opacity: 0.72;
+}
+
+.clarify-selection-edit:disabled {
+  cursor: wait;
+}

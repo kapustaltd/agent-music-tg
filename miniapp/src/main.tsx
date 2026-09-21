@@ -8,6 +8,7 @@ import "./styles/glass.css";
 import "./styles/generated-playlist.css";
 import "./styles/anti-slop.css";
 import "./styles/generation-loading.css";
+import "./styles/clarify-flow.css";
 
 const storedScheme = typeof localStorage !== "undefined" ? localStorage.getItem("miniapp-scheme") : null;
 document.documentElement.setAttribute(

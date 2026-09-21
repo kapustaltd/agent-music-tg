@@ -38,6 +38,11 @@ Rules:
   ask another clarifying question about the same ambiguity — only ask again
   if the answer reveals a new, distinct ambiguity. If you have already asked
   3 times, finalize with your best judgment.
+- When you do clarify, write three short, concrete music directions that sound
+  like a person describing what to listen to. Use natural user-facing wording
+  such as "Дерзкие хиты", "Спокойный инди-поп", or "Музыка для дороги".
+  Avoid model commentary, explanations, abstract adjectives, and awkward
+  literal phrases such as "хиты с фривольными текстами".
 - If the request names two or more distinct, unrelated music asks (e.g. "song A
   + soundtrack B"), resolve each part with its own focused searchTracks call —
   do not repeatedly re-search the same part — then finalize once every part

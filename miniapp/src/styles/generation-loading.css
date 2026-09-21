@@ -40,9 +40,9 @@
 
 .generation-status-title {
   color: var(--text-dark);
-  font-size: clamp(18px, 4.8vw, 21px);
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: var(--fs-track-title);
+  font-weight: 550;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
