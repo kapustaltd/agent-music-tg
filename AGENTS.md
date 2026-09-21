@@ -15,7 +15,7 @@ Telegram bot + Mini App that turns a mood/request into a playlist via an AI agen
 
 ## Agent workflow
 
-**Deploy rule**: always deploy via `./deploy/deploy-test.sh`, never `deploy.sh` or manual steps, unless the user explicitly says otherwise. Never deploy when a required verification step has failed.
+**Deployment rule**: do not run `./deploy/*.sh` or perform deployment manually. After a successful iteration, only create the required commits and push them to the configured git remote; deployment is handled separately. Never deploy when a required verification step has failed.
 
 **Successful iteration**: an iteration is complete only when the requested change is implemented, relevant documentation and `.env.example` are updated when applicable, and proportionate verification passes:
 
@@ -31,9 +31,9 @@ Telegram bot + Mini App that turns a mood/request into a playlist via an AI agen
 2. Create the functional commit using a Conventional Commit prefix such as `feat:`, `fix:`, `test:`, `docs:`, or `chore:`.
 3. Create Russian release notes for that functional commit under `release-notes/YYYY-MM-DD-<functional-short-sha>.md`. Format them as a Telegram post: a short bold heading using `*...*`, a tight bullet list, no walls of text, and sparing emoji.
 4. Commit only the release-notes file in a separate commit named `docs: release notes for <functional-short-sha>`.
-5. Run `./deploy/deploy-test.sh` from the resulting `HEAD`.
+5. Push the resulting commits to the configured git remote. Do not run a deploy script.
 
-Do not amend, rebase, force-push, push, or automatically roll back commits unless the user explicitly requests it. If deployment fails, preserve the commits, collect the relevant error output, report the status, and do not retry indefinitely.
+Do not amend, rebase, force-push, or automatically roll back commits unless the user explicitly requests it. If pushing fails, preserve the commits, collect the relevant error output, report the status, and do not retry indefinitely.
 
 ## Safety and scope
 
@@ -44,7 +44,7 @@ Do not amend, rebase, force-push, push, or automatically roll back commits unles
 - Do not add a dependency unless it is necessary. Keep Bun as the package manager and commit the lockfile whenever dependencies change.
 - Tests must not send real Telegram messages, create real Crypto Pay invoices, or perform heavyweight audio downloads unless the user explicitly requests an integration test against a designated test environment.
 - External and background operations must use appropriate timeouts. Retries must be bounded, use backoff where appropriate, and remain idempotent. Clean up temporary audio files.
-- Treat `deploy-test` as the only default deployment target. Production deployment requires an explicit user request.
+- Deployment is outside the agent workflow. Production deployment requires an explicit user request and must be handled by the operator or external release process.
 
 ## Setup
 
