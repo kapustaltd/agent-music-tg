@@ -324,14 +324,6 @@ export function ResultsScreen({
         </header>
 
         <div className="results-actions playlist-action-bar" aria-label="Действия с плейлистом">
-          <button type="button" className={`icon-btn playlist-action-icon${saved ? " active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-pressed={saved} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
-            {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
-            <span className="results-action-text">{saved ? "Сохранено" : "Сохранить"}</span>
-          </button>
-          <button type="button" className="icon-btn playlist-action-icon" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
-            {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
-            <span className="results-action-text">Поделиться</span>
-          </button>
           <button
             type="button"
             className="glass-button primary playlist-action-download"
@@ -342,6 +334,14 @@ export function ResultsScreen({
           >
             {download.kind === "sending" ? <CircleNotch size={18} className="spin" /> : download.kind === "sent" ? <CheckCircle size={18} weight="fill" /> : <DownloadSimple size={18} />}
             <span>{download.kind === "sent" ? "Отправлено" : "Скачать"}</span>
+          </button>
+          <button type="button" className={`icon-btn playlist-action-icon${saved ? " active" : ""}`} onClick={() => void handleToggleSave()} disabled={saveBusy} aria-pressed={saved} aria-label={saved ? "Убрать из истории" : "Сохранить в историю"} title={saved ? "Убрать из истории" : "Сохранить в историю"}>
+            {saveBusy ? <CircleNotch size={18} className="spin" /> : <BookmarkSimple size={18} weight={saved ? "fill" : "regular"} />}
+            <span className="results-action-text">{saved ? "Сохранено" : "Сохранить"}</span>
+          </button>
+          <button type="button" className="icon-btn playlist-action-icon" onClick={() => void handleShare()} disabled={sharing} aria-label="Поделиться плейлистом" title="Поделиться плейлистом">
+            {sharing ? <CircleNotch size={18} className="spin" /> : <ShareNetwork size={18} />}
+            <span className="results-action-text">Поделиться</span>
           </button>
         </div>
 
@@ -388,7 +388,7 @@ export function ResultsScreen({
                 }
               }}
             />
-            <button type="button" className="prompt-submit" aria-label="Добавить треки в плейлист" disabled={extendBusy || extendPrompt.trim().length === 0} onClick={() => void handleExtend()}>
+            <button type="button" className="prompt-submit" aria-label="Добавить треки в плейлист" title="Добавить треки" disabled={extendBusy || extendPrompt.trim().length === 0} onClick={() => void handleExtend()}>
               {extendBusy ? <CircleNotch size={20} weight="bold" className="spin" /> : <Plus size={20} weight="bold" />}
             </button>
           </div>

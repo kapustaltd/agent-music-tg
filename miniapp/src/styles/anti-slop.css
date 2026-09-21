@@ -605,3 +605,82 @@ h2.screen-title,
     font-size: 11px;
   }
 }
+
+/* Generated playlist detail: keep the artwork, identity and next action in
+   one reading order on phones. These rules intentionally come last because
+   older results experiments in glass.css still define the same selectors. */
+@media (max-width: 839px) {
+  .results-playlist-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .results-playlist-cover {
+    width: 120px;
+    height: 120px;
+    flex-basis: 120px;
+  }
+
+  .results-playlist-header-copy {
+    width: 100%;
+    align-items: center;
+    gap: var(--space-1);
+    text-align: center;
+  }
+
+  .results-playlist-header .playlist-name-title,
+  .results-playlist-header .playlist-name-input {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(24px, 8vw, 30px);
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .playlist-action-bar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .playlist-action-download {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .playlist-action-icon {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: var(--space-2);
+    border: 1px solid var(--content-hairline);
+    background: transparent;
+  }
+
+  .results-extend {
+    margin-top: var(--space-6);
+  }
+
+  .results-extend-heading h2 {
+    font-size: var(--fs-section-title);
+    line-height: 1.2;
+  }
+
+  .results-track-list {
+    padding-bottom: calc(var(--dock-height) + 24px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 360px) {
+  .results-playlist-cover {
+    width: 112px;
+    height: 112px;
+    flex-basis: 112px;
+  }
+}
