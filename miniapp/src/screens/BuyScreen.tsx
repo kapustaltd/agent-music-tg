@@ -180,7 +180,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
       <header className="subscription-header reveal">
         <div className="subscription-heading">
           <h1 className="screen-title">Подписка</h1>
-          <p>Генерация плейлистов без списания кредитов.</p>
         </div>
       </header>
 
@@ -228,9 +227,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
           <EmptyState icon={<CreditCard size={40} weight="bold" />} label="Подписки пока недоступны" />
         ) : (
           <div className="stack reveal-stagger">
-            <div className="subscription-section-heading">
-              <h2>Выберите срок</h2>
-            </div>
             <div className="subscription-plans" role="group" aria-label="Срок подписки">
               {visible.map((o) => (
                 <button
