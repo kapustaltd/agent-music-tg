@@ -1,22 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleNotch, Check, CreditCard, Gift, Star } from "../icons";
+import { Check, CreditCard, Gift, Star } from "../icons";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorBanner } from "../components/ErrorBanner";
-import { InlineNotice } from "../components/InlineNotice";
-import { Segmented } from "../components/Segmented";
 import { TrackSkeleton } from "../components/TrackSkeleton";
 import { SbpPayPopup } from "../components/SbpPayPopup";
+import { SubscriptionPaymentSheet } from "../components/SubscriptionPaymentSheet";
 import { api, type Offer, type Invoice, type PaymentMethod, type TrialStatus } from "../lib/api";
-import { openPayUrl, openStarsInvoice, openSupport } from "../lib/telegram";
+import { openPayUrl, openStarsInvoice } from "../lib/telegram";
 import { purchaseLabel, purchasePrice, purchaseTimestamp } from "../lib/purchase";
 
 const SUBSCRIPTION_DAYS = [30, 90, 180] as const;
 const PAYMENT_METHODS = ["platega", "stars"] as const satisfies readonly PaymentMethod[];
-const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  platega: "СБП",
-  stars: "Звёзды Telegram",
-};
-
 function planLabel(days: number): string {
   if (days === 30) return "1 месяц";
   if (days === 90) return "3 месяца";
@@ -26,14 +20,6 @@ function planLabel(days: number): string {
 
 function isSubscriptionPlan(days: number): boolean {
   return SUBSCRIPTION_DAYS.includes(days as (typeof SUBSCRIPTION_DAYS)[number]);
-}
-
-function subscriptionDate(until: number): string {
-  return new Date(until * 1000).toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }
 
 function planPriceLabel(o: Offer): string {
@@ -48,10 +34,10 @@ export default function BuyScreen({ reason }: { reason?: string }) {
   const [offers, setOffers] = useState<Offer[] | null>(null);
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
   const [trial, setTrial] = useState<TrialStatus | null>(null);
-  const [subscriptionUntil, setSubscriptionUntil] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [method, setMethod] = useState<PaymentMethod>("platega");
+  const [paymentOffer, setPaymentOffer] = useState<Offer | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [trialBusy, setTrialBusy] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -70,7 +56,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
         setOffers(o.offers);
         setSupportContact(cfg.supportContact ?? "");
         setTrial(me.trial);
-        setSubscriptionUntil(me.subscriptionUntil);
         const paid = p.purchases.filter((i) => i.status === "paid");
         setPaidInvoices(paid);
         if (prevCountRef.current !== null && paid.length > prevCountRef.current) {
@@ -97,26 +82,28 @@ export default function BuyScreen({ reason }: { reason?: string }) {
       .sort((a, b) => a.grantAmount - b.grantAmount);
   }, [offers]);
 
-  const selected = visible.find((offer) => offer.id === selectedId && (offer.rubAmount || offer.starsAmount)) ?? visible.find((offer) => offer.rubAmount || offer.starsAmount);
-  const selectedMethod: PaymentMethod = selected
-    ? method === "platega" && selected.rubAmount
-      ? "platega"
-      : selected.starsAmount
-        ? "stars"
-        : "platega"
-    : "stars";
-  const paymentOptions = selected
-    ? PAYMENT_METHODS.filter((paymentMethod) => paymentMethod === "platega" ? Boolean(selected.rubAmount) : Boolean(selected.starsAmount))
-    : [];
-  const selectedPrice = selectedMethod === "platega" ? `${selected?.rubAmount ?? "—"} ₽` : `${selected?.starsAmount ?? "—"} звёзд Telegram`;
-  const hasActiveSubscription = subscriptionUntil !== null && subscriptionUntil * 1000 > Date.now();
+  const selected = visible.find((offer) => offer.id === selectedId);
+
+  function paymentOptionsFor(offer: Offer): PaymentMethod[] {
+    return PAYMENT_METHODS.filter((paymentMethod) => paymentMethod === "platega" ? Boolean(offer.rubAmount) : Boolean(offer.starsAmount));
+  }
+
+  function openPaymentSheet(offer: Offer) {
+    const options = paymentOptionsFor(offer);
+    if (options.length === 0) return;
+    setSelectedId(offer.id);
+    setMethod(options.includes("platega") ? "platega" : options[0]!);
+    setPaymentOffer(offer);
+    setError(null);
+  }
 
   async function buy(offerId: number, method: PaymentMethod = "stars") {
     setBusyId(offerId);
     setError(null);
     try {
       const result = await api.createInvoice(offerId, method);
-      if (!result.payUrl) return;
+      if (!result.payUrl) throw new Error("Платёжная ссылка не получена");
+      setPaymentOffer(null);
       if (method === "stars") {
         openStarsInvoice(result.payUrl, (status) => {
           if (status !== "paid") return;
@@ -197,11 +184,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
       <header className="subscription-header reveal">
         <div className="subscription-heading">
           <h1 className="screen-title">Подписка</h1>
-          <p>Выбери срок и способ оплаты.</p>
-        </div>
-        <div className={`subscription-status${hasActiveSubscription ? " is-active" : ""}`}>
-          <span>{hasActiveSubscription ? "Активна до" : "Доступ по подписке"}</span>
-          <strong>{hasActiveSubscription && subscriptionUntil ? subscriptionDate(subscriptionUntil) : "1, 3 или 6 месяцев"}</strong>
         </div>
       </header>
 
@@ -251,7 +233,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
           <div className="stack reveal-stagger">
             <div className="subscription-section-heading">
               <h2>Выбери срок</h2>
-              <span>{visible.length} варианта</span>
             </div>
             <div className="subscription-plans" role="group" aria-label="Срок подписки">
               {visible.map((o) => (
@@ -261,7 +242,7 @@ export default function BuyScreen({ reason }: { reason?: string }) {
                   className={`subscription-plan${selected?.id === o.id ? " is-selected" : ""}`}
                   aria-pressed={selected?.id === o.id}
                   disabled={busyId !== null || (!o.rubAmount && !o.starsAmount)}
-                  onClick={() => setSelectedId(o.id)}
+                  onClick={() => openPaymentSheet(o)}
                 >
                   <span className="subscription-plan-duration">{planLabel(o.grantAmount)}</span>
                   <span className="subscription-plan-days">{o.grantAmount} дней доступа</span>
@@ -272,31 +253,6 @@ export default function BuyScreen({ reason }: { reason?: string }) {
                 </button>
               ))}
             </div>
-            {selected && <div className="subscription-checkout">
-              <div className="subscription-checkout-heading">
-                <span>Способ оплаты</span>
-                <strong>{planLabel(selected.grantAmount)}</strong>
-              </div>
-              {paymentOptions.length > 1 ? (
-                <Segmented<PaymentMethod>
-                  ariaLabel="Способ оплаты"
-                  role="radiogroup"
-                  fill
-                  options={paymentOptions}
-                  labels={PAYMENT_METHOD_LABELS}
-                  value={selectedMethod}
-                  onChange={setMethod}
-                />
-              ) : (
-                <p className="subscription-method-single">Доступно: {PAYMENT_METHOD_LABELS[selectedMethod]}</p>
-              )}
-              <button type="button" className="glass-button primary subscription-buy" disabled={busyId !== null} aria-busy={busyId !== null} onClick={() => void buy(selected.id, selectedMethod)}>
-                {busyId !== null && <CircleNotch size={20} className="spin" aria-hidden="true" />}
-                {busyId !== null ? "Открываю оплату…" : `Оплатить ${selectedPrice}`}
-              </button>
-              <p className="subscription-checkout-note">Доступ активируется после подтверждения оплаты.</p>
-              {offerErrors[selected.id] && <InlineNotice message={offerErrors[selected.id]!} onDismiss={() => clearOfferError(selected.id)} onOtherOption={() => clearOfferError(selected.id)} onSupport={supportContact ? () => openSupport(supportContact) : undefined} supportContact={supportContact} />}
-            </div>}
           </div>
         )}
       </section>
@@ -328,6 +284,20 @@ export default function BuyScreen({ reason }: { reason?: string }) {
           offerTitle={sbpInvoice.offerTitle}
           supportContact={supportContact}
           onClose={handleSbpClose}
+        />
+      )}
+
+      {paymentOffer && (
+        <SubscriptionPaymentSheet
+          offer={paymentOffer}
+          methods={paymentOptionsFor(paymentOffer)}
+          method={method}
+          busy={busyId !== null}
+          error={offerErrors[paymentOffer.id]}
+          onMethodChange={setMethod}
+          onPay={() => void buy(paymentOffer.id, method)}
+          onClose={() => setPaymentOffer(null)}
+          onDismissError={() => clearOfferError(paymentOffer.id)}
         />
       )}
     </div>

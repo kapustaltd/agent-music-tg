@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api, type SubscriptionChannel } from "../lib/api";
-import { getTelegramWebApp } from "../lib/telegram";
+import { openExternalUrl } from "../lib/telegram";
 
 interface Props {
   channels: SubscriptionChannel[];
@@ -23,14 +23,7 @@ export function SubscriptionGate({ channels, onPassed }: Props) {
         : null;
     if (!url) return;
 
-    const webApp = getTelegramWebApp();
-    if (webApp?.openTelegramLink && /^https?:\/\/t\.me\//i.test(url)) {
-      webApp.openTelegramLink(url);
-    } else if (webApp?.openLink) {
-      webApp.openLink(url);
-    } else {
-      window.open(url, "_blank");
-    }
+    openExternalUrl(url);
   }
 
   async function handleRecheck() {

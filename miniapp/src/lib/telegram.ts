@@ -100,21 +100,41 @@ export function getColorScheme(): "light" | "dark" {
 export function openStarsInvoice(url: string, onClosed?: (status: InvoiceStatus) => void): void {
   const webApp = getTelegramWebApp();
   if (webApp?.openInvoice) {
-    webApp.openInvoice(url, onClosed);
-    return;
+    try {
+      webApp.openInvoice(url, onClosed);
+      return;
+    } catch {
+      // Older Telegram clients expose the method but reject it at runtime.
+    }
   }
   openPayUrl(url);
 }
 
-/** Opens a Crypto Pay pay URL; t.me links use openTelegramLink, else openLink. */
-export function openPayUrl(url: string): void {
+/** Opens a URL through Telegram when available, with a browser fallback. */
+export function openExternalUrl(url: string): boolean {
+  if (!url) return false;
   const webApp = getTelegramWebApp();
   if (!webApp) {
-    window.open(url, "_blank");
-    return;
+    return window.open(url, "_blank", "noopener,noreferrer") !== null;
   }
-  if (/^https?:\/\/t\.me\//i.test(url)) webApp.openTelegramLink(url);
-  else webApp.openLink(url);
+  try {
+    if (/^https?:\/\/t\.me\//i.test(url)) webApp.openTelegramLink(url);
+    else webApp.openLink(url);
+    return true;
+  } catch {
+    // Telegram Web Apps keep the API method on the object even when the
+    // current client version does not support it. Preserve the click path.
+    try {
+      return window.open(url, "_blank", "noopener,noreferrer") !== null;
+    } catch {
+      return false;
+    }
+  }
+}
+
+/** Opens a Crypto Pay pay URL; t.me links use openTelegramLink, else openLink. */
+export function openPayUrl(url: string): boolean {
+  return openExternalUrl(url);
 }
 
 /**
@@ -137,11 +157,5 @@ export function normalizeSupportContact(contact: string): { url: string; telegra
 export function openSupport(contact: string): void {
   const target = normalizeSupportContact(contact);
   if (!target) return;
-  const webApp = getTelegramWebApp();
-  if (!webApp) {
-    window.open(target.url, "_blank");
-    return;
-  }
-  if (target.telegram) webApp.openTelegramLink(target.url);
-  else webApp.openLink(target.url);
+  openExternalUrl(target.url);
 }

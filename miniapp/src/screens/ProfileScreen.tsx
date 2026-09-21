@@ -10,7 +10,7 @@ import {
 import { GlassPanel } from "../components/GlassPanel";
 import { Segmented } from "../components/Segmented";
 import { EmptyState } from "../components/EmptyState";
-import { getTelegramUserFirstName, getTelegramWebApp } from "../lib/telegram";
+import { getTelegramUserFirstName, openExternalUrl } from "../lib/telegram";
 import { api, type MeResponse, type Invoice, type Offer } from "../lib/api";
 import { ACCENT_PRESETS } from "../lib/accent";
 import { purchaseLabel, purchasePrice, purchaseTimestamp } from "../lib/purchase";
@@ -179,10 +179,8 @@ function ReferralCard() {
 
   function handleShare() {
     if (!data) return;
-    const webApp = getTelegramWebApp();
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(data.link)}`;
-    if (webApp) webApp.openTelegramLink(shareUrl);
-    else window.open(shareUrl, "_blank");
+    openExternalUrl(shareUrl);
   }
 
   if (error) {

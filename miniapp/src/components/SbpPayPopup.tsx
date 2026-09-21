@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Bank, ArrowSquareOut } from "../icons";
 import { openPayUrl, openSupport } from "../lib/telegram";
 import { useDialog } from "../lib/useDialog";
@@ -16,16 +17,16 @@ interface SbpPayPopupProps {
  * «Закрыть» rolls the held credits back via onClose(true); the successful
  * completion path is handled by the parent polling the purchase list.
  */
-export function SbpPayPopup({ payUrl, offerTitle, onClose }: SbpPayPopupProps) {
-  const [, setOpened] = useState(false);
+export function SbpPayPopup({ payUrl, offerTitle, supportContact, onClose }: SbpPayPopupProps) {
+  const [openError, setOpenError] = useState(false);
   const cardRef = useDialog<HTMLDivElement>(true, () => onClose(true));
 
   function handlePay() {
-    setOpened(true);
-    openPayUrl(payUrl);
+    setOpenError(!openPayUrl(payUrl));
   }
 
-  return (
+  return createPortal(
+    (
     <div
       className="sbp-overlay"
       onClick={(e) => {
@@ -52,24 +53,30 @@ export function SbpPayPopup({ payUrl, offerTitle, onClose }: SbpPayPopupProps) {
           После оплаты доступ к подписке/генерациям появится автоматически.
         </p>
 
-        <a
-          className="glass-button primary sbp-pay-btn"
-          href={payUrl}
-          onClick={(e) => {
-            e.preventDefault();
-            handlePay();
-          }}
-        >
-          <ArrowSquareOut size={16} weight="bold" aria-hidden="true" /> Оплатить
-        </a>
         <button
           type="button"
-          className="sbp-support"
-          onClick={() => openSupport("https://t.me/litteralIy")}
+          className="glass-button primary sbp-pay-btn"
+          onClick={handlePay}
         >
-          Нужна помощь?
+          <ArrowSquareOut size={16} weight="bold" aria-hidden="true" /> Оплатить
         </button>
+        {openError && (
+          <p className="sbp-sheet-error" role="alert">
+            Не удалось открыть оплату. Попробуйте ещё раз.
+          </p>
+        )}
+        {supportContact && (
+          <button
+            type="button"
+            className="sbp-support"
+            onClick={() => openSupport(supportContact)}
+          >
+            Нужна помощь?
+          </button>
+        )}
       </div>
     </div>
+    ),
+    document.body,
   );
 }

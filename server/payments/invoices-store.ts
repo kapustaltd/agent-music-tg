@@ -58,8 +58,8 @@ export function insertPendingInvoice(
     asset: string;
     reservedCredits?: number;
   },
-): void {
-  db.query(
+): number {
+  const result = db.query(
     `INSERT INTO invoices (provider, external_id, chat_id, offer_id, amount, asset, status, reserved_credits)
      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
   ).run(
@@ -71,6 +71,7 @@ export function insertPendingInvoice(
     input.asset,
     input.reservedCredits ?? 0,
   );
+  return Number(result.lastInsertRowid);
 }
 
 /**

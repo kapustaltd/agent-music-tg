@@ -89,7 +89,7 @@ export async function purchaseOfferRub(
     failedUrl: env.publicOrigin,
   });
 
-  insertPendingInvoice(db, {
+  const invoiceId = insertPendingInvoice(db, {
     provider: "platega",
     externalId: tx.transactionId,
     chatId,
@@ -100,5 +100,5 @@ export async function purchaseOfferRub(
   });
   recordEvent(db, chatId, "checkout_started", { method: "platega", offerId });
 
-  return { invoiceId: 0, payUrl: tx.redirect, offerTitle: offer.title };
+  return { invoiceId, payUrl: tx.redirect, offerTitle: offer.title };
 }

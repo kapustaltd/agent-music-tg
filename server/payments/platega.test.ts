@@ -116,6 +116,7 @@ describe("purchaseOfferRub", () => {
     const result = await purchaseOfferRub(db, CHAT, offer.id, create);
 
     expect(result.payUrl).toBe("https://pay.example/tx-9");
+    expect(result.invoiceId).toBeGreaterThan(0);
     const invoice = getInvoice(db, "platega", "tx-9");
     expect(invoice?.amount).toBe("450");
     expect(invoice?.asset).toBe("RUB");
