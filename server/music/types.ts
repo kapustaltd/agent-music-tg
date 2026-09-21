@@ -20,6 +20,9 @@ export interface Album {
   title: string;
   artist: string;
   artwork?: string;
+  /** Release kind when the backend can distinguish albums from singles. */
+  releaseType?: "album" | "single";
+  year?: number;
   /** Present on resolve-only backends (SoundCloud/YouTube Music): open-in-app link. */
   deepLink?: string;
 }
@@ -69,7 +72,7 @@ export interface MusicProvider {
   getArtistTopTracks(artistId: string, limit?: number): Promise<Track[]>;
   /** Free-text search returning up to `limit` candidate artist cards. */
   searchArtists(query: string, limit?: number): Promise<ArtistCard[]>;
-  /** Latest albums for a resolved artist; empty when the backend has no such data. */
+  /** Releases for a resolved artist; empty when the backend has no such data. */
   getArtistAlbums(artistId: string, limit?: number): Promise<Album[]>;
   /**
    * Avatar, follower count and bio for a resolved artist. Optional: callers

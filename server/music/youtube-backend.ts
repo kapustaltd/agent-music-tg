@@ -8,11 +8,25 @@ interface YtmApi {
   searchSongs(query: string): Promise<any[]>;
   searchArtists(query: string): Promise<any[]>;
   getArtistSongs(artistId: string): Promise<any[]>;
-  getArtistAlbums(artistId: string): Promise<any[]>;
   getArtist(artistId: string): Promise<any>;
   searchAlbums(query: string): Promise<any[]>;
   getAlbum(albumId: string): Promise<any>;
 }
+
+type RawArtistRelease = {
+  albumId?: unknown;
+  name?: unknown;
+  artist?: { artistId?: unknown; name?: unknown };
+  thumbnails?: Array<{ url?: unknown }>;
+  year?: unknown;
+};
+
+type RawArtistProfile = {
+  artistId?: unknown;
+  name?: unknown;
+  topAlbums?: RawArtistRelease[];
+  topSingles?: RawArtistRelease[];
+};
 
 function normalizeName(s: string): string {
   return s.normalize("NFKD").toLowerCase().trim();
@@ -29,6 +43,49 @@ function toTrack(song: any): Track {
     artwork: song.thumbnails?.at(-1)?.url,
     deepLink: `https://music.youtube.com/watch?v=${videoId}`,
   };
+}
+
+/**
+ * Maps releases from ArtistFull instead of ytmusic-api's getArtistAlbums().
+ * The latter currently selects the first carousel on an artist page; that
+ * carousel can be a generic YouTube Music recommendation shelf (for example,
+ * "Podcasts"), not the artist's releases.
+ */
+export function mapArtistReleases(profile: RawArtistProfile, artistId: string, limit: number): Album[] {
+  const releases = [
+    ...(profile.topAlbums ?? []).map((item) => ({ item, releaseType: "album" as const })),
+    ...(profile.topSingles ?? []).map((item) => ({ item, releaseType: "single" as const })),
+  ];
+  const seen = new Set<string>();
+
+  return releases
+    .filter(({ item }) => {
+      const id = typeof item.albumId === "string" ? item.albumId : "";
+      const ownerId = item.artist?.artistId;
+      if (!id || ownerId !== artistId || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .slice(0, Math.max(0, limit))
+    .map(({ item, releaseType }) => {
+      const albumId = item.albumId as string;
+      const thumbnails = Array.isArray(item.thumbnails) ? item.thumbnails : [];
+      const artwork = thumbnails.at(-1)?.url;
+      return {
+        uri: `ytm:album:${albumId}`,
+        title: typeof item.name === "string" ? item.name : "",
+        artist:
+          typeof item.artist?.name === "string"
+            ? item.artist.name
+            : typeof profile.name === "string"
+              ? profile.name
+              : "",
+        artwork: typeof artwork === "string" ? artwork : undefined,
+        releaseType,
+        ...(typeof item.year === "number" ? { year: item.year } : {}),
+        deepLink: `https://music.youtube.com/browse/${albumId}`,
+      };
+    });
 }
 
 /**
@@ -137,19 +194,13 @@ export class YouTubeMusicBackend implements MusicProvider {
   }
 
   async getArtistAlbums(artistId: string, limit = 10): Promise<Album[]> {
-    // Cached like the sibling artist lookups: /api/artist awaits albums in the
-    // same Promise.all as topTracks and details, so leaving this one uncached
-    // made it the sole network-bound leg of every repeat artist view.
+    // Cached like the sibling artist lookups: /api/artist awaits releases in
+    // the same Promise.all as topTracks and details.
     return withQueryCache("youtube-music", "artist-albums", artistId, limit, async () => {
       const api = await this.ensureApi();
-      const albums = await withTimeout(api.getArtistAlbums(artistId), SEARCH_TIMEOUT_MS, [] as any[]);
-      return albums.slice(0, limit).map((a: any) => ({
-        uri: `ytm:album:${a.albumId}`,
-        title: a.name,
-        artist: a.artist?.name ?? "",
-        artwork: a.thumbnails?.at(-1)?.url,
-        deepLink: `https://music.youtube.com/browse/MPREb_${a.albumId}`,
-      }));
+      const artist = await withTimeout(api.getArtist(artistId), SEARCH_TIMEOUT_MS, null as RawArtistProfile | null);
+      if (!artist?.artistId || artist.artistId !== artistId) return [];
+      return mapArtistReleases(artist, artistId, limit);
     });
   }
 

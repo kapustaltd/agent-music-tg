@@ -183,6 +183,8 @@ export interface Album {
   title: string;
   artist: string;
   artwork?: string;
+  releaseType?: "album" | "single";
+  year?: number;
   deepLink?: string;
 }
 

@@ -214,10 +214,12 @@ export function ArtistScreen({
 
             {state.data.albums.length > 0 && (
               <section className="search-section">
-                <h2 className="search-section-title">Альбомы</h2>
+                <h2 className="search-section-title">Релизы</h2>
                 <div className="stack reveal-stagger">
                   {state.data.albums.map((album, i) => {
                     const open = expanded[album.uri];
+                    const releaseLabel = album.releaseType === "single" ? "Сингл" : "Альбом";
+                    const releaseMeta = album.year ? `${releaseLabel} · ${album.year}` : releaseLabel;
                     return (
                       <div className="album-block" key={album.uri} style={{ ["--i" as string]: i }}>
                         <TrackRow
@@ -225,7 +227,7 @@ export function ArtistScreen({
                           onClick={() => void toggleAlbum(album)}
                           artwork={album.artwork}
                           title={album.title}
-                          meta={`Альбом · ${album.artist}`}
+                          meta={releaseMeta}
                           metaClassName="search-row-meta"
                           ariaExpanded={Boolean(open)}
                           mainTrailing={

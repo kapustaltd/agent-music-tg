@@ -11,7 +11,7 @@ or loading/progress state.
 | Prompt / AI mode | Persistent assistant chrome and duplicated progress copy | replace | The submitted prompt becomes one compact summary; one status row communicates active generation. |
 | Prompt / Search mode | Repeated rounded controls | simplify | Input remains a separated control; suggestions and recent queries use compact 8px controls with 44px hit areas. |
 | Results / playlist detail | Card-wrapped track rows | replace | Artwork, title, artist and dividers establish the list hierarchy; actions stay in a secondary menu. |
-| Library / artist | Identical cards and row chevrons | simplify | Sections use spacing and list rhythm; artwork and identity provide the visual anchor. |
+| Library / artist | Generic provider recommendations could appear as an artist's albums; rows also implied every result was an album | fix + simplify | Artist releases are now sourced from provider records whose artist id matches the page; the UI calls the section «Релизы» and labels album/single plus year when available. |
 | Subscription | One plan presented as a selector | replace | A single plan is plain content without a selected checkmark; the purchase CTA is the only accented primary action. |
 | Purchase history | Database-like purchase labels | replace | Rows show product/period, paid date and price when available; rows remain flat and divided. |
 | Player | Accent used for playback state | intentional exception | Accent marks the active play control, current track and progress because it communicates playback state. |
