@@ -1,4 +1,4 @@
-import { Check, CircleNotch, CreditCard, Star, X } from "../icons";
+import { Check, CircleNotch, CreditCard, X } from "../icons";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Offer, PaymentMethod } from "../lib/api";
@@ -7,6 +7,11 @@ import { useDialog } from "../lib/useDialog";
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   platega: "СБП",
   stars: "Звёзды",
+};
+
+const METHOD_ARTWORK: Record<PaymentMethod, string> = {
+  platega: "/payment-spb-icon.webp",
+  stars: "/payment-stars-icon.webp",
 };
 
 function priceLabel(offer: Offer, method: PaymentMethod): string {
@@ -22,20 +27,9 @@ function methodDescription(offer: Offer, method: PaymentMethod): string {
 }
 
 function PaymentMethodArtwork({ method }: { method: PaymentMethod }) {
-  if (method === "platega") {
-    return (
-      <span className="payment-method-art payment-method-art--sbp" aria-hidden="true">
-        <span className="payment-art-bank payment-art-bank--green">С</span>
-        <span className="payment-art-bank payment-art-bank--yellow">T</span>
-        <span className="payment-art-bank payment-art-bank--red">A</span>
-        <span className="payment-art-bank payment-art-bank--blue">ВТБ</span>
-      </span>
-    );
-  }
-
   return (
-    <span className="payment-method-art payment-method-art--stars" aria-hidden="true">
-      <Star className="payment-art-star" size={148} weight="fill" />
+    <span className={`payment-method-art payment-method-art--${method}`} aria-hidden="true">
+      <img src={METHOD_ARTWORK[method]} alt="" draggable="false" />
     </span>
   );
 }
