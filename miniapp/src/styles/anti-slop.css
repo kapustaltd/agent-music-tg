@@ -35,6 +35,36 @@ select {
   font-family: var(--font-body);
 }
 
+/* The halftone artwork stays behind the app chrome and content. A fixed layer
+   keeps the wallpaper still while the Mini App scrolls and never intercepts
+   taps. Screen blend preserves the white pattern on the dark theme; light
+   mode uses a restrained multiply treatment so the canvas stays readable. */
+body {
+  isolation: isolate;
+}
+
+body::before {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  background: url("/miniapp-wallpaper.webp") center / cover no-repeat;
+  content: "";
+  opacity: 0.12;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-scheme="light"] body::before {
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+}
+
 h1.screen-title {
   font-size: var(--fs-screen-title);
   line-height: 1.15;
