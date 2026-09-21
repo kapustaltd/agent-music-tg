@@ -1007,24 +1007,6 @@ h2.screen-title,
   color: var(--text-dark);
 }
 
-.payment-method-summary {
-  display: grid;
-  gap: 4px;
-  margin-top: var(--space-5);
-  padding: var(--space-4) 0;
-  color: var(--text-muted);
-}
-
-.payment-method-summary span {
-  font-size: var(--fs-body);
-}
-
-.payment-method-summary strong {
-  color: var(--text-dark);
-  font-size: var(--fs-title);
-  font-weight: 650;
-}
-
 .payment-method-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1762,22 +1744,6 @@ h2.screen-title,
   margin: var(--space-1) 0 0;
   color: var(--text-muted);
   font-size: var(--fs-body);
-}
-
-.payment-method-summary {
-  gap: 4px;
-  margin-top: var(--space-5);
-  padding: 0;
-}
-
-.payment-method-summary span {
-  color: var(--text-muted);
-  font-size: var(--fs-metadata);
-}
-
-.payment-method-summary strong {
-  font-size: var(--fs-body);
-  font-weight: 600;
 }
 
 .payment-method-section-title {

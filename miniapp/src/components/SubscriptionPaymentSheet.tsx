@@ -87,11 +87,6 @@ export function SubscriptionPaymentSheet({
           </button>
         </div>
 
-        <div className="payment-method-summary">
-          <span>Срок</span>
-          <strong>{durationLabel(offer.grantAmount)} доступа</strong>
-        </div>
-
         <h3 className="payment-method-section-title">Способ оплаты</h3>
 
         <div className="payment-method-options" role="radiogroup" aria-label="Способ оплаты">
