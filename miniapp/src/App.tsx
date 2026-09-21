@@ -5,7 +5,6 @@ import { ClarifyScreen } from "./screens/ClarifyScreen";
 import { ResultsScreen } from "./screens/ResultsScreen";
 import BuyScreen from "./screens/BuyScreen";
 import ProfileScreen from "./screens/ProfileScreen";
-import HelpScreen from "./screens/HelpScreen";
 import PlaylistsScreen from "./screens/PlaylistsScreen";
 import { GlassPanel } from "./components/GlassPanel";
 import { ScreenTransition } from "./components/ScreenTransition";
@@ -35,8 +34,6 @@ import { ArtistScreen } from "./screens/ArtistScreen";
 import { AddToPlaylistSheet } from "./components/AddToPlaylistSheet";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { applyAccent, initialAccent } from "./lib/accent";
-import { Onboarding } from "./components/Onboarding";
-import { completeOnboarding, shouldShowOnboarding } from "./lib/onboarding";
 import { BrandMark } from "./components/BrandMark";
 
 // Lazy: the admin screen's own chunk is only fetched when isAdmin is true,
@@ -52,7 +49,6 @@ type Screen =
   | { kind: "buy"; reason?: string }
   | { kind: "playlists" }
   | { kind: "profile" }
-  | { kind: "help" }
   | { kind: "admin" };
 
 function activeTab(screen: Screen): "create" | "shop" | "playlists" | null {
@@ -69,7 +65,6 @@ function activeTab(screen: Screen): "create" | "shop" | "playlists" | null {
     case "playlists":
       return "playlists";
     case "profile":
-    case "help":
     case "admin":
       return null;
   }
@@ -101,7 +96,6 @@ function AppInner() {
   const [events, setEvents] = useState<AgentProgressEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [accent, setAccent] = useState<string>(() => initialAccent());
-  const [showOnboarding, setShowOnboarding] = useState(() => shouldShowOnboarding());
   const [subscriptionGate, setSubscriptionGate] = useState<SubscriptionChannel[] | null>(null);
 
   function changeAccent(value: string) {
@@ -171,7 +165,6 @@ function AppInner() {
     if (shareToken) navigate({ kind: "shared", token: shareToken });
     else if (tabParam === "playlists") navigate({ kind: "playlists" });
     else if (tabParam === "profile") navigate({ kind: "profile" });
-    else if (tabParam === "help") navigate({ kind: "help" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -392,17 +385,9 @@ function AppInner() {
           <ProfileScreen
             me={me}
             onGoShop={() => navigate({ kind: "buy" })}
-            onOpenHelp={() => navigate({ kind: "help" })}
             onOpenAdmin={() => navigate({ kind: "admin" })}
             accent={accent}
             onChangeAccent={changeAccent}
-          />
-        );
-      case "help":
-        return (
-          <HelpScreen
-            onReplayOnboarding={() => setShowOnboarding(true)}
-            onStart={() => navigate({ kind: "prompt" }, "back")}
           />
         );
       case "admin":
@@ -426,21 +411,6 @@ function AppInner() {
   function handleReset() {
     setHistory([{ kind: "prompt" }]);
     setError(null);
-  }
-
-  function dismissOnboarding() {
-    completeOnboarding();
-    setShowOnboarding(false);
-  }
-
-  function startFromOnboarding(prompt: string) {
-    completeOnboarding();
-    setShowOnboarding(false);
-    navigate({ kind: "prompt", initialMode: "ai", initialQuery: prompt }, "back");
-  }
-
-  if (showOnboarding) {
-    return <Onboarding onSkip={dismissOnboarding} onStart={startFromOnboarding} />;
   }
 
   if (subscriptionGate) {

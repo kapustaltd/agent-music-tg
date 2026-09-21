@@ -79,8 +79,7 @@ export function createBot(db: AppDb): Bot<BotContext> {
       .text(btnText("Купить", "money"), "nav:buy")
       .text(btnText("Профиль", "profile"), "nav:profile")
       .text(btnText("История", "history"), "nav:history").row()
-      .text(btnText("Пригласить друга", "gift"), "nav:referral")
-      .text(btnText("Помощь и FAQ", "info"), "nav:faq").row();
+      .text(btnText("Пригласить друга", "gift"), "nav:referral").row();
     if (ctx.isAdmin) {
       kb.text(btnText("Админка", "gear"), "nav:admin");
     }
@@ -109,34 +108,6 @@ export function createBot(db: AppDb): Bot<BotContext> {
       ? `${messageTitle("info", "Поддержка")}\n${messageHint("Напишите нам — поможем разобраться.")}\n\n${detailBlock([escapeHtml(shop.supportContact)])}`
       : statusMessage("info", "Поддержка", "Контакт поддержки пока не указан.");
     const kb = new InlineKeyboard().text(btnText("Назад", "back"), "nav:menu");
-    return { text, keyboard: kb };
-  }
-
-  function buildFaqView(): ShopView {
-    const text = [
-      messageTitle("info", "Помощь и FAQ"),
-      messageHint("Коротко о главных возможностях"),
-      "",
-      "<b>Как создать плейлист?</b>",
-      "Откройте приложение, выберите AI-подбор и опишите настроение или ситуацию одной фразой.",
-      "",
-      "<b>Чем AI-подбор отличается от поиска?</b>",
-      "AI собирает новый плейлист по описанию. Поиск находит конкретный трек, артиста или альбом.",
-      "",
-      "<b>Где моя музыка?</b>",
-      "Сохранённые плейлисты, избранные треки и загрузки находятся во вкладке «Музыка».",
-      "",
-      "<b>Как скачать аудио?</b>",
-      "Нажмите кнопку загрузки в приложении — готовые аудиофайлы придут в этот чат.",
-      "",
-      "<b>Как работают генерации?</b>",
-      "Один новый AI-плейлист расходует генерацию. Остаток виден в верхней панели и профиле.",
-    ].join("\n");
-    const kb = new InlineKeyboard()
-      .webApp(btnText("Открыть полную справку", "app"), `${env.publicOrigin}?tab=help`).row();
-    const shop = getShopSettings(db);
-    if (shop.supportContact) kb.text(btnText("Написать в поддержку", "info"), "nav:support").row();
-    kb.text(btnText("Назад", "back"), "nav:menu");
     return { text, keyboard: kb };
   }
 
@@ -246,11 +217,6 @@ export function createBot(db: AppDb): Bot<BotContext> {
     await ctx.reply(view.text, { reply_markup: view.keyboard, parse_mode: "HTML" });
   });
 
-  bot.command("help", async (ctx) => {
-    const view = buildFaqView();
-    await ctx.reply(view.text, { reply_markup: view.keyboard, parse_mode: "HTML" });
-  });
-
   registerShop(bot, db);
   registerAdminPanel(bot, db);
   registerCredits(bot, db);
@@ -298,9 +264,6 @@ export function createBot(db: AppDb): Bot<BotContext> {
         break;
       case "support":
         await editOrReply(ctx, buildSupportView());
-        break;
-      case "faq":
-        await editOrReply(ctx, buildFaqView());
         break;
       case "admin": {
         if (!ctx.isAdmin) return;
@@ -359,7 +322,6 @@ export function createBot(db: AppDb): Bot<BotContext> {
     { command: "buy", description: "Купить доступ" },
     { command: "profile", description: "Мой профиль" },
     { command: "support", description: "Поддержка" },
-    { command: "help", description: "Помощь и частые вопросы" },
   ]).catch(() => {});
 
   // Telegram Stars (XTR) for playlist slots. Offer invoices are answered by

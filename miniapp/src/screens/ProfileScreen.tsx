@@ -5,7 +5,7 @@ import {
   MusicNotes,
   ChartBar,
   UsersThree, Copy, Check,
-  Question, CaretRight, Shield,
+  CaretRight, Shield,
 } from "../icons";
 import { GlassPanel } from "../components/GlassPanel";
 import { Segmented } from "../components/Segmented";
@@ -251,14 +251,12 @@ function ReferralCard() {
 export default function ProfileScreen({
   me,
   onGoShop,
-  onOpenHelp,
   onOpenAdmin,
   accent,
   onChangeAccent,
 }: {
   me: MeResponse | null;
   onGoShop: () => void;
-  onOpenHelp: () => void;
   onOpenAdmin: () => void;
   accent: string;
   onChangeAccent: (value: string) => void;
@@ -358,19 +356,6 @@ export default function ProfileScreen({
       </GlassPanel>
 
       <ReferralCard />
-
-      <GlassPanel className="reveal profile-help-panel">
-        <button type="button" className="profile-help-link" onClick={onOpenHelp}>
-          <span className="profile-help-icon" aria-hidden="true">
-            <Question size={20} weight="bold" />
-          </span>
-          <span>
-            <strong>Помощь и FAQ</strong>
-            <small>Быстрый старт, ответы и поддержка</small>
-          </span>
-          <CaretRight size={18} weight="bold" aria-hidden="true" />
-        </button>
-      </GlassPanel>
 
       {me?.isAdmin && (
         <GlassPanel className="reveal profile-help-panel">
