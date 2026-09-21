@@ -143,6 +143,10 @@ Playlist generation is paywalled: a user needs either generation credits or an a
 
 Users buy via `/buy` in the bot or the «Магазин» tab in the Mini App, and check balance/history via `/profile` or the same tab.
 
+### Payments via Platega (СБП)
+
+Set `PLATEGA_MERCHANT_ID` and `PLATEGA_SECRET` from the Platega dashboard. The callback URL is `https://miniapp.xdshka.party/api/platega/webhook`; Platega authenticates callbacks with the `X-MerchantId` and `X-Secret` headers, so a `401 invalid signature` means the credentials in the running server environment do not match the merchant/API key configured in Platega. Keep callback verification enabled. After a successful or failed payment, Platega opens `PLATEGA_RETURN_URL`, which defaults to `https://t.me/music_agentbot` so the user returns to the bot instead of an environment-specific Mini App URL.
+
 ### Admin panel
 
 Admins (`ADMIN_CHAT_IDS` or allowlist admin flag) get:

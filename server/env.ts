@@ -66,6 +66,10 @@ export const env = {
   // Platega (СБП / RUB) — payments feature. Both required only when used.
   plategaMerchantId: process.env.PLATEGA_MERCHANT_ID ?? "",
   plategaSecret: process.env.PLATEGA_SECRET ?? "",
+  // Platega sends the customer here after success or failure. Keep this on
+  // the bot so a payment started from either the bot or the Mini App returns
+  // to the same Telegram conversation instead of an environment-specific UI.
+  plategaReturnUrl: (process.env.PLATEGA_RETURN_URL?.trim() || "https://t.me/music_agentbot").replace(/\/+$/, ""),
   // Separate alert bot for admin top-up notifications.
   alertBotToken: process.env.ALERT_BOT_TOKEN ?? "",
   alertChatIds: splitChatIds(process.env.ALERT_CHAT_IDS),

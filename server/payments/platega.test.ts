@@ -5,6 +5,7 @@ import { describe, expect, test } from "bun:test";
 process.env.TELEGRAM_BOT_TOKEN ??= "test-token";
 
 const { openDb } = await import("../db");
+const { env } = await import("../env");
 const { createOffer, assertValidRubAmount, InvalidRubAmountError } = await import("./offers-store");
 const { insertPendingInvoice, getInvoice, markCanceled, listPendingInvoices } = await import("./invoices-store");
 const { fulfillPendingInvoice } = await import("./fulfillment");
@@ -111,11 +112,17 @@ describe("purchaseOfferRub", () => {
   test("creates pending invoice with frozen amount/asset RUB", async () => {
     const db = freshDb();
     const offer = createOffer(db, { title: "pack", amount: "5", asset: "USDT", starsAmount: 100, rubAmount: 450, grantKind: "credits", grantAmount: 10 });
-    const create = async () => ({ transactionId: "tx-9", redirect: "https://pay.example/tx-9", status: "PENDING" });
+    let request: { returnUrl: string; failedUrl: string } | undefined;
+    const create = async (params: { returnUrl: string; failedUrl: string }) => {
+      request = params;
+      return { transactionId: "tx-9", redirect: "https://pay.example/tx-9", status: "PENDING" };
+    };
 
     const result = await purchaseOfferRub(db, CHAT, offer.id, create);
 
     expect(result.payUrl).toBe("https://pay.example/tx-9");
+    expect(request?.returnUrl).toBe(env.plategaReturnUrl);
+    expect(request?.failedUrl).toBe(env.plategaReturnUrl);
     expect(result.invoiceId).toBeGreaterThan(0);
     const invoice = getInvoice(db, "platega", "tx-9");
     expect(invoice?.amount).toBe("450");

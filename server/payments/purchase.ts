@@ -85,8 +85,8 @@ export async function purchaseOfferRub(
     amountRub: offer.rubAmount,
     description: offer.title,
     payload: JSON.stringify({ chatId, offerId }),
-    returnUrl: env.publicOrigin,
-    failedUrl: env.publicOrigin,
+    returnUrl: env.plategaReturnUrl,
+    failedUrl: env.plategaReturnUrl,
   });
 
   const invoiceId = insertPendingInvoice(db, {
