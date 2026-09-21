@@ -1,4 +1,4 @@
-import { Bank, Check, CircleNotch, CreditCard, Star, X } from "../icons";
+import { Check, CircleNotch, CreditCard, Star, X } from "../icons";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Offer, PaymentMethod } from "../lib/api";
@@ -6,7 +6,7 @@ import { useDialog } from "../lib/useDialog";
 
 const METHOD_LABELS: Record<PaymentMethod, string> = {
   platega: "СБП",
-  stars: "Звёзды Telegram",
+  stars: "Звёзды",
 };
 
 function priceLabel(offer: Offer, method: PaymentMethod): string {
@@ -17,14 +17,27 @@ function priceLabel(offer: Offer, method: PaymentMethod): string {
 
 function methodDescription(offer: Offer, method: PaymentMethod): string {
   return method === "platega"
-    ? `${offer.rubAmount ?? "—"} ₽ · откроется банковская страница`
-    : `${offer.starsAmount ?? "—"} звёзд · оплата в Telegram`;
+    ? `От ${offer.rubAmount ?? "—"} ₽`
+    : "1 звезда = 1 ₽";
 }
 
-function methodIcon(method: PaymentMethod) {
-  return method === "platega"
-    ? <Bank size={20} weight="bold" aria-hidden="true" />
-    : <Star size={20} weight="fill" aria-hidden="true" />;
+function PaymentMethodArtwork({ method }: { method: PaymentMethod }) {
+  if (method === "platega") {
+    return (
+      <span className="payment-method-art payment-method-art--sbp" aria-hidden="true">
+        <span className="payment-art-bank payment-art-bank--green">С</span>
+        <span className="payment-art-bank payment-art-bank--yellow">T</span>
+        <span className="payment-art-bank payment-art-bank--red">A</span>
+        <span className="payment-art-bank payment-art-bank--blue">ВТБ</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className="payment-method-art payment-method-art--stars" aria-hidden="true">
+      <Star className="payment-art-star" size={148} weight="fill" />
+    </span>
+  );
 }
 
 export function SubscriptionPaymentSheet({
@@ -83,16 +96,15 @@ export function SubscriptionPaymentSheet({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                className={`payment-method-option${selected ? " is-selected" : ""}`}
+                className={`payment-method-option payment-method-option--${option}${selected ? " is-selected" : ""}`}
                 disabled={busy}
                 onClick={() => onMethodChange(option)}
               >
-                <span className="payment-method-option-icon">{methodIcon(option)}</span>
+                <PaymentMethodArtwork method={option} />
                 <span className="payment-method-option-copy">
                   <strong>{METHOD_LABELS[option]}</strong>
                   <small>{methodDescription(offer, option)}</small>
                 </span>
-                <span className="payment-method-option-price">{priceLabel(offer, option)}</span>
                 <span className="payment-method-option-check" aria-hidden="true">
                   {selected ? <Check size={18} weight="bold" /> : null}
                 </span>
