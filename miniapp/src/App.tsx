@@ -348,8 +348,6 @@ function AppInner() {
             playlist={screen.playlist}
             generationId={screen.generationId}
             initialSaved={screen.saved}
-            requestSummary={screen.request}
-            onEditRequest={screen.request ? () => navigate({ kind: "prompt", initialQuery: screen.request }, "back") : undefined}
           />
         );
       case "shared":

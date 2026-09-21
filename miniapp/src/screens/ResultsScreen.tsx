@@ -25,14 +25,10 @@ export function ResultsScreen({
   playlist,
   generationId,
   initialSaved = false,
-  requestSummary,
-  onEditRequest,
 }: {
   playlist: FinalizedPlaylist;
   generationId: number;
   initialSaved?: boolean;
-  requestSummary?: string;
-  onEditRequest?: () => void;
 }) {
   const player = usePlayer();
   const [current, setCurrent] = useState<FinalizedPlaylist>(playlist);
@@ -260,19 +256,6 @@ export function ResultsScreen({
   return (
     <div className="reveal results-panel">
       <div className="results-main">
-        {requestSummary && (
-          <div className="prompt-request-summary results-request-summary" aria-label="Исходный запрос">
-            <span className="prompt-request-summary-copy">
-              <span className="prompt-request-summary-label">Запрос</span>
-              <strong>{requestSummary}</strong>
-            </span>
-            {onEditRequest && (
-              <button type="button" className="prompt-request-summary-edit" onClick={onEditRequest}>
-                Изменить
-              </button>
-            )}
-          </div>
-        )}
         <header className="results-playlist-header">
           <div className="results-playlist-cover" aria-hidden="true">
             {coverTracks.length > 0 ? coverTracks.map((track) => (
