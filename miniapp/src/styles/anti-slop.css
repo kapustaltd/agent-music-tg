@@ -1860,7 +1860,6 @@ h2.screen-title,
   height: 48px;
   border-radius: var(--radius-control);
   object-fit: contain;
-  outline: 1px solid oklch(1 0 0 / 0.1);
 }
 
 .payment-method-art--platega img,
