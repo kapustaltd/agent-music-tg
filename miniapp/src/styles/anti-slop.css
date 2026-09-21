@@ -546,6 +546,272 @@ h2.screen-title,
   }
 }
 
+/* Prompt modes use the same segmented control as the profile's track-source
+   picker. The mode switch is a decision control, so it gets the full width;
+   the heading is intentionally omitted and the input carries the task. */
+.prompt-compose > .segmented {
+  width: 100%;
+  min-height: 56px;
+  border-radius: var(--radius-input-shared);
+  border-color: var(--content-hairline);
+  background: var(--control-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.prompt-compose > .segmented .segmented-option {
+  min-height: 46px;
+  border-radius: var(--radius-compact);
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.prompt-compose > .segmented .segmented-option.active {
+  color: var(--text-dark);
+}
+
+.prompt-compose > .segmented .segmented-indicator {
+  border-radius: var(--radius-compact);
+  background: color-mix(in srgb, var(--text-dark) 10%, transparent);
+  border-color: var(--content-hairline);
+  box-shadow: none;
+}
+
+:root[data-scheme="light"] .prompt-compose > .segmented .segmented-indicator {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: var(--content-hairline);
+}
+
+/* Subscription shop: three plans are the primary object, payment is a single
+   follow-up action. This keeps the page legible when either gateway is absent. */
+.subscription-page {
+  gap: var(--space-6);
+}
+
+.subscription-header {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.subscription-heading {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.subscription-heading .screen-title {
+  margin: 0;
+}
+
+.subscription-heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-body);
+}
+
+.subscription-status {
+  display: grid;
+  gap: 2px;
+  padding-block: var(--space-3);
+  border-block: 1px solid var(--content-hairline);
+}
+
+.subscription-status span,
+.subscription-section-heading span,
+.subscription-checkout-heading span {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+}
+
+.subscription-status strong {
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.subscription-status.is-active strong {
+  color: var(--accent);
+}
+
+.subscription-section-heading,
+.subscription-checkout-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.subscription-section-heading {
+  margin-bottom: var(--space-3);
+}
+
+.subscription-section-heading h2 {
+  margin: 0;
+  font-size: var(--fs-section-title);
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.subscription-plans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.subscription-plan {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  min-height: 132px;
+  padding: var(--space-3);
+  border: 1px solid var(--content-hairline);
+  border-radius: var(--radius-input-shared);
+  background: transparent;
+  color: var(--text-dark);
+  text-align: start;
+  font: inherit;
+}
+
+.subscription-plan:hover {
+  background: var(--control-surface);
+}
+
+.subscription-plan.is-selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.subscription-plan-duration {
+  padding-inline-end: 18px;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.subscription-plan-days {
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+  line-height: 1.3;
+}
+
+.subscription-plan-prices {
+  align-self: end;
+  padding-top: var(--space-2);
+  color: var(--text-dark);
+  font-size: var(--fs-metadata);
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.subscription-plan-check {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.subscription-checkout {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--content-hairline);
+}
+
+.subscription-checkout-heading strong {
+  font-size: var(--fs-body);
+  font-weight: 600;
+}
+
+.subscription-checkout > .segmented {
+  width: 100%;
+  min-height: 48px;
+}
+
+.subscription-method-single {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+}
+
+.subscription-buy {
+  width: 100%;
+  min-height: 52px;
+  justify-content: center;
+  border-radius: var(--radius-input-shared);
+  background: var(--accent);
+  color: #101012;
+}
+
+.subscription-checkout-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-metadata);
+  line-height: 1.35;
+}
+
+.subscription-history .screen-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-section-title);
+}
+
+@media (max-width: 839px) {
+  /* The query is the primary action on mobile. Let its surface reach both
+     viewport edges while the mode switch and suggestions keep 14px gutters. */
+  .app-shell--prompt .prompt-card {
+    width: 100vw;
+    max-width: none;
+    margin-inline-start: calc((100% - 100vw) / 2);
+    padding-inline: 14px;
+  }
+
+  .app-shell--prompt .prompt-pill {
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    min-height: 64px;
+    padding-inline: 18px;
+    border-radius: 0;
+  }
+
+  .app-shell--prompt .prompt-pill-input {
+    padding-block: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .subscription-plans {
+    display: flex;
+    overflow-x: auto;
+    gap: var(--space-2);
+    padding-bottom: 4px;
+    scroll-snap-type: x proximity;
+  }
+
+  .subscription-plan {
+    flex: 0 0 132px;
+    padding-inline: 10px;
+    scroll-snap-align: start;
+  }
+
+  .subscription-plan-duration {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .subscription-plan-days,
+  .subscription-plan-prices {
+    font-size: 12px;
+  }
+}
+
 /* ResultsScreen keeps its action names intentionally specific so the same
    controls are reused by older shared styles. Finish that action bar here. */
 .playlist-action-bar {
@@ -685,53 +951,127 @@ h2.screen-title,
   }
 }
 
-/* Scroll-aware app chrome: the header stays readable over the page while the
-   mobile dock gives long lists breathing room. These rules intentionally live
-   last because glass.css contains several historical shell overrides. */
-.app-top-bar,
-.app-sidebar .app-top-bar {
-  position: sticky;
-  top: max(8px, env(safe-area-inset-top, 0px));
-  z-index: 110;
-  background: color-mix(in srgb, var(--lg-v2-bg) 88%, transparent);
-  border-bottom: 1px solid var(--content-hairline);
-  backdrop-filter: blur(16px) saturate(130%);
-  -webkit-backdrop-filter: blur(16px) saturate(130%);
+/* Final generated-playlist-card pass. The result is content, not a nested
+   decorative card: artwork establishes the visual anchor, while the title,
+   count and actions share one predictable reading order. The breakpoint is
+   based on the header's content rather than the app shell's desktop switch. */
+.results-panel,
+.results-panel::before,
+.results-panel::after,
+.results-panel > .results-main,
+.results-playlist-header,
+.results-playlist-header-copy,
+.playlist-action-bar {
+  background-image: none;
 }
 
-/* `overflow-x: hidden` computes overflow-y to `auto` and makes app-shell a
-   nested scroll container, which prevents the header from sticking to the
-   viewport on mobile. `clip` keeps the horizontal guard without creating that
-   scrollport; the document remains the one vertical scroll surface. */
-.app-shell {
-  overflow-x: clip;
+.results-panel::before,
+.results-panel::after {
+  display: none;
+  content: none;
 }
 
-@media (max-width: 839px) {
-  .dock {
-    will-change: transform, opacity;
-    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease;
-  }
-
-  .dock.dock--hidden {
-    transform: translateY(calc(100% + 24px));
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .dock.dock--hidden > * {
-    pointer-events: none;
-  }
+.results-panel {
+  padding-block: var(--space-4) var(--space-6);
+  border: 0;
+  box-shadow: none;
 }
 
-@media (min-width: 840px) {
-  .app-sidebar .app-top-bar {
-    top: var(--desktop-sticky-top);
+.results-panel > .results-main {
+  max-width: 760px;
+}
+
+.results-playlist-header {
+  display: grid;
+  grid-template-columns: minmax(112px, 120px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-5);
+  min-width: 0;
+  text-align: start;
+}
+
+.results-playlist-cover {
+  width: 120px;
+  height: 120px;
+  flex-basis: 120px;
+  border: 0;
+  border-radius: var(--radius-input-shared);
+  outline: 1px solid oklch(1 0 0 / 0.1);
+  box-shadow: none;
+}
+
+:root[data-scheme="light"] .results-playlist-cover {
+  outline-color: oklch(0 0 0 / 0.1);
+}
+
+.results-playlist-header-copy {
+  align-items: flex-start;
+  min-width: 0;
+  gap: var(--space-2);
+  text-align: start;
+}
+
+.results-playlist-header .playlist-name-title,
+.results-playlist-header .playlist-name-input {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: start;
+  text-wrap: balance;
+}
+
+.results-playlist-meta {
+  margin: 0;
+}
+
+.playlist-action-bar {
+  align-items: center;
+  border: 0;
+  box-shadow: none;
+}
+
+.playlist-action-icon {
+  border: 1px solid var(--content-hairline);
+  background: transparent;
+  box-shadow: none;
+}
+
+.playlist-action-icon:hover,
+.playlist-action-icon:focus-visible {
+  background: color-mix(in srgb, var(--text-dark) 7%, transparent);
+}
+
+.playlist-action-icon.active {
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .results-playlist-header {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .results-playlist-cover {
+    width: min(120px, 34vw);
+    height: min(120px, 34vw);
+    flex-basis: auto;
+  }
+
+  .results-playlist-header-copy {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+
+  .results-playlist-header .playlist-name-title,
+  .results-playlist-header .playlist-name-input {
+    text-align: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dock {
+  .playlist-action-icon {
     transition: none;
   }
 }

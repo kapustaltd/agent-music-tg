@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, CircleNotch, MagnifyingGlass, Sparkle } from "../icons";
+import { ArrowUp, CircleNotch, MagnifyingGlass } from "../icons";
 import { api, type HistoryEntry, type SuggestionsResponse } from "../lib/api";
 import type { AgentProgressEvent } from "../lib/api";
 import { EMPTY_SUGGESTIONS, samplePromptExamples } from "../lib/suggestions";
+import { Segmented } from "../components/Segmented";
 import { AiMode } from "./AiMode";
 import { SearchMode } from "./SearchMode";
 
 const MAX_INPUT_HEIGHT = 96;
 
 type Mode = "ai" | "search";
+
+const PROMPT_MODES = ["ai", "search"] as const;
+const PROMPT_MODE_LABELS: Record<Mode, string> = {
+  ai: "Подобрать",
+  search: "Поиск",
+};
 
 /**
  * The create tab's shell: hero, mode toggle and the shared input. Each mode's
@@ -130,11 +137,6 @@ export function PromptScreen({
     setPromptExamples((current) => samplePromptExamples(current, suggestions.topArtists));
   }
 
-  const MODES: { id: Mode; label: string; icon: typeof Sparkle }[] = [
-    { id: "ai", label: "Подобрать", icon: Sparkle },
-    { id: "search", label: "Найти", icon: MagnifyingGlass },
-  ];
-
   return (
     <div
       className={`reveal prompt-card${mode === "search" ? " prompt-card--search" : ""}${busy && requestCollapsed ? " prompt-card--busy" : ""}`}
@@ -152,28 +154,18 @@ export function PromptScreen({
         </div>
       ) : (
         <div className="prompt-compose">
-          <h1 className="prompt-heading">{mode === "ai" ? "Что хочется послушать?" : "Найти музыку"}</h1>
-
-          <div className="prompt-modes" role="group" aria-label="Режим">
-            {MODES.map((m) => {
-              const Icon = m.icon;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`prompt-mode-seg-btn${mode === m.id ? " active" : ""}`}
-                  aria-pressed={mode === m.id}
-                  onClick={() => {
-                    if (m.id === "ai" && !prompt.trim()) refreshPromptExamples();
-                    setMode(m.id);
-                  }}
-                >
-                  <Icon size={20} weight={mode === m.id ? "fill" : "regular"} />
-                  <span>{m.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <Segmented<Mode>
+            ariaLabel="Режим"
+            role="radiogroup"
+            fill
+            options={PROMPT_MODES}
+            labels={PROMPT_MODE_LABELS}
+            value={mode}
+            onChange={(nextMode) => {
+              if (nextMode === "ai" && !prompt.trim()) refreshPromptExamples();
+              setMode(nextMode);
+            }}
+          />
 
           <div className={`prompt-pill${mode === "search" ? " prompt-pill--search" : ""}`}>
             {mode === "search" && (
