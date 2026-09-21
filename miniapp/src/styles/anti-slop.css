@@ -449,6 +449,18 @@ h2.screen-title,
   font-weight: 500;
 }
 
+/* The dock is persistent chrome: pressing a tab should not make it look like
+   a raised button. Keep keyboard focus visible, but suppress pointer-focus
+   outlines and the shared press shadow/shift. */
+.dock .dock-tab:active {
+  transform: none;
+  box-shadow: none;
+}
+
+.dock .dock-tab:focus:not(:focus-visible) {
+  outline: none;
+}
+
 @media (max-width: 839px) {
   .app-top-bar {
     top: 0;
