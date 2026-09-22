@@ -16,12 +16,22 @@ Telegram bot + Mini App that turns a mood/request into a playlist via an AI agen
 
 ## Agent workflow
 
+Read and follow [the agent workflow](docs/agents/workflow.md) before implementing
+changes. It defines proportional planning, the existing OpenSpec lifecycle,
+implementation, review, requirements convergence, verification, and release.
+Use [the review checklist](docs/agents/review.md); substantial OpenSpec changes
+record evidence in `review.md` using [the template](docs/agents/review-template.md).
+Small documentation or behavior-preserving changes use the short path. Roles
+may be sequential passes of one agent; do not claim self-review is independent.
+Do not introduce a second specification system or require approval for routine
+steps already authorized by the user.
+
 **Deployment rule**: do not run `./deploy/*.sh` or perform deployment manually. After a successful iteration, only create the required commits and push them to the configured git remote; deployment is handled separately. Never deploy when a required verification step has failed.
 
 **Successful iteration**: an iteration is complete only when the requested change is implemented, relevant documentation and `.env.example` are updated when applicable, and proportionate verification passes:
 
 - Always run `bun run typecheck` for TypeScript changes.
-- Run `bun test` for server or shared-logic changes.
+- Run `bun run test` (isolated `bun test`) for server or shared-logic changes.
 - Run `bun run build:miniapp` for Mini App changes.
 - Run focused tests or checks for the changed area when available.
 - Documentation-only changes may be verified by reviewing the rendered content and diff; they do not require unrelated builds or tests.

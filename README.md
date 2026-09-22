@@ -35,6 +35,15 @@ for inspection, not yet the deployment input. Each CI job has a 20-minute timeou
 
 See [the refactoring audit](docs/refactoring-audit.md) for the remaining technical debt.
 
+## Работа coding-агентов
+
+Общий процесс подключён через [AGENTS.md](AGENTS.md):
+задача → OpenSpec/план → реализация → ревью → сверка
+с требованиями → проверки → коммиты и push. Для небольших правок есть короткий путь.
+[Регламент](docs/agents/workflow.md), [чек-лист ревью](docs/agents/review.md) и
+[шаблон отчёта](docs/agents/review-template.md) хранятся в репозитории.
+Это процесс разработки, не изменение AI-агента подбора музыки внутри бота.
+
 ## Deploy
 
 Every push to `main` runs the checks in `.github/workflows/ci.yml` and, when
