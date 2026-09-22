@@ -19,9 +19,21 @@ bun run dev
 ## Test
 
 ```bash
-bun test              # server
-cd miniapp && bun run build   # typecheck + build the Mini App
+bun install --frozen-lockfile
+(cd miniapp && bun install --frozen-lockfile)
+(cd dashboard && bun install --frozen-lockfile)
+bun run check         # server types, isolated tests, Mini App + dashboard builds
+bun run test          # tests only (all test files, isolated module registries)
 ```
+
+CI and local checks use Bun `1.3.14`. The quality gate stops on the first failure.
+Both frontend builds include TypeScript checks. Successful CI runs retain separate
+Mini App and dashboard artifacts for 7 days, named with the verified commit SHA.
+Deploy jobs check out that same SHA even when a manually selected branch moves.
+The existing external deployment scripts still rebuild bundles; the artifacts are
+for inspection, not yet the deployment input. Each CI job has a 20-minute timeout.
+
+See [the refactoring audit](docs/refactoring-audit.md) for the remaining technical debt.
 
 ## Deploy
 
@@ -184,7 +196,6 @@ Material Icons. Правила поверхностей, состояний и r
 найденные треки в необязательном `progress.tracks`; это кандидаты, итоговый
 плейлист по-прежнему приходит в `outcome`. Сырые ответы модели не публикуются.
 
-Проверки на Bun с поддержкой изоляции: `bun test --isolate`. Изоляция нужна,
-поскольку существующие `mock.module` в разных тестовых файлах изменяют одни
-и те же модули. Обычный `bun test` на Bun 1.4.2 может давать ложные падения
-`run-generation.test.ts` из-за общего реестра моков.
+Используйте `bun run test` (запускает `bun test --isolate`): существующие
+`mock.module` в разных тестовых файлах изменяют одни и те же модули.
+Изоляция всех файлов предотвращает зависимость результата от порядка запуска.

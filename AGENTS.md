@@ -5,7 +5,8 @@ Telegram bot + Mini App that turns a mood/request into a playlist via an AI agen
 ## Commands
 
 - `bun run dev` — Start dev server with watch
-- `bun test` — Run server tests
+- `bun run test` — Run all tests with isolated module registries
+- `bun run check` — Run the CI quality gate (types, tests, both frontend builds)
 - `bun run typecheck` — Type-check without building
 - `bun run build:miniapp` — Build the Mini App
 - `./deploy/deploy.sh` — Deploy to VPS (builds miniapp, rsyncs, restarts systemd unit)

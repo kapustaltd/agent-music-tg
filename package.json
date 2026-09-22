@@ -6,12 +6,13 @@
   "scripts": {
     "dev": "bun run --watch server/index.ts",
     "start": "bun run server/index.ts",
-    "test": "bun test",
+    "test": "bun test --isolate",
     "openspec:commit": "bun run scripts/openspec-commit.ts",
     "typecheck": "tsc --noEmit",
     "build:miniapp": "cd miniapp && bun run build",
     "build:dashboard": "cd dashboard && bun run build",
-    "dashboard": "bun run --watch server/dashboard-server.ts"
+    "dashboard": "bun run --watch server/dashboard-server.ts",
+    "check": "bun run typecheck && bun run test && bun run build:miniapp && bun run build:dashboard"
   },
   "dependencies": {
     "@grammyjs/runner": "^2.0.3",
