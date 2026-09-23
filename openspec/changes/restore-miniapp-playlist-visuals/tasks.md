@@ -21,3 +21,9 @@
 - [ ] 3.3 Провести одну батч-проверку в браузере на мобильной ширине и desktop;
       сверить тёмную и светлую схему и повторно проверить изменённые состояния.
 - [x] 3.4 Запустить Impeccable detector и пройти review checklist.
+
+## Convergence 1 — test build ignored the final visual overrides
+
+- [x] 4.1 Close the malformed `.results-action--primary:hover` rule in
+      `miniapp/src/styles/glass.css`; confirm the built CSS leaves subsequent
+      header, bitmap, and artwork rules at the top level.

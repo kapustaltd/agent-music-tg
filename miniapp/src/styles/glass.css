@@ -9392,8 +9392,8 @@ div.player-bar-thumbnail::after {
 }
 
 .results-action--primary:hover {
-.results-action:active {
-  transform: scale(0.96);
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 
 .results-action:focus-visible {
