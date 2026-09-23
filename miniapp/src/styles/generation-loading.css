@@ -1,4 +1,4 @@
-/* Generation loading keeps one indicator and the playable track preview. */
+/* Generation loading keeps one indicator, the phase trace and playable tracks. */
 .prompt-card--busy .prompt-request-summary {
   margin-bottom: 0;
   padding-bottom: var(--space-2);
@@ -13,17 +13,20 @@
 
 .generation-status {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 76px;
-  padding: var(--space-2) 0;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: 0;
+  padding: var(--space-1) 0 var(--space-2);
   border: 0;
   border-bottom: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--accent-text);
   box-shadow: none;
 }
+
+.generation-status-icon { display: inline-flex; flex: 0 0 auto; margin-top: 4px; color: var(--accent-text); }
+.generation-status-copy { display: grid; min-width: 0; gap: 2px; }
+.generation-status-detail { color: var(--text-muted); font-size: var(--fs-metadata); line-height: 1.35; }
 
 .generation-tracks {
   display: grid;
