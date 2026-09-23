@@ -53,12 +53,13 @@ export function PlayerScreen({
   const [showLyrics, setShowLyrics] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [reacting, setReacting] = useState(false);
-  const { isSaved, isPending, toggleSaved } = useMyMusic();
+  const { isSaved, isPending, toggleSaved, markUnsaved } = useMyMusic();
 
   const overlayRef = useDialog<HTMLDivElement>(true, onClose);
   const startX = useRef(0);
   const startY = useRef(0);
   const currentY = useRef(0);
+  const reactionRevision = useRef(0);
   // "pending" until travel clears a slop and picks a dominant axis (see
   // shouldEngageVerticalSwipe) — only then does the gesture actually start
   // moving the card. "rejected" once a horizontal drag has been identified,
@@ -88,22 +89,45 @@ export function PlayerScreen({
     // placeholder up for every track played afterwards.
     setArtworkError(false);
     if (!track) return;
-    // "liked" now comes from the shared my-music store (see toggleLike below)
-    // — reactionStatus is only consulted here for "disliked", which has no
-    // other source of truth.
+    // Saved state comes from the shared my-music store. If older data contains
+    // both reactions, prefer Like so the player never shows both as active.
+    let cancelled = false;
+    const revision = reactionRevision.current;
     api
       .reactionStatus(track.uri)
-      .then(({ disliked }) => setDisliked(disliked))
+      .then(({ liked, disliked }) => {
+        if (cancelled || revision !== reactionRevision.current) return;
+        if (liked && disliked) {
+          setDisliked(false);
+          // Repair legacy dual state once, using the existing favorite as the
+          // canonical reaction. The status read itself remains read-only.
+          void api.undislikeTrack(track.uri).catch(() => {});
+          return;
+        }
+        setDisliked(disliked);
+      })
       .catch(() => {});
+    return () => { cancelled = true; };
   }, [track?.uri]);
 
-  function toggleLike() {
-    if (!track) return;
-    void toggleSaved(track);
+  async function toggleLike() {
+    if (!track || reacting || isPending(track.uri)) return;
+    reactionRevision.current += 1;
+    const wasSaved = isSaved(track.uri);
+    setReacting(true);
+    try {
+      const succeeded = await toggleSaved(track);
+      // POST /my-music also removes a dislike server-side. Only clear the
+      // visible state after the favorite write succeeds.
+      if (succeeded && !wasSaved) setDisliked(false);
+    } finally {
+      setReacting(false);
+    }
   }
 
   async function toggleDislike() {
-    if (!track || reacting) return;
+    if (!track || reacting || isPending(track.uri)) return;
+    reactionRevision.current += 1;
     setReacting(true);
     try {
       if (disliked) {
@@ -111,6 +135,7 @@ export function PlayerScreen({
         setDisliked(false);
       } else {
         await api.dislikeTrack({ uri: track.uri, title: track.title, artist: track.artist });
+        markUnsaved(track.uri);
         setDisliked(true);
       }
     } finally {
@@ -389,31 +414,17 @@ export function PlayerScreen({
               <SkipForward size={26} weight="fill" />
             </button>
           </div>
-          {/* Reactions are a group; lyrics is navigation into another surface. */}
-          <div className="player-screen-secondary-row">
-            <div className="player-screen-reactions" role="group" aria-label="Реакция на трек">
-              <button
-                type="button"
-                className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
-                aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-                title={disliked ? "Убрать из нелюбимых" : "Не нравится"}
-                disabled={!track || reacting}
-                onClick={() => void toggleDislike()}
-              >
-                <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
-              </button>
-              <button
-                type="button"
-                className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
-                aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
-                title={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
-                aria-pressed={!!track && isSaved(track.uri)}
-                disabled={!track || isPending(track.uri)}
-                onClick={toggleLike}
-              >
-                <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
-              </button>
-            </div>
+          <div className="player-screen-secondary-row" role="group" aria-label="Действия с треком">
+            <button
+              type="button"
+              className={`player-screen-reaction-btn${disliked ? " active" : ""}`}
+              aria-label={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              title={disliked ? "Убрать из нелюбимых" : "Не нравится"}
+              disabled={!track || reacting || isPending(track.uri)}
+              onClick={() => void toggleDislike()}
+            >
+              <ThumbsDown size={20} weight={disliked ? "fill" : "regular"} />
+            </button>
             <button
               type="button"
               className="player-screen-lyrics-btn"
@@ -423,6 +434,17 @@ export function PlayerScreen({
               onClick={() => setShowLyrics(true)}
             >
               <TextAlignLeft size={16} weight="bold" /> Текст песни
+            </button>
+            <button
+              type="button"
+              className={`player-screen-reaction-btn${track && isSaved(track.uri) ? " active" : ""}`}
+              aria-label={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+              title={track && isSaved(track.uri) ? "Убрать из моей музыки" : "Добавить в мою музыку"}
+              aria-pressed={!!track && isSaved(track.uri)}
+              disabled={!track || reacting || isPending(track.uri)}
+              onClick={() => void toggleLike()}
+            >
+              <HeartStraight size={20} weight={track && isSaved(track.uri) ? "fill" : "regular"} />
             </button>
           </div>
           <VolumeControl

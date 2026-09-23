@@ -55,6 +55,13 @@ export class MyMusicStore {
     return !!this.snapshot.saved[uri];
   }
 
+  /** Syncs the shared heart state after a reaction endpoint removes a favorite. */
+  markUnsaved(uri: string): void {
+    if (!this.isSaved(uri)) return;
+    const { [uri]: _removed, ...saved } = this.snapshot.saved;
+    this.update({ saved });
+  }
+
   isPending(uri: string): boolean {
     return !!this.snapshot.pending[uri];
   }
@@ -111,6 +118,8 @@ export interface MyMusicApiPublic {
   isPending: (uri: string) => boolean;
   /** Resolves to whether the toggle stuck (false = the request failed and rolled back). */
   toggleSaved: (track: MyMusicTrack) => Promise<boolean>;
+  /** Syncs local state after the dislike endpoint removes a favorite server-side. */
+  markUnsaved: (uri: string) => void;
 }
 
 const MyMusicContext = createContext<MyMusicStore | null>(null);
@@ -136,5 +145,6 @@ export function useMyMusic(): MyMusicApiPublic {
     isSaved: (uri: string) => !!snapshot.saved[uri],
     isPending: (uri: string) => !!snapshot.pending[uri],
     toggleSaved: (track: MyMusicTrack) => store.toggleSaved(track),
+    markUnsaved: (uri: string) => store.markUnsaved(uri),
   };
 }

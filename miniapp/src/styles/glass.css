@@ -10051,7 +10051,7 @@ input, textarea { caret-color: var(--accent); }
   .playlist-name-title:hover .playlist-name-edit-icon, .playlist-name-edit-btn:focus-visible .playlist-name-edit-icon { opacity: 1; }
 }
 .player-screen-play-btn, :root[data-scheme="light"] .player-screen-play-btn { width: 56px; height: 56px; min-width: 56px; min-height: 56px; }
-.player-screen-secondary-row { justify-content: center; gap: 16px; }
+.player-screen-secondary-row { justify-content: space-between; gap: 0; }
 .lyrics-screen-line, .lyrics-screen-line.is-next, .lyrics-screen-line.is-past,
 :root[data-scheme="light"] .lyrics-screen-line, :root[data-scheme="light"] .lyrics-screen-line.is-next, :root[data-scheme="light"] .lyrics-screen-line.is-past { color: var(--text-muted); font-weight: 500; line-height: 1.4; opacity: 1; text-shadow: none; }
 .lyrics-screen-line.active, :root[data-scheme="light"] .lyrics-screen-line.active { color: var(--text-dark); font-weight: 600; text-shadow: none; transform: none; }
@@ -10450,7 +10450,8 @@ input, textarea { caret-color: var(--accent); }
 }
 
 .player-screen-secondary-row {
-  gap: 12px;
+  justify-content: space-between;
+  gap: 0;
 }
 
 .player-screen-lyrics-btn {

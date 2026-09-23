@@ -65,3 +65,9 @@
 - [x] 10.1 `bun test`, `bun run typecheck`, `bun run build:miniapp`
 - [ ] 10.2 Browser walkthrough (Chrome DevTools MCP): slider drag, reactions, lyrics sync, artist page load/error, playlist flows, merged action; re-check anti-slop law points on all new UI
 - [x] 10.3 Deploy via `./deploy/deploy-test.sh`; verify Stars invoice flow on test bot
+
+## Convergence 1
+
+- [x] 11.1 Keep Like and Dislike mutually exclusive in persisted and visible player state, including legacy dual-reaction state; requirement: `player-reactions`.
+- [x] 11.2 Place Dislike, lyrics action, and Like from left to right; requirement: `player-reactions`.
+- [x] 11.3 Let the app shell own the mobile chrome clearance instead of double-counting it on ResultsScreen; verified the final track stays above the mini-player and dock at a short mobile viewport; request: attached second screenshot.

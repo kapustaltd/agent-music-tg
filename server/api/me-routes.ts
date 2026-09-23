@@ -288,7 +288,10 @@ export function createMeRoutes(db: AppDb): Hono<AppEnv> {
     const artist = typeof body?.artist === "string" ? body.artist.trim() : "";
     const artwork = typeof body?.artwork === "string" ? body.artwork : null;
     if (!uri || !title || !artist) return c.json({ error: "invalid track" }, 400);
+    // Like and dislike are mutually exclusive, including when a legacy
+    // reaction exists from before this rule was enforced in both directions.
     addSavedTrack(db, c.get("chatId"), { uri, title, artist, artwork });
+    removeDislike(db, c.get("chatId"), uri);
     return c.json({ ok: true });
   });
 

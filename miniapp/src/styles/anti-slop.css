@@ -1554,7 +1554,7 @@ h2.screen-title,
 
 @media (max-width: 839px) {
   .results-panel {
-    padding-block: var(--space-3) var(--space-5);
+    padding-block: var(--space-3) 0;
   }
 
   .results-track-list {
@@ -1569,11 +1569,9 @@ h2.screen-title,
 
   .results-panel {
     padding-top: 0;
-    padding-bottom: calc(var(--space-5) + var(--dock-height) + var(--space-5) + env(safe-area-inset-bottom, 0px));
-  }
-
-  .app-shell--results:has(> .player-bar) .results-panel {
-    padding-bottom: calc(var(--space-5) + var(--mini-player-height) + var(--dock-height) + 48px + env(safe-area-inset-bottom, 0px));
+    /* The app shell reserves the fixed dock/player stack; don't add the same
+       bottom clearance to this page a second time. */
+    padding-bottom: 0;
   }
 
   .results-playlist-header {
