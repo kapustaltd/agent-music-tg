@@ -486,6 +486,10 @@ body {
   font-size: var(--fs-label);
   letter-spacing: var(--ls-tight);
   color: var(--text-dark);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   min-width: 0;
   max-width: 100%;
   justify-content: center;

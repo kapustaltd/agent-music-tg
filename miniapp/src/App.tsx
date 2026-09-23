@@ -85,6 +85,7 @@ function AppInner() {
   const [shopConfig, setShopConfig] = useState<ShopConfig | null>(null);
   const [history, setHistory] = useState<Screen[]>([{ kind: "prompt" }]);
   const screen = history[history.length - 1];
+  const [homeNavigationKey, setHomeNavigationKey] = useState(0);
   const [showPlayer, setShowPlayer] = useState(false);
   // `fromPlayer` is fixed at open time (not derived from the live `showPlayer`
   // flag) so the artist screen only sits above the full player when it was
@@ -290,6 +291,12 @@ function AppInner() {
     }
   }
 
+  function goHome() {
+    setHomeNavigationKey((key) => key + 1);
+    setError(null);
+    navigate({ kind: "prompt", initialMode: "ai" }, "back");
+  }
+
   function formatRetryTime(retryAt: number): string {
     const t = new Date(retryAt * 1000);
     const hh = String(t.getHours()).padStart(2, "0");
@@ -337,6 +344,7 @@ function AppInner() {
       case "prompt":
         return (
           <PromptScreen
+            key={homeNavigationKey}
             onSubmit={handleSubmit}
             busy={busy}
             progress={events}
@@ -441,12 +449,18 @@ function AppInner() {
             <MagnifyingGlass size={18} weight="bold" aria-hidden="true" />
           </button>
 
-        <span className="app-top-brand" title="music agent">
+        <button
+          type="button"
+          className="app-top-brand"
+          aria-label="На главную"
+          title="На главную"
+          onClick={goHome}
+        >
           <span className="app-top-logo" aria-hidden>
             <BrandMark size={26} />
           </span>
           <span className="app-top-brand-title">{shopConfig?.headerTitle || "agent music"}</span>
-        </span>
+        </button>
         <span className="app-top-actions">
           <button
             type="button"
