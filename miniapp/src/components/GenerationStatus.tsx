@@ -1,6 +1,6 @@
 import { TrackRow } from "./TrackRow";
 import { usePlayer } from "../lib/player";
-import { Swirl } from "loading-dev";
+import { Blocks } from "loading-dev";
 import { ThoughtLine } from "./ThoughtLine";
 import type { AgentProgressEvent, AgentProgressPhase } from "../lib/api";
 
@@ -32,7 +32,7 @@ export function GenerationStatus({ progress, preview = false }: { progress: Agen
   return (
     <section className="generation-preview" aria-label="Подбор музыки" aria-busy="true">
       <div className="generation-status" role="status" aria-live="polite" aria-atomic="true">
-        <span className="generation-status-icon" aria-hidden="true"><Swirl size={20} /></span>
+        <span className="generation-status-icon" aria-hidden="true"><Blocks size={48} /></span>
         <span className="generation-status-copy">
           <ThoughtLine steps={steps} />
           <span className="generation-status-detail">{detail}</span>
