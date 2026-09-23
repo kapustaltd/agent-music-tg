@@ -11,6 +11,9 @@ Mini App построен вокруг большого `miniapp/src/styles/glas
 - Сделать визуальную иерархию Mini App более продуктовой: сначала prompt, playlist, track и действие, затем вторичная метаинформация.
 - Свести каждую поверхность к понятной роли и убрать слои, которые повторяют друг друга.
 - Сохранить узнаваемую музыкальную идентичность, light/dark тему, состояния player/generation и доступные интеракции.
+- Сделать мобильные действия предсказуемыми в Telegram WebView: отступы от краёв, достаточные hit areas, доступность без hover и safe-area/keyboard-aware композиция.
+- Использовать жесты только там, где они ожидаемы и не конкурируют с текстовым вводом, вертикальной прокруткой, горизонтальными rails или системными жестами Telegram.
+- Оставить обратную связь при нажатии и смене экранов/состояний короткой, interruptible и согласованной с существующими токенами.
 - Оставить после прохода проверяемый список «удалено / заменено / оставлено намеренно».
 
 **Non-Goals:**
@@ -42,7 +45,17 @@ Mini App построен вокруг большого `miniapp/src/styles/glas
 
 ### Решение: motion должна объяснять изменение состояния
 
-Статичный status dot не пульсирует, обычный текст не получает blinking cursor, контент не прокручивается сам и routine dialog не bounce-ится. Анимация playback/generation и переходы остаются, но проходят проверку на layout shift и `prefers-reduced-motion`.
+Статичный status dot не пульсирует, обычный текст не получает blinking cursor, контент не прокручивается сам и routine dialog не bounce-ится. Короткое нажатие, смена выбранного состояния, навигация и открытие/закрытие overlay получают только ту обратную связь, которая помогает увидеть результат действия. Длительность соответствует существующему диапазону 150–250ms, изменение прерываемо и не создаёт layout shift; playback/generation остаются функциональными исключениями и поддерживают `prefers-reduced-motion`.
+
+### Решение: touch is primary on Telegram phones
+
+Actionable controls должны работать без hover. На телефоне целевой размер — 44×44 CSS px, если это не ломает плотную инструментальную компоновку; меньший видимый icon допускается внутри более крупной кнопки. Увеличенные hit areas не пересекаются с соседними действиями. Текст и controls получают общий inline gutter не менее 16px на узком экране; плавающий chrome и листы учитывают `safe-area-inset-*` и экранную клавиатуру.
+
+Свайп дополняет видимый control и никогда не становится единственным способом выполнить действие. Горизонтальные жесты уступают вложенным scrollers и полям ввода; vertical drag плеера начинает закрытие только после подтверждения направления и дистанции. У dismissible sheets сохраняется явная кнопка закрытия.
+
+### Решение: remove divider stripes by default
+
+Повторяющиеся hairline между одинаковыми строками заменяются вертикальным ритмом и состоянием active/focus. Структурный разделитель допустим между смысловыми секциями или в плотном административном списке. Seek/progress, focus rings и selected-state не относятся к декоративным полоскам.
 
 ## Risks / Trade-offs
 
@@ -53,8 +66,8 @@ Mini App построен вокруг большого `miniapp/src/styles/glas
 
 ## Verification Plan
 
-1. Выполнить source scan `npx impeccable detect miniapp/src/` и, если доступен running Mini App, browser scan локального URL.
-2. Повторить detector после правок; каждый оставшийся AI-slop finding должен быть устранён либо обоснован в audit matrix.
-3. Прогнать `bun run typecheck`, `bun test` и `bun run build:miniapp` по правилам репозитория.
-4. Просмотреть состояния prompt, clarify, results, profile, shop, playlists, admin, player, empty/loading/error/dialog в light/dark темах и ширине 320px.
-5. Проверить keyboard focus, contrast, touch targets, отсутствие horizontal overflow и поведение `prefers-reduced-motion`.
+1. Выполнить source scan bundled Impeccable detector по `miniapp/src/` и, если доступен running Mini App, browser scan локального URL.
+2. Записать найденные детектором паттерны в audit matrix; рекомендации за пределами выбранного мобильного scope оставить в backlog.
+3. Прогнать `bun run typecheck`, `bun run test` и `bun run build:miniapp` по правилам репозитория.
+4. Просмотреть состояния prompt, clarify, results, profile, shop, playlists, admin, player, empty/loading/error/dialog в light/dark темах на узком телефоне, 320px и desktop.
+5. Проверить touch targets и отсутствие hover-only действий, режимы swipe/scroll/input, keyboard focus, contrast, safe areas, отсутствие horizontal overflow и `prefers-reduced-motion`.
