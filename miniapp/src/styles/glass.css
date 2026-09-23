@@ -11078,7 +11078,7 @@ body {
 
 .dock-inner {
   padding: var(--space-1);
-  border: 1px solid var(--border-subtle);
+  border: 0;
   border-radius: var(--radius-md);
   background: var(--surface);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
