@@ -14,6 +14,7 @@ import { usePlayer } from "../lib/player";
 import { useMyMusic } from "../lib/my-music";
 import { openStarsInvoice } from "../lib/telegram";
 import { shareUrlToChat } from "../lib/share";
+import { ARTWORK_ROW, artworkUrl } from "../lib/artwork";
 import {
   api,
   PlaylistLimitReachedError,
@@ -181,29 +182,20 @@ function HistoryItem({
   );
 }
 
-const PLAYLIST_COVER_PALETTES = [
-  ["#ff6f91", "#7247d9", "#15162a"],
-  ["#ff9a62", "#c93672", "#24152b"],
-  ["#68d5c8", "#2472a4", "#111d31"],
-  ["#f5c85b", "#e75d55", "#2e1930"],
-] as const;
-
-function PlaylistCover({ playlistId }: { playlistId: number }) {
-  const palette = PLAYLIST_COVER_PALETTES[Math.abs(playlistId) % PLAYLIST_COVER_PALETTES.length]!;
+function PlaylistCover({ artworks }: { artworks: string[] }) {
+  const covers = artworks.slice(0, 4);
   return (
-    <span
-      className="playlist-cover-art"
-      aria-hidden="true"
-      style={{
-        ["--cover-a" as string]: palette[0],
-        ["--cover-b" as string]: palette[1],
-        ["--cover-c" as string]: palette[2],
-      }}
-    >
-      <span aria-hidden="true" style={{ background: palette[0] }} />
-      <span aria-hidden="true" style={{ background: palette[1] }} />
-      <span aria-hidden="true" style={{ background: palette[2] }} />
-      <span aria-hidden="true" style={{ background: palette[0] }} />
+    <span className="playlist-cover-art" aria-hidden="true">
+      <PlaylistIcon className="playlist-cover-fallback" size={20} weight="bold" />
+      {covers.length === 1 ? (
+        <img src={artworkUrl(covers[0]!, ARTWORK_ROW)} alt="" loading="lazy" decoding="async"
+          onError={(event) => { event.currentTarget.style.display = "none"; }} />
+      ) : covers.length > 1 ? (
+        Array.from({ length: 4 }, (_, i) => covers[i % covers.length]!).map((cover, i) => (
+          <img key={`${cover}-${i}`} src={artworkUrl(cover, ARTWORK_ROW)} alt="" loading="lazy" decoding="async"
+            onError={(event) => { event.currentTarget.style.display = "none"; }} />
+        ))
+      ) : null}
     </span>
   );
 }
@@ -451,7 +443,7 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
         <div className="stack reveal-stagger mt-12">
           {playlists.map((p, i) => (
             <button key={p.id} type="button" className="track-row search-artist-row" style={{ ["--i" as string]: i }} onClick={() => onOpen(p.id)}>
-              <PlaylistCover playlistId={p.id} />
+              <PlaylistCover artworks={p.coverArtworks ?? []} />
               <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                 <p className="search-row-title">{p.name}</p>
                 <p className="text-muted search-row-meta">Плейлист · {trackCountLabel(p.trackCount)}</p>

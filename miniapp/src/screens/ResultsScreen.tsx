@@ -51,7 +51,13 @@ export function ResultsScreen({
 
   const uris = current.tracks.map((t) => t.uri);
   const visibleTracks = current.tracks.filter((t) => verification[t.uri] !== "unavailable");
-  const coverTracks = current.tracks.filter((track) => track.artwork).slice(0, 1);
+  const uniqueCoverTracks = current.tracks
+    .filter((track) => track.artwork)
+    .filter((track, index, tracks) => tracks.findIndex((candidate) => candidate.artwork === track.artwork) === index)
+    .slice(0, 4);
+  const coverTracks = uniqueCoverTracks.length > 1
+    ? Array.from({ length: 4 }, (_, index) => uniqueCoverTracks[index % uniqueCoverTracks.length]!)
+    : uniqueCoverTracks;
   const firstVisibleTrack = visibleTracks[0];
   const isFirstTrackPlaying = firstVisibleTrack !== undefined
     && player.track?.uri === firstVisibleTrack.uri
@@ -286,15 +292,16 @@ export function ResultsScreen({
       <div className="results-main">
         <header className="results-playlist-header">
           <div className="results-playlist-cover" aria-hidden="true">
-            {coverTracks.length > 0 ? coverTracks.map((track) => (
+            <MusicNotes className="results-playlist-cover-fallback" size={28} weight="duotone" />
+            {coverTracks.map((track, index) => (
               <img
-                key={track.uri}
+                key={`${track.uri}-${index}`}
                 src={artworkUrl(track.artwork, ARTWORK_ROW)}
                 alt=""
                 loading="lazy"
                 onError={(event) => { event.currentTarget.style.display = "none"; }}
               />
-            )) : <MusicNotes className="results-playlist-cover-fallback" size={28} weight="duotone" />}
+            ))}
           </div>
           <div className="results-playlist-header-copy">
             {editingName ? (

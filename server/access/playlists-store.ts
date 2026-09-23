@@ -8,6 +8,7 @@ export interface Playlist {
   name: string;
   createdAt: number;
   trackCount: number;
+  coverArtworks: string[];
 }
 
 export interface PlaylistTrack {
@@ -42,8 +43,8 @@ interface PlaylistTrackRow {
   created_at: number;
 }
 
-function toPlaylist(row: PlaylistRow): Playlist {
-  return { id: row.id, name: row.name, createdAt: row.created_at, trackCount: row.track_count };
+function toPlaylist(row: PlaylistRow, coverArtworks: string[] = []): Playlist {
+  return { id: row.id, name: row.name, createdAt: row.created_at, trackCount: row.track_count, coverArtworks };
 }
 
 function toPlaylistTrack(row: PlaylistTrackRow): PlaylistTrack {
@@ -65,14 +66,45 @@ export function countPlaylists(db: AppDb, chatId: number): number {
 }
 
 export function listPlaylists(db: AppDb, chatId: number): Playlist[] {
-  return db
+  const playlists = db
     .query<PlaylistRow, [number]>(
       `SELECT p.id, p.name, p.created_at,
               (SELECT COUNT(*) FROM playlist_tracks pt WHERE pt.playlist_id = p.id) AS track_count
        FROM playlists p WHERE p.chat_id = ? ORDER BY p.created_at DESC`,
     )
-    .all(chatId)
-    .map(toPlaylist);
+    .all(chatId);
+  if (playlists.length === 0) return [];
+
+  const artworkRows = db
+    .query<{ playlist_id: number; artwork: string }, [number]>(
+      `SELECT playlist_id, artwork FROM (
+         SELECT playlist_id, artwork,
+                ROW_NUMBER() OVER (
+                  PARTITION BY playlist_id ORDER BY position ASC, created_at ASC, artwork ASC
+                ) AS artwork_order
+         FROM (
+           SELECT pt.playlist_id, pt.artwork,
+                  MIN(pt.position) AS position, MIN(pt.created_at) AS created_at
+           FROM playlist_tracks pt
+           INNER JOIN playlists p ON p.id = pt.playlist_id
+           WHERE p.chat_id = ? AND pt.artwork IS NOT NULL AND pt.artwork != ''
+           GROUP BY pt.playlist_id, pt.artwork
+         ) unique_artworks
+       ) ranked_artworks
+       WHERE artwork_order <= 4
+       ORDER BY playlist_id, artwork_order`,
+    )
+    .all(chatId);
+  const artworksByPlaylist = new Map<number, string[]>();
+  for (const row of artworkRows) {
+    const artworks = artworksByPlaylist.get(row.playlist_id) ?? [];
+    if (artworks.length < 4 && !artworks.includes(row.artwork)) {
+      artworks.push(row.artwork);
+      artworksByPlaylist.set(row.playlist_id, artworks);
+    }
+  }
+
+  return playlists.map((playlist) => toPlaylist(playlist, artworksByPlaylist.get(playlist.id) ?? []));
 }
 
 /** Throws PlaylistLimitError when the chat is at its slot limit. */
@@ -115,7 +147,12 @@ export function getPlaylist(db: AppDb, chatId: number, id: number): (Playlist & 
     )
     .all(id)
     .map(toPlaylistTrack);
-  return { ...toPlaylist(row), tracks };
+  const coverArtworks: string[] = [];
+  for (const track of tracks) {
+    if (track.artwork && !coverArtworks.includes(track.artwork)) coverArtworks.push(track.artwork);
+    if (coverArtworks.length === 4) break;
+  }
+  return { ...toPlaylist(row, coverArtworks), tracks };
 }
 
 /** Returns "added" | "duplicate" | "not_found" (playlist doesn't belong to chatId). */

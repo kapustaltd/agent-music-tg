@@ -1974,3 +1974,199 @@ h2.screen-title,
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Restore the quiet app bar in both the desktop rail and the direct mobile
+   shell. The legacy pill pseudo-layer must not draw a second outline. */
+.app-shell > .app-top-bar,
+.app-top-bar,
+.app-shell > .app-sidebar .app-top-bar,
+.app-sidebar .app-top-bar {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.app-top-bar::before {
+  display: none;
+}
+
+/* Keep the bundled bitmap legible above every transparent screen surface. */
+body::before {
+  opacity: 0.19;
+}
+
+:root[data-scheme="light"] body::before {
+  opacity: 0.065;
+}
+
+/* A late legacy rule changed this cover to block layout. Reassert the square
+   collage so one image fills it and multiple images share it evenly. */
+.results-playlist-cover {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--color-surface-dark);
+}
+
+.results-playlist-cover img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: cover;
+}
+
+.results-playlist-cover img:only-of-type {
+  grid-area: 1 / 1 / -1 / -1;
+}
+
+.results-playlist-cover-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 28px;
+  height: 28px;
+  margin: auto;
+  display: block;
+  color: var(--text-muted);
+}
+
+/* Saved playlists use their actual track artwork; keep the container square
+   and let a single image use every pixel. */
+.playlist-cover-art {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  overflow: hidden;
+  border-radius: var(--radius-compact);
+  background: var(--color-surface-dark-raised);
+  box-shadow: none;
+}
+
+.playlist-cover-art > img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: cover;
+}
+
+.playlist-cover-art > img:only-of-type {
+  grid-area: 1 / 1 / -1 / -1;
+}
+
+.playlist-cover-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  color: var(--text-muted);
+}
+
+:root[data-scheme="light"] .playlist-cover-art,
+:root[data-scheme="light"] .results-playlist-cover {
+  background: var(--color-surface-light-raised);
+}
+
+/* Compact plan cards use an explicit grid instead of inheriting the UA button
+   layout when Telegram reports a narrow viewport. */
+.subscription-plan {
+  appearance: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "duration prices"
+    "days prices"
+    "action action";
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 96px;
+  padding: 14px 16px;
+  border: 1px solid var(--content-hairline);
+  border-radius: var(--radius-input-shared);
+  background: var(--color-surface-dark);
+  color: var(--text-dark);
+  text-align: left;
+  white-space: normal;
+  font: inherit;
+}
+
+.subscription-plan-duration { grid-area: duration; min-width: 0; }
+.subscription-plan-days { grid-area: days; min-width: 0; }
+.subscription-plan-prices {
+  grid-area: prices;
+  align-self: center;
+  padding: 0 28px 0 12px;
+}
+.subscription-plan-action {
+  grid-area: action;
+  justify-self: start;
+  padding-top: 8px;
+  color: var(--accent-text);
+}
+
+.subscription-plan:hover {
+  background: color-mix(in srgb, var(--color-surface-dark) 90%, var(--text-dark) 10%);
+}
+
+:root[data-scheme="light"] .subscription-plan {
+  background: var(--color-surface-light);
+}
+
+:root[data-scheme="light"] .subscription-plan:hover {
+  background: var(--color-surface-light-raised);
+}
+
+:root[data-scheme="light"] .subscription-plan.is-selected {
+  background: color-mix(in srgb, var(--color-surface-light) 90%, var(--accent) 10%);
+}
+
+.library-section-head {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+}
+
+.library-section-head > .screen-title {
+  min-width: 0;
+  margin: 0;
+}
+
+.library-section-head .library-new-prompt {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--hit-area);
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--accent-text);
+  white-space: nowrap;
+}

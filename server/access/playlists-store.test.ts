@@ -27,11 +27,35 @@ describe("playlists-store", () => {
     const db = freshDb();
     const p = createPlaylist(db, 123, "Chill");
     expect(p.trackCount).toBe(0);
+    expect(p.coverArtworks).toEqual([]);
     expect(listPlaylists(db, 123)).toHaveLength(1);
     expect(renamePlaylist(db, 123, p.id, "Focus")).toBe(true);
     expect(getPlaylist(db, 123, p.id)?.name).toBe("Focus");
     expect(deletePlaylist(db, 123, p.id)).toBe(true);
     expect(listPlaylists(db, 123)).toHaveLength(0);
+  });
+
+  test("list returns up to four ordered artworks only for the requested chat", () => {
+    const db = freshDb();
+    const playlist = createPlaylist(db, 123, "Chill");
+    const otherPlaylist = createPlaylist(db, 999, "Private");
+    for (let i = 0; i < 6; i++) {
+      addTrackToPlaylist(db, 123, playlist.id, {
+        uri: `ytm:${i}`,
+        title: `Track ${i}`,
+        artist: "Artist",
+        artwork: i === 1 ? "cover-0" : `cover-${i}`,
+      });
+    }
+    addTrackToPlaylist(db, 999, otherPlaylist.id, {
+      uri: "ytm:private",
+      title: "Private track",
+      artist: "Private artist",
+      artwork: "private-cover",
+    });
+
+    expect(listPlaylists(db, 123)[0]?.coverArtworks).toEqual(["cover-0", "cover-2", "cover-3", "cover-4"]);
+    expect(listPlaylists(db, 999)[0]?.coverArtworks).toEqual(["private-cover"]);
   });
 
   test("limit math: 2 free, +extra slots", () => {

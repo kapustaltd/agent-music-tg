@@ -351,6 +351,7 @@ export interface Playlist {
   name: string;
   createdAt: number;
   trackCount: number;
+  coverArtworks: string[];
 }
 
 export interface PlaylistTrack {
