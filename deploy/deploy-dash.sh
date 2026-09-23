@@ -18,6 +18,7 @@ CONFIG_FILE="$SCRIPT_DIR/deploy.conf"
 : ${DASH_SERVICE:="agent-music-dash"}
 : ${DASH_HEALTH_PORT:=8789}
 : ${KEEP_RELEASES:=5}
+: ${REMOTE_SUDO:=}
 
 SSH_OPTS="${SSH_OPTS:--o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes}"
 
@@ -41,8 +42,9 @@ fail() { echo "FATAL: $*" >&2; exit 1; }
 
 SSH_BASE="ssh $SSH_OPTS"
 run_ssh()    { $SSH_BASE "$HOST" "$@"; }
+source "$SCRIPT_DIR/remote.sh"
 run_cmd()    { if $DRY_RUN; then echo "[DRY-RUN] $*"; else "$@"; fi; }
-run_remote() { if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else run_ssh "$1"; fi }
+run_remote() { if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else remote_exec "$1"; fi }
 
 check_git_clean() {
   if ! $ALLOW_DIRTY && [ -n "$(git status --porcelain)" ]; then
@@ -62,12 +64,14 @@ check_typecheck() {
 
 check_ssh() {
   log "Checking SSH connectivity to $HOST"
-  $SSH_BASE "$HOST" "exit" || fail "Cannot reach $HOST"
+  remote_exec "exit" || fail "Cannot reach $HOST"
 }
 
 ensure_systemd_unit() {
   log "Ensuring systemd unit installed"
-  run_cmd scp -q -o ConnectTimeout=25 "$SCRIPT_DIR/agent-music-dash.service" "$HOST:/etc/systemd/system/${DASH_SERVICE}.service"
+  local remote_tmp="/tmp/${DASH_SERVICE}.service.$$"
+  run_cmd scp -q -o ConnectTimeout=25 "$SCRIPT_DIR/agent-music-dash.service" "$HOST:$remote_tmp"
+  run_remote "install -m 644 '$remote_tmp' '/etc/systemd/system/${DASH_SERVICE}.service' && rm -f '$remote_tmp'"
   run_remote "systemctl daemon-reload && systemctl enable ${DASH_SERVICE} >/dev/null"
 }
 
@@ -93,6 +97,7 @@ run_remote "mkdir -p '$DASH_API_DIR/releases/$RELEASE' '$DASH_STATIC_DIR/release
 log "Syncing server code"
 run_cmd rsync -az --delete \
   --exclude node_modules --exclude .git --exclude openspec --exclude data \
+  --rsync-path="$(remote_rsync_path)" \
   -e "$SSH_BASE" \
   server package.json bun.lock tsconfig.json "$HOST:$DASH_API_DIR/releases/$RELEASE/"
 
@@ -111,7 +116,7 @@ run_remote "systemctl restart '$DASH_SERVICE' && sleep 3"
 log "Health check (port $DASH_HEALTH_PORT)"
 if $DRY_RUN; then
   echo "[DRY-RUN] Skipping health check"
-elif run_ssh "curl -fsS --max-time 10 http://127.0.0.1:$DASH_HEALTH_PORT/healthz && test -f '$DASH_STATIC_DIR/current/dist/index.html'"; then
+elif remote_exec "curl -fsS --max-time 10 http://127.0.0.1:$DASH_HEALTH_PORT/healthz && test -f '$DASH_STATIC_DIR/current/dist/index.html'"; then
   log "DASHBOARD deploy OK: $RELEASE — https://dash.xdshka.party"
   if [ "$KEEP_RELEASES" -gt 0 ]; then
     run_remote "cd '$DASH_API_DIR/releases' && cur=\$(readlink -f '$DASH_API_DIR/current'); ls -1dt */ | sed 's:/\$::' | awk -v d=\"\$PWD\" '{print d\"/\"\$0}' | grep -vxF \"\$cur\" | tail -n +$KEEP_RELEASES | xargs -r rm -rf"

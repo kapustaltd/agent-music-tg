@@ -33,7 +33,10 @@ Both frontend builds include TypeScript checks. Successful CI runs retain separa
 Mini App and dashboard artifacts for 7 days, named with the verified commit SHA.
 Deploy jobs check out that same SHA even when a manually selected branch moves.
 The existing external deployment scripts still rebuild bundles; the artifacts are
-for inspection, not yet the deployment input. Each CI job has a 20-minute timeout.
+for inspection, not yet the deployment input. Verification jobs have a 20-minute
+timeout. Deploy jobs have a 35-minute timeout: they allow up to 10 minutes on
+the primary VPS and try the passive fallback only when that bounded attempt
+times out.
 
 See [the refactoring audit](docs/refactoring-audit.md) for the remaining technical debt.
 
@@ -49,8 +52,8 @@ See [the refactoring audit](docs/refactoring-audit.md) for the remaining technic
 ## Deploy
 
 Every push to `main` runs the checks in `.github/workflows/ci.yml` and, when
-they pass, automatically deploys the separate test instance through
-`deploy/deploy-test.sh`. Pull requests run the checks but never deploy. The
+they pass, automatically deploys the separate test instance through the
+bounded `deploy/deploy-with-failover.sh` wrapper. Pull requests run the checks but never deploy. The
 workflow can also be started manually with `workflow_dispatch` and an optional
 ref. Deploys are serialized so two releases cannot restart the test service at
 the same time.
@@ -59,17 +62,27 @@ Configure these GitHub Actions values once:
 
 - repository/environment variable `DEPLOY_HOST` (optional; defaults to
   `root@45.128.235.219`);
+- repository/environment variable `DEPLOY_FALLBACK_HOST` (optional; defaults
+  to `litteraly@89.34.219.35`);
 - environment `test` secret `DEPLOY_SSH_KEY` — the private key for the
-  dedicated Actions deploy key;
-- environment `test` secret `DEPLOY_KNOWN_HOSTS` — the pinned SSH host key;
+  dedicated Actions deploy key, installed on both SSH targets;
+- environment `test` secret `DEPLOY_KNOWN_HOSTS` — pinned SSH host keys for
+  both SSH targets;
 - environment `test` secret `TEST_BOT_TOKEN` — the token used when the test
   `.env` is bootstrapped on the VPS.
 - environment `production` secret `DEPLOY_SSH_KEY` — a separate private key
   for production promotion;
-- environment `production` secret `DEPLOY_KNOWN_HOSTS` — the pinned
-  production SSH host key;
+- environment `production` secret `DEPLOY_KNOWN_HOSTS` — pinned SSH host keys
+  for both production SSH targets;
 - environment `production` variable `DEPLOY_HOST` — the production SSH
   target. The environment has a required reviewer gate.
+
+The fallback target is passive. Before enabling it, provision Bun at
+`/usr/local/bin/bun`, `rsync`, the systemd units
+`meatproxy-prod.service` and `meatproxy-test.service`, application directories,
+separate `.env` files and the Cloudflare Tunnel/Nginx configuration. The
+restricted SSH user only needs passwordless `sudo systemctl restart` for those
+two units. The repository does not copy production secrets automatically.
 
 The test workflow deploys to `/opt/agent-music-tg-test`, listens on port `8788`,
 and serves the Mini App at `https://miniapp-dev.xdshka.party`. Production is
@@ -90,6 +103,21 @@ approval before running the production deploy:
 
 Builds the Mini App locally, rsyncs server code to `/opt/agent-music-tg` and the static build to `/srv/www/miniapp.xdshka.party` on the VPS, restarts the `agent-music-tg` systemd unit, and health-checks `/healthz`.
 
+CI failover is implemented by `deploy/deploy-with-failover.sh`. It retries on
+the fallback only for the explicit 10-minute attempt timeout and uses
+`deploy/deploy-reserve-test.sh` or `deploy/deploy-reserve-prod.sh` there. A
+failed health check, rollback or other non-timeout deployment error stops the
+workflow.
+
+The reserve layout is `/opt/meatproxy-prod` on port `8787` and
+`/opt/meatproxy-test` on port `8788`. The service and Nginx templates are in
+`deploy/meatproxy-*.service` and `deploy/meatproxy-*.nginx`. Production uses
+`miniapp.xdshka.party`; test uses `miniapp-dev.xdshka.party`. The Platega
+webhook template listens on the separate local Nginx port `8096` and forwards
+only to production. After creating the secure env files, a root operator can
+apply the checked-in templates with `sudo ./deploy/bootstrap-reserve.sh`; the
+script does not start either Telegram bot.
+
 Pre-flight checks run before any changes: git status, branch, `bun run typecheck`, SSH connectivity, and `.env` presence on the VPS. The release directory name includes the git commit SHA for traceability (e.g. `20250714-171509-a1b2c3d`).
 
 If the health check fails, the script automatically rolls back to the previous release and restarts the service. On success, old releases beyond the 5 most recent are pruned. On success or failure, a Telegram notification is sent to the admin.
@@ -98,6 +126,12 @@ Infra on the VPS (already wired, only touch if changing ports/domains):
 - `/etc/caddy/Caddyfile` — site block on `:8094` (see `deploy/miniapp.caddy`), reverse-proxying `/api/*` to `127.0.0.1:8787` and serving the Mini App static build for everything else.
 - `/etc/cloudflared/config.yml` — ingress rule routing `miniapp.xdshka.party` to `localhost:8094` (this box has no direct A record; Cloudflare Tunnel handles public routing and TLS termination for every hostname on it).
 - `/opt/agent-music-tg/.env` — secrets, not in git. `/opt/agent-music-tg/data/app.sqlite` — allowlist, active provider/backend settings.
+
+Cloudflare DNS/Load Balancer and Tunnel routing are not changed by the CI
+fallback. HTTP domains can use the two servers as origins only after the
+passive server has matching Caddy/Tunnel configuration. The Telegram bot uses
+long polling, so the same bot token must not be actively polled by both servers
+at once; switching the active server is a separate infrastructure operation.
 
 ### Rollback
 

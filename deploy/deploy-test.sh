@@ -22,6 +22,7 @@ CONFIG_FILE="$SCRIPT_DIR/deploy.conf"
 : ${TEST_PORT:=8788}
 : ${TEST_SERVICE:="agent-music-tg-test"}
 : ${KEEP_RELEASES:=3}
+: ${REMOTE_SUDO:=}
 
 SSH_OPTS="${SSH_OPTS:--o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes}"
 
@@ -45,8 +46,9 @@ fail() { echo "FATAL: $*" >&2; exit 1; }
 
 SSH_BASE="ssh $SSH_OPTS"
 run_ssh()    { $SSH_BASE "$HOST" "$@"; }
+source "$SCRIPT_DIR/remote.sh"
 run_cmd()    { if $DRY_RUN; then echo "[DRY-RUN] $*"; else "$@"; fi; }
-run_remote() { if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else run_ssh "$1"; fi }
+run_remote() { if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else remote_exec "$1"; fi }
 
 check_git_clean() {
   if ! $ALLOW_DIRTY && [ -n "$(git status --porcelain)" ]; then
@@ -65,7 +67,7 @@ check_typecheck() {
 
 check_ssh() {
   log "Checking SSH connectivity to $HOST"
-  $SSH_BASE "$HOST" "exit" || fail "Cannot reach $HOST"
+  remote_exec "exit" || fail "Cannot reach $HOST"
 }
 
 # Bootstrap the test .env from the prod one on first run: same providers/
@@ -74,7 +76,7 @@ ensure_test_env() {
   log "Ensuring test .env exists on VPS"
   run_remote "test -f '$TEST_API_DIR/.env'" && { log "Test .env already present, leaving as-is"; return; }
   [ -n "${TEST_BOT_TOKEN:-}" ] || fail "Set TEST_BOT_TOKEN in the environment or gitignored deploy/deploy.conf before first TEST bootstrap"
-  run_ssh "test -f '/opt/agent-music-tg/.env'" || fail "Prod .env not found at /opt/agent-music-tg/.env — nothing to bootstrap test .env from"
+  remote_exec "test -f '/opt/agent-music-tg/.env'" || fail "Prod .env not found at /opt/agent-music-tg/.env — nothing to bootstrap test .env from"
   run_remote "mkdir -p '$TEST_API_DIR'"
   run_remote "cp '/opt/agent-music-tg/.env' '$TEST_API_DIR/.env'"
   run_remote "sed -i \
@@ -90,7 +92,9 @@ ensure_test_env() {
 
 ensure_systemd_unit() {
   log "Ensuring systemd unit installed"
-  run_cmd scp -q -o ConnectTimeout=25 "$SCRIPT_DIR/agent-music-tg-test.service" "$HOST:/etc/systemd/system/${TEST_SERVICE}.service"
+  local remote_tmp="/tmp/${TEST_SERVICE}.service.$$"
+  run_cmd scp -q -o ConnectTimeout=25 "$SCRIPT_DIR/agent-music-tg-test.service" "$HOST:$remote_tmp"
+  run_remote "install -m 644 '$remote_tmp' '/etc/systemd/system/${TEST_SERVICE}.service' && rm -f '$remote_tmp'"
   run_remote "systemctl daemon-reload && systemctl enable ${TEST_SERVICE} >/dev/null"
 }
 
@@ -117,6 +121,7 @@ run_remote "mkdir -p '$TEST_API_DIR/releases/$RELEASE' '$TEST_STATIC_DIR/release
 log "Syncing server code"
 run_cmd rsync -az --delete \
   --exclude node_modules --exclude .git --exclude openspec --exclude data \
+  --rsync-path="$(remote_rsync_path)" \
   -e "$SSH_BASE" \
   server package.json bun.lock tsconfig.json "$HOST:$TEST_API_DIR/releases/$RELEASE/"
 
@@ -139,7 +144,7 @@ run_remote "systemctl restart '$TEST_SERVICE' && sleep 3"
 log "Health check (port $TEST_PORT)"
 if $DRY_RUN; then
   echo "[DRY-RUN] Skipping health check"
-elif run_ssh "curl -fsS --max-time 10 http://127.0.0.1:$TEST_PORT/healthz && test -f '$TEST_STATIC_DIR/current/dist/index.html'"; then
+elif remote_exec "curl -fsS --max-time 10 http://127.0.0.1:$TEST_PORT/healthz && test -f '$TEST_STATIC_DIR/current/dist/index.html'"; then
   log "TEST deploy OK: $RELEASE — open $TEST_PUBLIC_ORIGIN from the test bot's menu button on Telegram"
   if [ "$KEEP_RELEASES" -gt 0 ]; then
     run_remote "cd '$TEST_API_DIR/releases' && cur=\$(readlink -f '$TEST_API_DIR/current'); ls -1dt */ | sed 's:/\$::' | awk -v d=\"\$PWD\" '{print d\"/\"\$0}' | grep -vxF \"\$cur\" | tail -n +$KEEP_RELEASES | xargs -r rm -rf"

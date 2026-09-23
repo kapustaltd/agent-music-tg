@@ -7,7 +7,8 @@
 set -euo pipefail
 
 # ── Config ──────────────────────────────────────────────────────────────────
-CONFIG_FILE="$(dirname "$0")/deploy.conf"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_FILE="$SCRIPT_DIR/deploy.conf"
 [ -f "$CONFIG_FILE" ] && source "$CONFIG_FILE"
 
 : ${HOST:?"set HOST=root@<vps-ip>"}
@@ -15,6 +16,7 @@ CONFIG_FILE="$(dirname "$0")/deploy.conf"
 : ${STATIC_DIR:="/srv/www/miniapp.xdshka.party"}
 : ${KEEP_RELEASES:=5}
 : ${NOTIFY:=true}
+: ${REMOTE_SUDO:=}
 
 SSH_OPTS="${SSH_OPTS:--o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes}"
 
@@ -40,9 +42,10 @@ fail() { echo "FATAL: $*" >&2; exit 1; }
 
 SSH_BASE="ssh $SSH_OPTS"
 run_ssh()  { $SSH_BASE "$HOST" "$@"; }
+source "$SCRIPT_DIR/remote.sh"
 run_cmd()  { if $DRY_RUN; then echo "[DRY-RUN] $*"; else "$@"; fi; }
 run_remote() {
-  if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else run_ssh "$1"; fi
+  if $DRY_RUN; then echo "[DRY-RUN] ssh $HOST: $1"; else remote_exec "$1"; fi
 }
 
 # ── Pre-flight checks ───────────────────────────────────────────────────────
@@ -79,12 +82,12 @@ check_typecheck() {
 
 check_ssh() {
   log "Checking SSH connectivity to $HOST"
-  $SSH_BASE "$HOST" "exit" || fail "Cannot reach $HOST"
+  remote_exec "exit" || fail "Cannot reach $HOST"
 }
 
 check_remote_env() {
   log "Checking .env on VPS"
-  run_ssh "test -f '$API_DIR/.env'" || fail "No .env found at $API_DIR/.env on VPS"
+  remote_exec "test -f '$API_DIR/.env'" || fail "No .env found at $API_DIR/.env on VPS"
 }
 
 # ── Telegram notifications ──────────────────────────────────────────────────
@@ -134,6 +137,7 @@ run_cmd rsync -az --delete \
   --exclude .git \
   --exclude openspec \
   --exclude data \
+  --rsync-path="$(remote_rsync_path)" \
   -e "$SSH_BASE" \
   server package.json bun.lock tsconfig.json "$HOST:$API_DIR/releases/$RELEASE/"
 
@@ -154,13 +158,13 @@ run_remote "ln -sfn '$API_DIR/releases/$RELEASE' '$API_DIR/current' && ln -sfn '
 
 log "Verifying 'current' symlinks resolve to the new release"
 if ! $DRY_RUN; then
-  ACTUAL_STATIC=$(run_ssh "readlink -f '$STATIC_DIR/current'")
+  ACTUAL_STATIC=$(remote_exec "readlink -f '$STATIC_DIR/current'")
   EXPECTED_STATIC="$STATIC_DIR/releases/$RELEASE"
   if [ "$ACTUAL_STATIC" != "$EXPECTED_STATIC" ]; then
     err "Static 'current' points at '$ACTUAL_STATIC', expected '$EXPECTED_STATIC'. Deploy aborted to avoid serving a stale build."
     exit 1
   fi
-  if ! run_ssh "test -n \"\$(ls -A '$STATIC_DIR/current/dist/assets' 2>/dev/null)\""; then
+  if ! remote_exec "test -n \"\$(ls -A '$STATIC_DIR/current/dist/assets' 2>/dev/null)\""; then
     err "New static release has no built assets under dist/assets. Deploy aborted."
     exit 1
   fi
@@ -172,7 +176,7 @@ run_remote "systemctl restart agent-music-tg && sleep 3"
 log "Health check"
 if $DRY_RUN; then
   echo "[DRY-RUN] Skipping health check"
-elif run_ssh "curl -fsS --max-time 10 http://127.0.0.1:8787/healthz && test -f '$STATIC_DIR/current/dist/index.html'"; then
+elif remote_exec "curl -fsS --max-time 10 http://127.0.0.1:8787/healthz && test -f '$STATIC_DIR/current/dist/index.html'"; then
   echo ""
   log "Deploy OK: $RELEASE"
 
@@ -190,7 +194,7 @@ else
   echo ""
   warn "Health check FAILED — rolling back..."
 
-  PREV_RELEASE=$(run_ssh "cd '$API_DIR/releases' && ls -1dt */ | sed 's:/\$::' | grep -vxF '$RELEASE' | head -n 1")
+  PREV_RELEASE=$(remote_exec "cd '$API_DIR/releases' && ls -1dt */ | sed 's:/\$::' | grep -vxF '$RELEASE' | head -n 1")
 
   if [ -n "$PREV_RELEASE" ]; then
     PREV_RELEASE=$(basename "$PREV_RELEASE")
@@ -198,7 +202,7 @@ else
     run_remote "ln -sfn '$API_DIR/releases/$PREV_RELEASE' '$API_DIR/current' && ln -sfn '$STATIC_DIR/releases/$PREV_RELEASE' '$STATIC_DIR/current'"
     run_remote "systemctl restart agent-music-tg && sleep 3"
 
-    if run_ssh "curl -fsS --max-time 10 http://127.0.0.1:8787/healthz && test -f '$STATIC_DIR/current/dist/index.html'"; then
+    if remote_exec "curl -fsS --max-time 10 http://127.0.0.1:8787/healthz && test -f '$STATIC_DIR/current/dist/index.html'"; then
       log "Rollback OK: $PREV_RELEASE"
     else
       warn "CRITICAL: Rollback health check also FAILED — server may be down"

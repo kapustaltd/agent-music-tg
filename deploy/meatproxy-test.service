@@ -1,0 +1,18 @@
+[Unit]
+Description=Agent Music Telegram Bot + Mini App API (reserve test)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=meatproxy
+Group=meatproxy
+WorkingDirectory=/opt/meatproxy-test/current
+EnvironmentFile=/etc/meatproxy/test.env
+ExecStart=/usr/local/bin/bun run server/index.ts
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

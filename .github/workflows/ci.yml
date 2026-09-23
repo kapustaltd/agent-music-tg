@@ -75,7 +75,7 @@ jobs:
 
   deploy-test:
     name: Deploy test instance
-    timeout-minutes: 20
+    timeout-minutes: 35
     if: >-
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       github.event_name == 'workflow_dispatch'
@@ -88,6 +88,9 @@ jobs:
       cancel-in-progress: false
     env:
       HOST: ${{ vars.DEPLOY_HOST || 'root@45.128.235.219' }}
+      FALLBACK_HOST: ${{ vars.DEPLOY_FALLBACK_HOST || 'litteraly@89.34.219.35' }}
+      FALLBACK_DEPLOY_SCRIPT: deploy-reserve-test.sh
+      DEPLOY_ATTEMPT_TIMEOUT_SECONDS: "600"
       TEST_BOT_TOKEN: ${{ secrets.TEST_BOT_TOKEN }}
     steps:
       - name: Check out source
@@ -121,11 +124,11 @@ jobs:
           printf 'SSH_OPTS=%s\n' "-o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
 
       - name: Deploy test instance
-        run: ./deploy/deploy-test.sh --no-typecheck
+        run: ./deploy/deploy-with-failover.sh deploy-test.sh --no-typecheck
 
   deploy-production:
     name: Deploy production instance
-    timeout-minutes: 20
+    timeout-minutes: 35
     if: >-
       (github.event_name == 'workflow_dispatch' &&
        inputs.deploy_production == true &&
@@ -140,6 +143,9 @@ jobs:
       cancel-in-progress: false
     env:
       HOST: ${{ vars.DEPLOY_HOST || 'root@45.128.235.219' }}
+      FALLBACK_HOST: ${{ vars.DEPLOY_FALLBACK_HOST || 'litteraly@89.34.219.35' }}
+      FALLBACK_DEPLOY_SCRIPT: deploy-reserve-prod.sh
+      DEPLOY_ATTEMPT_TIMEOUT_SECONDS: "600"
       NOTIFY: "false"
     steps:
       - name: Check out source
@@ -172,4 +178,4 @@ jobs:
           printf 'SSH_OPTS=%s\n' "-o ConnectTimeout=25 -o ConnectionAttempts=5 -o ServerAliveInterval=10 -o ServerAliveCountMax=6 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
 
       - name: Promote to production
-        run: ./deploy/deploy-prod.sh --no-typecheck --dirty
+        run: ./deploy/deploy-with-failover.sh deploy-prod.sh --no-typecheck --dirty
