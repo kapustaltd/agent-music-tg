@@ -1,0 +1,40 @@
+/* Artist detail is a browsing surface: keep the identity clear and let more
+   releases fit above the persistent player and navigation. */
+.artist-screen .artist-screen-appbar {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.artist-screen .artist-screen-head {
+  margin-block: var(--space-3) var(--space-4);
+}
+
+.artist-screen .search-section {
+  gap: var(--space-2);
+}
+
+.artist-screen .search-section + .search-section {
+  margin-top: var(--space-5);
+}
+
+.artist-screen .stack {
+  gap: var(--space-2);
+}
+
+@media (max-width: 430px) {
+  .artist-screen .artist-screen-head {
+    gap: var(--space-3);
+  }
+
+  .artist-screen .artist-screen-avatar,
+  .artist-screen .artist-screen-avatar-skeleton {
+    width: 96px;
+    height: 96px;
+    flex-basis: 96px;
+  }
+
+  .artist-screen .artist-screen-name {
+    font-size: 26px;
+  }
+}
