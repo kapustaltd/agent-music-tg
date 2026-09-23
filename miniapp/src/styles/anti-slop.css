@@ -663,7 +663,7 @@ h2.screen-title,
   display: grid;
   gap: 2px;
   padding-block: var(--space-3);
-  border-block: 1px solid var(--content-hairline);
+  border-block: 0;
 }
 
 .subscription-status span,

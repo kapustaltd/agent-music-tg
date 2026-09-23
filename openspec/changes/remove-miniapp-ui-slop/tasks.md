@@ -40,7 +40,7 @@
 - [x] 6.1 Map actionable controls in every Mini App screen and shared component; bring phone hit areas to the existing 44px product target and remove hover-only access paths. (`App.tsx`, `screens/**`, `components/**`, `styles/anti-slop.css`)
 - [x] 6.2 Tune the shared mobile content gutter, prompt composer and fixed chrome for safe areas and keyboard, with the smallest supported width as the constraint. (`styles/glass.css`, `styles/anti-slop.css`)
 - [x] 6.3 Add or correct purposeful, interruptible state and navigation feedback; preserve/reuse horizontal rail scrolling and player swipe-dismiss while preventing gesture conflicts. (`components/ScreenTransition.tsx`, `screens/PlayerScreen.tsx`, relevant screen/components and CSS)
-- [x] 6.4 Replace decorative repeated row/section separators with spacing and grouping; retain only structural or functional indicators and record justified exceptions in `audit.md`. (`styles/glass.css`, `styles/anti-slop.css`, audit.md)
+- [x] 6.4 Replace decorative repeated row/section separators with spacing and grouping; retain only structural or functional indicators and record justified exceptions in `audit.md`. (`styles/glass.css`, `styles/anti-slop.css`, audit.md; includes subscription status section)
 - [ ] 6.5 Confirm Impeccable detector findings in context and complete the browser pass at 320px, phone width and desktop; update `review.md` with implemented requirements and remaining backlog.
 
 ## Audit backlog
