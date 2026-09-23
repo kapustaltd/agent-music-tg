@@ -10,6 +10,7 @@ import "./styles/anti-slop.css";
 import "./styles/generation-loading.css";
 import "./styles/clarify-flow.css";
 import "./styles/artist-screen.css";
+import "./styles/control-motion.css";
 
 const storedScheme = typeof localStorage !== "undefined" ? localStorage.getItem("miniapp-scheme") : null;
 document.documentElement.setAttribute(

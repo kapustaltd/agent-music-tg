@@ -1,0 +1,39 @@
+/* One press response for every Mini App button, including segmented tabs,
+   chips, menus, player actions, and admin controls. */
+button:not(:disabled),
+button:disabled,
+[role="button"] {
+  transition-property: background-color, border-color, color, filter, opacity, box-shadow, transform, scale;
+  transition-duration: var(--press-duration, 160ms);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:not(:disabled):not([aria-disabled="true"]):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: translateY(1px) scale(0.98);
+  scale: 1;
+  box-shadow: inset 0 1px 2px color-mix(in srgb, var(--text-dark) 16%, transparent);
+}
+
+button:disabled:active,
+button[aria-disabled="true"]:active,
+[role="button"][aria-disabled="true"]:active {
+  transform: none;
+  scale: 1;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled),
+  button:disabled,
+  [role="button"] {
+    transition-duration: 0s !important;
+  }
+
+  button:not(:disabled):not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: none;
+    scale: 1;
+    box-shadow: none;
+  }
+}
