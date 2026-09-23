@@ -1,5 +1,4 @@
-/* Generation loading: status explains the work; preview rows stay content.
-   No divider rails, nested cards or fake percentage bars in this state. */
+/* Generation loading keeps one indicator and the playable track preview. */
 .prompt-card--busy .prompt-request-summary {
   margin-bottom: 0;
   padding-bottom: var(--space-2);
@@ -14,42 +13,16 @@
 
 .generation-status {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  min-height: 0;
-  padding: var(--space-1) 0 var(--space-2);
+  justify-content: center;
+  align-items: center;
+  min-height: 76px;
+  padding: var(--space-2) 0;
   border: 0;
   border-bottom: 0;
   border-radius: 0;
   background: transparent;
-  box-shadow: none;
-}
-
-.generation-status-icon {
-  display: inline-flex;
-  flex: 0 0 auto;
-  margin-top: 2px;
   color: var(--accent-text);
-}
-
-.generation-status-copy {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.generation-status-title {
-  color: var(--text-dark);
-  font-size: var(--fs-track-title);
-  font-weight: 550;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-
-.generation-status-detail {
-  color: var(--text-muted);
-  font-size: var(--fs-metadata);
-  line-height: 1.35;
+  box-shadow: none;
 }
 
 .generation-tracks {
@@ -77,10 +50,4 @@
 
 .generation-tracks .track-row:last-child {
   border-bottom: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .generation-status-icon .spin {
-    animation: none;
-  }
 }
