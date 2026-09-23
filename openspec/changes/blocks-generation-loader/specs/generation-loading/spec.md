@@ -2,7 +2,7 @@
 
 ## Requirement: Blocks loading indicator
 
-While generation or clarification is busy, the Mini App MUST display `Blocks` from `loading-dev` at 48 px next to the existing timer and public phase trace. It MUST keep the found-track preview and MUST NOT display Swirl in that status.
+While generation or clarification is busy, the Mini App MUST display `Blocks` from `loading-dev` at 24 px next to the existing timer and public phase trace. It MUST keep the found-track preview and MUST NOT display Swirl in that status.
 
 ### Scenario: Loading before tracks arrive
 
