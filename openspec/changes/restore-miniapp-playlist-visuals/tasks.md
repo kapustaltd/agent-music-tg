@@ -25,5 +25,5 @@
 ## Convergence 1 — test build ignored the final visual overrides
 
 - [x] 4.1 Close the malformed `.results-action--primary:hover` rule in
-      `miniapp/src/styles/glass.css`; confirm the built CSS leaves subsequent
-      header, bitmap, and artwork rules at the top level.
+      `miniapp/src/styles/glass.css`; confirm built and served CSS leave
+      subsequent header, bitmap, and artwork rules at the top level.
