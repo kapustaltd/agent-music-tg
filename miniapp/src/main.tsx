@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { LoadingPreview } from "./LoadingPreview";
 import { getColorScheme } from "./lib/telegram";
 import "./styles/fonts.css";
 
@@ -19,6 +20,6 @@ document.documentElement.setAttribute(
 );
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    {import.meta.env.DEV && new URLSearchParams(window.location.search).get("preview") === "loading" ? <LoadingPreview /> : <App />}
   </StrictMode>,
 );

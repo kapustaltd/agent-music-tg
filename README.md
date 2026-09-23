@@ -16,6 +16,8 @@ cp .env.example .env   # fill in TELEGRAM_BOT_TOKEN, ALLOWLIST_CHAT_IDS, ADMIN_C
 bun run dev
 ```
 
+Для проверки анимации подбора без Telegram-авторизации запустите `cd miniapp && bun run dev --host 127.0.0.1` и откройте `http://127.0.0.1:5173/?preview=loading`. Кнопки «Назад» и «Дальше» переключают фиктивные этапы; этот режим доступен только в dev-сборке.
+
 ## Test
 
 ```bash
