@@ -3,6 +3,7 @@
 ## 1. Contract
 
 - [x] 1.1 Define the shared two-scheme color roles and their intentional exceptions in the Mini App visual foundation spec.
+- [x] 1.2 Update `DESIGN.md` and its Impeccable sidecar to match the Mini App palette and component contract.
 
 ## 2. Implementation
 

@@ -1,102 +1,471 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-15T00:00:00Z",
+  "generatedAt": "2026-09-23T04:01:35Z",
   "title": "Design System: agent-music-tg Mini App",
   "extensions": {
     "colorMeta": {
-      "electric-violet": { "role": "primary", "displayName": "Electric Violet", "canonical": "#a855f7", "tonalRamp": ["#2c1140", "#3f1861", "#5a1f8c", "#7C3AED", "#a855f7", "#c084fc", "#dab8fb", "#f0e0fd"] },
-      "night-bg": { "role": "neutral", "displayName": "Night", "canonical": "#050508", "tonalRamp": ["#000000", "#0a0a0d", "#131318", "#1a1c24", "#2a2c36", "#4a4c58", "#7a7c88", "#f2f3f5"] },
-      "day-bg": { "role": "neutral", "displayName": "Day", "canonical": "#EEEEF3", "tonalRamp": ["#0d0d10", "#3a3a40", "#6a6a72", "#9a9aa2", "#c8c8cf", "#e0e0e6", "#EEEEF3", "#ffffff"] }
+      "accent-teal": {
+        "role": "primary",
+        "displayName": "Sea Teal",
+        "canonical": "#14b8a6",
+        "tonalRamp": [
+          "#001710",
+          "#003127",
+          "#004D40",
+          "#006A5B",
+          "#008878",
+          "#00A795",
+          "#4AD7C4",
+          "#83FFF5"
+        ]
+      },
+      "accent-pink": {
+        "role": "primary",
+        "displayName": "Raspberry Pink",
+        "canonical": "#e0367a",
+        "tonalRamp": [
+          "#3D0005",
+          "#60001A",
+          "#830032",
+          "#A6004C",
+          "#CA1968",
+          "#EE4585",
+          "#FF79B3",
+          "#FFABE4"
+        ]
+      },
+      "accent-violet": {
+        "role": "primary",
+        "displayName": "Clear Violet",
+        "canonical": "#8b5cf6",
+        "tonalRamp": [
+          "#20005D",
+          "#32007D",
+          "#48009E",
+          "#6024C0",
+          "#7B49E3",
+          "#986BFF",
+          "#C59CFF",
+          "#F5CEFF"
+        ]
+      },
+      "accent-blue": {
+        "role": "primary",
+        "displayName": "Clear Blue",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "#090059",
+          "#000079",
+          "#002A99",
+          "#004BBB",
+          "#246BDD",
+          "#438BFF",
+          "#72BBFF",
+          "#A1EEFF"
+        ]
+      },
+      "accent-green": {
+        "role": "primary",
+        "displayName": "Leaf Green",
+        "canonical": "#22c55e",
+        "tonalRamp": [
+          "#001900",
+          "#003400",
+          "#005100",
+          "#006F00",
+          "#008E26",
+          "#00AD47",
+          "#49DF76",
+          "#82FFA6"
+        ]
+      },
+      "accent-amber": {
+        "role": "primary",
+        "displayName": "Warm Amber",
+        "canonical": "#d97706",
+        "tonalRamp": [
+          "#310000",
+          "#510000",
+          "#711200",
+          "#913400",
+          "#B25300",
+          "#D47200",
+          "#FFA149",
+          "#FFD37C"
+        ]
+      },
+      "accent-red": {
+        "role": "primary",
+        "displayName": "Signal Red",
+        "canonical": "#ef4444",
+        "tonalRamp": [
+          "#410000",
+          "#640000",
+          "#880000",
+          "#AB0002",
+          "#CF1E29",
+          "#F44948",
+          "#FF7D76",
+          "#FFB0A5"
+        ]
+      },
+      "canvas-dark": {
+        "role": "neutral",
+        "displayName": "Night Canvas",
+        "canonical": "#121212",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#222222",
+          "#3A3A3A",
+          "#555555",
+          "#717171",
+          "#8F8F8F",
+          "#BEBEBE",
+          "#EEEEEE"
+        ]
+      },
+      "canvas-light": {
+        "role": "neutral",
+        "displayName": "Cool Light Canvas",
+        "canonical": "#EEEEF3",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#212125",
+          "#3A3A3E",
+          "#555559",
+          "#717175",
+          "#8F8F93",
+          "#BDBDC2",
+          "#EEEEF3"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Graphite Surface",
+        "canonical": "#1c1c1f",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#212124",
+          "#3A3A3D",
+          "#555558",
+          "#717175",
+          "#8F8F93",
+          "#BDBDC1",
+          "#EEEEF2"
+        ]
+      },
+      "surface-dark-raised": {
+        "role": "neutral",
+        "displayName": "Raised Graphite",
+        "canonical": "#242428",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#212125",
+          "#3A3A3E",
+          "#555559",
+          "#717176",
+          "#8E8F94",
+          "#BDBDC2",
+          "#EEEEF3"
+        ]
+      },
+      "surface-light": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#222222",
+          "#3A3A3A",
+          "#555555",
+          "#717171",
+          "#8F8F8F",
+          "#BEBEBE",
+          "#EEEEEE"
+        ]
+      },
+      "surface-light-raised": {
+        "role": "neutral",
+        "displayName": "Raised Paper",
+        "canonical": "#f7f7f8",
+        "tonalRamp": [
+          "#0B0B0C",
+          "#212122",
+          "#3A3A3B",
+          "#555556",
+          "#717172",
+          "#8F8F90",
+          "#BDBDBE",
+          "#EEEEEF"
+        ]
+      },
+      "ink-dark": {
+        "role": "neutral",
+        "displayName": "Soft White Ink",
+        "canonical": "#f2f3f5",
+        "tonalRamp": [
+          "#0A0B0C",
+          "#212223",
+          "#3A3A3C",
+          "#545557",
+          "#717173",
+          "#8E8F91",
+          "#BDBEBF",
+          "#EDEEF0"
+        ]
+      },
+      "ink-light": {
+        "role": "neutral",
+        "displayName": "Deep Ink",
+        "canonical": "#0d0d10",
+        "tonalRamp": [
+          "#0B0B0E",
+          "#212125",
+          "#3A3A3E",
+          "#555559",
+          "#717175",
+          "#8F8F93",
+          "#BDBDC2",
+          "#EEEEF3"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Muted Light Ink",
+        "canonical": "rgba(242, 243, 245, 0.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.0029 264.5 / 0.7)",
+          "oklch(25.0% 0.0029 264.5 / 0.7)",
+          "oklch(35.0% 0.0029 264.5 / 0.7)",
+          "oklch(45.0% 0.0029 264.5 / 0.7)",
+          "oklch(55.0% 0.0029 264.5 / 0.7)",
+          "oklch(65.0% 0.0029 264.5 / 0.7)",
+          "oklch(80.0% 0.0029 264.5 / 0.7)",
+          "oklch(95.0% 0.0029 264.5 / 0.7)"
+        ]
+      },
+      "muted-light": {
+        "role": "neutral",
+        "displayName": "Muted Dark Ink",
+        "canonical": "rgba(13, 13, 16, 0.66)",
+        "tonalRamp": [
+          "oklch(15.0% 0.0063 285.7 / 0.66)",
+          "oklch(25.0% 0.0063 285.7 / 0.66)",
+          "oklch(35.0% 0.0063 285.7 / 0.66)",
+          "oklch(45.0% 0.0063 285.7 / 0.66)",
+          "oklch(55.0% 0.0063 285.7 / 0.66)",
+          "oklch(65.0% 0.0063 285.7 / 0.66)",
+          "oklch(80.0% 0.0063 285.7 / 0.66)",
+          "oklch(95.0% 0.0063 285.7 / 0.66)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Dark Scheme Hairline",
+        "canonical": "rgba(255, 255, 255, 0.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.0000 89.9 / 0.1)",
+          "oklch(25.0% 0.0000 89.9 / 0.1)",
+          "oklch(35.0% 0.0000 89.9 / 0.1)",
+          "oklch(45.0% 0.0000 89.9 / 0.1)",
+          "oklch(55.0% 0.0000 89.9 / 0.1)",
+          "oklch(65.0% 0.0000 89.9 / 0.1)",
+          "oklch(80.0% 0.0000 89.9 / 0.1)",
+          "oklch(95.0% 0.0000 89.9 / 0.1)"
+        ]
+      },
+      "border-light": {
+        "role": "neutral",
+        "displayName": "Light Scheme Hairline",
+        "canonical": "rgba(13, 13, 16, 0.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.0063 285.7 / 0.1)",
+          "oklch(25.0% 0.0063 285.7 / 0.1)",
+          "oklch(35.0% 0.0063 285.7 / 0.1)",
+          "oklch(45.0% 0.0063 285.7 / 0.1)",
+          "oklch(55.0% 0.0063 285.7 / 0.1)",
+          "oklch(65.0% 0.0063 285.7 / 0.1)",
+          "oklch(80.0% 0.0063 285.7 / 0.1)",
+          "oklch(95.0% 0.0063 285.7 / 0.1)"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "One hero heading per screen (prompt screen only)." },
-      "body": { "displayName": "Body", "purpose": "System font stack; carries nearly all UI text." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Screen-opening headline."
+      },
+      "headline": {
+        "displayName": "Section Headline",
+        "purpose": "Section and prominent block headings."
+      },
+      "title": {
+        "displayName": "Content Title",
+        "purpose": "Track and row titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Prompts, descriptions, and main UI copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadata and secondary labels."
+      },
+      "navigation": {
+        "displayName": "Navigation Label",
+        "purpose": "Bottom dock and compact navigation captions."
+      }
     },
     "shadows": [
-      { "name": "glass-shadow-sm", "value": "inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.15), 0 2px 8px rgba(0,0,0,.2)", "purpose": "Chips, small controls." },
-      { "name": "glass-shadow-md", "value": "inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.15), 0 4px 16px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.15)", "purpose": "Panels, cards." },
-      { "name": "glass-shadow-lg", "value": "inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.15), 0 8px 32px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.2)", "purpose": "Dock, player bar, floating chrome." },
-      { "name": "glass-shadow-active", "value": "inset 0 1px 2px rgba(0,0,0,.25), inset 0 -1px 0 rgba(255,255,255,.05), 0 2px 8px rgba(0,0,0,.2)", "purpose": "Pressed state." }
+      {
+        "name": "menu-float-dark",
+        "value": "0 12px 32px rgba(0, 0, 0, 0.34)",
+        "purpose": "Track menu popover above a dark content list."
+      },
+      {
+        "name": "menu-float-light",
+        "value": "0 12px 28px rgba(30, 20, 70, 0.16)",
+        "purpose": "Track menu popover in the light scheme."
+      }
     ],
     "motion": [
-      { "name": "glass-transition", "value": "0.18s ease", "purpose": "Default state transitions." },
-      { "name": "glass-transition-morph", "value": "0.35s cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Layout/position morphs (dock indicator, panel resize)." }
+      {
+        "name": "press-state",
+        "value": "160ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Shared touch-press response for enabled controls; slight 1px press and scale, removed for reduced motion."
+      },
+      {
+        "name": "ui-transition",
+        "value": "180ms ease",
+        "purpose": "Color, border, and opacity changes for interactive states."
+      },
+      {
+        "name": "screen-entry",
+        "value": "200ms cubic-bezier(.2, .75, .25, 1)",
+        "purpose": "Subtle content-screen appearance."
+      },
+      {
+        "name": "sheet-entry",
+        "value": "260ms cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Functional sheet and payment overlay entry."
+      },
+      {
+        "name": "layout-morph",
+        "value": "350ms cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Larger position and layout changes only."
+      }
     ],
     "breakpoints": [
-      { "name": "desktop", "min": 1100, "purpose": "Left nav rail + content pane; PromptScreen splits composer/mode body." }
+      {
+        "name": "desktop-shell",
+        "value": "840px",
+        "purpose": "Switch from mobile dock layout to desktop navigation rail and content shell."
+      },
+      {
+        "name": "wide-composer",
+        "value": "1000px",
+        "purpose": "Open the wider prompt composition layout."
+      }
     ]
   },
   "components": [
     {
-      "name": "Primary Button",
+      "name": "Primary Action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Main call-to-action pill (e.g. Generate).",
-      "html": "<button class=\"ds-btn-primary\">Сгенерировать</button>",
-      "css": ".ds-btn-primary { background: #a855f7; color: #fff; border: none; border-radius: 999px; padding: 14px 28px; font-weight: 600; font-size: 16px; transition: background 0.18s ease, box-shadow 0.18s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.15), 0 4px 16px rgba(0,0,0,.3); } .ds-btn-primary:hover { background: #7C3AED; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(168,85,247,.5); } .ds-btn-primary:active { box-shadow: inset 0 1px 2px rgba(0,0,0,.25); }"
+      "description": "Full-width high-priority action, such as the subscription checkout CTA.",
+      "html": "<button class='ds-btn-primary'>Оформить подписку</button>",
+      "css": ".ds-btn-primary { min-height: 52px; width: 100%; padding: 0 16px; border: 0; border-radius: var(--radius-input-shared, 12px); background: var(--accent, #14b8a6); color: var(--accent-foreground, #0d0d10); font: 600 16px/1.25 var(--font-body, 'Roboto Variable', sans-serif); transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary:hover { background: color-mix(in srgb, var(--accent, #14b8a6) 88%, white); } .ds-btn-primary:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 3px; } .ds-btn-primary:active { transform: translateY(1px) scale(.98); } @media (prefers-reduced-motion: reduce) { .ds-btn-primary { transition: none; } .ds-btn-primary:active { transform: none; } }"
     },
     {
-      "name": "Glass Panel",
-      "kind": "card",
-      "refersTo": "glass-panel",
-      "description": "Frosted card container for content sections.",
-      "html": "<div class=\"ds-panel\">Панель</div>",
-      "css": ".ds-panel { background: rgba(26,28,36,.4); backdrop-filter: blur(22px) saturate(130%); -webkit-backdrop-filter: blur(22px) saturate(130%); border: 1px solid rgba(255,255,255,.08); border-radius: 28px; padding: 16px; color: #f2f3f5; box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.12), 0 6px 20px rgba(0,0,0,.3); }"
-    },
-    {
-      "name": "Glass Input",
+      "name": "Prompt Field",
       "kind": "input",
-      "refersTo": "input-glass",
-      "description": "Prompt text field.",
-      "html": "<input class=\"ds-input\" placeholder=\"Опиши настроение…\" />",
-      "css": ".ds-input { background: rgba(255,255,255,.05); color: #f2f3f5; border: 1px solid rgba(255,255,255,.1); border-radius: 20px; padding: 12px 16px; font-size: 16px; transition: box-shadow 0.18s ease, border-color 0.18s ease; } .ds-input::placeholder { color: rgba(242,243,245,.62); } .ds-input:focus-visible { outline: none; border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168,85,247,.35); }"
-    },
-    {
-      "name": "Dock Nav Item",
-      "kind": "nav",
-      "refersTo": "nav-row",
-      "description": "Bottom dock tab, active state in Electric Violet.",
-      "html": "<button class=\"ds-nav-item ds-nav-item--active\">Профиль</button>",
-      "css": ".ds-nav-item { background: transparent; border: none; color: rgba(242,243,245,.62); font-size: 13px; font-weight: 500; padding: 8px 12px; border-radius: 999px; transition: color 0.18s ease, background 0.18s ease; } .ds-nav-item--active { color: #a855f7; background: rgba(168,85,247,.15); }"
+      "refersTo": "input-prompt",
+      "description": "Mood or search prompt with a send action inside the same touchable field.",
+      "html": "<div class='ds-prompt-field'><input aria-label='Опиши музыку' placeholder='Опиши настроение…' /><button class='ds-prompt-submit' aria-label='Отправить запрос'><svg viewBox='0 0 24 24' aria-hidden='true'><path d='M5 12h14M13 6l6 6-6 6' /></svg></button></div>",
+      "css": ".ds-prompt-field { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 4px 8px 4px 14px; border-radius: var(--radius-input-shared, 12px); background: var(--lg-v2-input-bg, #242428); transition: outline-color 180ms ease; } .ds-prompt-field:hover { background: color-mix(in srgb, var(--lg-v2-input-bg, #242428) 92%, var(--text-dark, white)); } .ds-prompt-field:focus-within { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 3px; } .ds-prompt-field input { min-width: 0; flex: 1; padding: 6px 0; border: 0; outline: 0; background: transparent; color: var(--text-dark, #f2f3f5); font: 400 16px/1.5 var(--font-body, 'Roboto Variable', sans-serif); } .ds-prompt-field input::placeholder { color: var(--text-muted, rgba(242,243,245,.62)); } .ds-prompt-submit { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: var(--radius-compact, 8px); background: transparent; color: var(--accent-text, #14b8a6); transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-prompt-submit svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-prompt-submit:hover { background: var(--state-tonal, rgba(255,255,255,.08)); } .ds-prompt-submit:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 2px; } .ds-prompt-submit:active { transform: translateY(1px) scale(.98); } @media (pointer: coarse) { .ds-prompt-field { min-height: 64px; } } @media (prefers-reduced-motion: reduce) { .ds-prompt-submit { transition: none; } .ds-prompt-submit:active { transform: none; } }"
     },
     {
       "name": "Suggestion Chip",
       "kind": "chip",
-      "refersTo": "prompt-pill",
-      "description": "Prompt suggestion pill.",
-      "html": "<button class=\"ds-chip\">Для тренировки 💪</button>",
-      "css": ".ds-chip { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.09); color: #f2f3f5; border-radius: 999px; padding: 8px 14px; font-size: 14px; transition: background 0.18s ease; } .ds-chip:hover { background: rgba(255,255,255,.12); } .ds-chip:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(168,85,247,.35); }"
+      "refersTo": "chip-suggestion",
+      "description": "Tap-ready prompt example that inserts a starting idea.",
+      "html": "<button class='ds-suggestion-chip'>Для тренировки</button>",
+      "css": ".ds-suggestion-chip { min-height: 44px; padding: 8px 12px; border: 0; border-radius: var(--radius-compact, 8px); background: var(--state-tonal, rgba(255,255,255,.08)); color: var(--text-dark, #f2f3f5); font: 400 16px/1.25 var(--font-body, 'Roboto Variable', sans-serif); transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-suggestion-chip:hover { background: color-mix(in srgb, var(--text-dark, white) 12%, transparent); } .ds-suggestion-chip:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 3px; } .ds-suggestion-chip:active { transform: translateY(1px) scale(.98); } @media (prefers-reduced-motion: reduce) { .ds-suggestion-chip { transition: none; } .ds-suggestion-chip:active { transform: none; } }"
+    },
+    {
+      "name": "Track Row",
+      "kind": "custom",
+      "description": "Flat music list row; artwork and type provide hierarchy, with a tonal state on interaction.",
+      "html": "<button class='ds-track-row'><span class='ds-track-art' aria-hidden='true'></span><span class='ds-track-copy'><strong>Название трека</strong><small>Исполнитель</small></span></button>",
+      "css": ".ds-track-row { display: flex; align-items: center; gap: 16px; width: 100%; min-height: 68px; padding: 12px 0; border: 0; border-radius: 0; background: transparent; color: var(--text-dark, #f2f3f5); text-align: left; font: inherit; transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-track-row:hover { background: var(--control-surface, rgba(255,255,255,.06)); } .ds-track-row:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 2px; } .ds-track-row:active { transform: translateY(1px) scale(.98); background: color-mix(in srgb, var(--text-dark, white) 12%, transparent); } @media (prefers-reduced-motion: reduce) { .ds-track-row:active { transform: none; } } .ds-track-art { flex: 0 0 48px; width: 48px; height: 48px; border-radius: var(--radius-compact, 8px); background: var(--control-surface, rgba(255,255,255,.06)); } .ds-track-copy { display: grid; min-width: 0; gap: 4px; } .ds-track-copy strong { overflow: hidden; color: var(--text-dark, #f2f3f5); font-size: 16px; font-weight: 550; text-overflow: ellipsis; white-space: nowrap; } .ds-track-copy small { overflow: hidden; color: var(--text-muted, rgba(242,243,245,.62)); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }"
+    },
+    {
+      "name": "Bottom Navigation Tab",
+      "kind": "nav",
+      "refersTo": "nav-tab",
+      "description": "Persistent mobile destination; the active icon carries the chosen accent color.",
+      "html": "<button class='ds-nav-tab ds-nav-tab--active' aria-current='page'><svg viewBox='0 0 24 24' aria-hidden='true'><path d='M4 4h16v16H4zM8 8h8v8H8z' /></svg><span>Музыка</span></button>",
+      "css": ".ds-nav-tab { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 44px; min-height: 44px; padding: 4px 8px; border: 0; border-radius: var(--radius-compact, 8px); background: transparent; color: var(--text-muted, rgba(242,243,245,.62)); font: 500 12px/1.2 var(--font-body, 'Roboto Variable', sans-serif); transition: color 180ms ease, transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-nav-tab svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; } .ds-nav-tab--active svg { color: var(--accent-text, #14b8a6); } .ds-nav-tab:hover { background: var(--state-tonal, rgba(255,255,255,.08)); } .ds-nav-tab:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 2px; } .ds-nav-tab:active { color: var(--text-dark, #f2f3f5); transform: translateY(1px) scale(.98); } @media (prefers-reduced-motion: reduce) { .ds-nav-tab { transition: none; } .ds-nav-tab:active { transform: none; } }"
+    },
+    {
+      "name": "Subscription Plan Option",
+      "kind": "card",
+      "description": "Selectable plan block; borders appear for selection, not as decoration around all content.",
+      "html": "<button class='ds-plan-option' aria-pressed='true'><strong>30 дней</strong><span>Подписка</span><b>399 ₽</b></button>",
+      "css": ".ds-plan-option { position: relative; display: grid; align-content: start; gap: 8px; min-width: 0; min-height: 132px; padding: 12px; border: 1px solid var(--content-hairline, rgba(255,255,255,.1)); border-radius: var(--radius-input-shared, 12px); background: transparent; color: var(--text-dark, #f2f3f5); text-align: left; font: inherit; transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1), border-color 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-plan-option:hover { background: var(--control-surface, rgba(255,255,255,.06)); } .ds-plan-option[aria-pressed='true'] { border-color: var(--accent-text, #14b8a6); background: var(--accent-bg, color-mix(in srgb, var(--accent, #14b8a6) 15%, transparent)); } .ds-plan-option:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 3px; } .ds-plan-option:active { transform: translateY(1px) scale(.98); } .ds-plan-option span { color: var(--text-muted, rgba(242,243,245,.62)); font-size: 14px; } .ds-plan-option b { align-self: end; margin-top: auto; } @media (prefers-reduced-motion: reduce) { .ds-plan-option { transition: none; } .ds-plan-option:active { transform: none; } }"
+    },
+    {
+      "name": "Player Play Control",
+      "kind": "button",
+      "description": "Primary playback control; larger than surrounding transport actions and easy to hit by thumb.",
+      "html": "<button class='ds-player-play' aria-label='Воспроизвести'><svg viewBox='0 0 24 24' aria-hidden='true'><path d='M8 5v14l11-7z' /></svg></button>",
+      "css": ".ds-player-play { display: grid; place-items: center; width: 56px; height: 56px; min-width: 56px; min-height: 56px; border: 0; border-radius: 999px; background: var(--accent, #14b8a6); color: var(--accent-foreground, #0d0d10); transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-player-play svg { width: 24px; height: 24px; fill: currentColor; } .ds-player-play:hover { background: color-mix(in srgb, var(--accent, #14b8a6) 88%, white); } .ds-player-play:focus-visible { outline: 2px solid var(--text-dark, #f2f3f5); outline-offset: 3px; } .ds-player-play:active { transform: translateY(1px) scale(.98); } @media (prefers-reduced-motion: reduce) { .ds-player-play { transition: none; } .ds-player-play:active { transform: none; } }"
     }
   ],
   "narrative": {
-    "northStar": "Quiet Glass",
-    "overview": "Glass exists but recedes. The app is a calm, near-black room inside Telegram where frosted panels float just enough to organize content — the prompt, the tracks, the player — and never enough to become the show. Blur, specular insets, and translucency are structural material, not decoration: every glass surface earns its place by separating a layer of hierarchy. The personality is calm minimal utility: fast, direct, unceremonious, Russian-language voice. The system explicitly rejects the Spotify-clone look (green-on-black, browsing-first density) and the cheap default-Telegram-bot look (unstyled lists, emoji-as-design).",
+    "northStar": "Музыка впереди интерфейса",
+    "overview": "Это спокойная музыкальная утилита для Telegram: пользователь описывает настроение, находит музыку и возвращается к прослушиванию. Обложки, названия и действия держат внимание; интерфейс остаётся ясным, быстрым и русскоязычным. Локальная Roboto Variable одинаково обслуживает кириллицу и латиницу. Фоновая полутоновая иллюстрация живёт только в верхней части приложения и не превращает каждый экран в текстурную поверхность.\n\nОсновной контент располагается на фоне экрана. Бирюзовый акцент отмечает действие или состояние, а спокойный тональный фон помогает читать выбор и нажатия. Движение короткое и объясняет состояние: нажатие, смену экрана, появление sheet или прогресс. Отдельные поверхности отделяют функциональные слои от музыки, а не украшают каждый блок.",
     "keyCharacteristics": [
-      "Near-black base (#050508) with dual light scheme (#EEEEF3), driven by Telegram theme.",
-      "One accent — Electric Violet — reserved for primary actions and active state.",
-      "Glass panels with structural blur (22–24px) and specular top-edge insets.",
-      "System fonts for UI; Golos Text only for display headings.",
-      "Short, state-conveying motion (0.18s ease; 0.35s morph for layout shifts)."
+      "Музыкальный контент и обложки стоят выше декоративного контейнера.",
+      "Светлая и тёмная схемы используют общие нейтральные роли; пользователь выбирает один акцент в профиле.",
+      "Списки плоские, ритм задают отступы, типографика и artwork.",
+      "Управление рассчитано на палец; состояния читаемы без hover.",
+      "Системное уменьшение движения отключает необязательные перемещения."
     ],
     "rules": [
-      { "name": "The Signal Rule", "body": "Violet appears only on interactive or active elements — never as ambient decoration, background wash, or gradient text.", "section": "colors" },
-      { "name": "The One Room Rule", "body": "All surfaces derive from the scheme's base plus white/black alpha. No third hue family enters the neutral stack.", "section": "colors" },
-      { "name": "The One Headline Rule", "body": "At most one display-size heading per screen; everything else stays in the body/title band.", "section": "typography" },
-      { "name": "The Three Layers Rule", "body": "A screen has at most three depth tiers: background, panels, floating chrome (dock/player). Nothing floats above the chrome except the OS.", "section": "elevation" }
+      {
+        "name": "The Signal Rule",
+        "body": "Акцент показывает действие или состояние. Не растягивай его на декоративные заливки и фоновые градиенты.",
+        "section": "colors"
+      },
+      {
+        "name": "The Cyrillic Fit Rule",
+        "body": "Не сжимай межбуквенное расстояние ради компактности: широкие кириллические буквы должны сохранять свободную форму.",
+        "section": "typography"
+      },
+      {
+        "name": "The No Divider Rule",
+        "body": "Между музыкальными строками и обычными секциями не ставь тонкие разделительные линии. Используй отступы и состояние строки; оставляй контур только для фокуса, выбора или функциональной границы.",
+        "section": "layout"
+      },
+      {
+        "name": "The Functional Layer Rule",
+        "body": "Новая поверхность оправдана только отдельной задачей управления или перекрытием; не вкладывай карточку в карточку.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do reserve Electric Violet (#a855f7) for interactive/active elements (The Signal Rule).",
-      "Do ship opaque fallbacks for every glass surface (prefers-reduced-transparency, missing backdrop-filter).",
-      "Do honor prefers-reduced-motion on every transition — crossfade or instant.",
-      "Do keep body text ≥4.5:1 against the effective glass background in both schemes.",
-      "Do keep transitions at 0.18s ease; 0.35s only for layout morphs."
+      "Do держать поле, списки и действия внутри единого мобильного бокового поля.",
+      "Do сохранять hit area минимум 44×44px; главную кнопку плеера — 56×56px.",
+      "Do связывать движение с изменением состояния и уважать `prefers-reduced-motion`.",
+      "Do показывать выбранное состояние через тон, акцент или контур вместе с доступным фокусом."
     ],
     "donts": [
-      "Don't imitate Spotify — no green-on-black identity, no browsing-first layouts.",
-      "Don't regress to a cheap Telegram bot UI — no unstyled lists, no emoji-as-design.",
-      "Don't add glass-on-glass nesting (a glass card inside a glass panel) — one glass layer per depth tier.",
-      "Don't use violet as ambient decoration, gradient text, or background wash.",
-      "Don't exceed three depth tiers on a screen."
+      "Don't добавлять тонкие линии между строками музыки и обычными секциями.",
+      "Don't превращать каждую группу контента в стеклянную карточку с тенью.",
+      "Don't использовать выбранный акцент как постоянную декоративную подсветку.",
+      "Don't полагаться на hover, чтобы сделать мобильное действие доступным."
     ]
   }
 }
