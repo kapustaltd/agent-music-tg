@@ -19,14 +19,13 @@
   --fs-track-title: 16px;
   --fs-metadata: 14px;
   --fs-nav-label: 12px;
-  --content-hairline: rgba(255, 255, 255, 0.1);
-  --control-surface: rgba(255, 255, 255, 0.06);
-  --subscription-accent: #ef5350;
+  --content-hairline: var(--color-border-dark);
+  --control-surface: color-mix(in srgb, var(--color-ink-dark) 6%, transparent);
 }
 
 :root[data-scheme="light"] {
-  --content-hairline: rgba(13, 13, 16, 0.1);
-  --control-surface: rgba(13, 13, 16, 0.05);
+  --content-hairline: var(--color-border-light);
+  --control-surface: color-mix(in srgb, var(--color-ink-light) 5%, transparent);
 }
 
 button,
@@ -270,7 +269,7 @@ h2.screen-title,
 }
 
 .generation-status-icon {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Generated playlist: one artwork-led header and three understandable actions. */
@@ -297,7 +296,7 @@ h2.screen-title,
 .results-action--download {
   border-radius: var(--radius-compact);
   background: var(--accent);
-  color: #101012;
+  color: var(--accent-foreground);
 }
 
 .results-action-text {
@@ -318,7 +317,7 @@ h2.screen-title,
   padding: 4px 0;
   border: 1px solid var(--content-hairline);
   border-radius: var(--radius-input-shared);
-  background: #1c1c1f;
+  background: var(--surface);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -329,7 +328,7 @@ h2.screen-title,
 }
 
 :root[data-scheme="light"] .track-menu-popover {
-  background: #ffffff;
+  background: var(--surface);
   box-shadow: 0 12px 28px rgba(30, 20, 70, 0.16);
 }
 
@@ -415,7 +414,7 @@ h2.screen-title,
   min-height: 56px;
   border-radius: var(--radius-circle);
   background: var(--accent);
-  color: #101012;
+  color: var(--accent-foreground);
   box-shadow: none;
 }
 
@@ -487,7 +486,7 @@ h2.screen-title,
 
 .dock-tab.active .dock-tab-icon,
 :root[data-scheme="light"] .dock-tab.active .dock-tab-icon {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .dock-tab.active .dock-tab-label,
@@ -680,7 +679,7 @@ h2.screen-title,
 }
 
 .subscription-status.is-active strong {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .subscription-section-heading,
@@ -766,7 +765,7 @@ h2.screen-title,
   place-items: center;
   width: 20px;
   height: 20px;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .subscription-checkout {
@@ -799,7 +798,7 @@ h2.screen-title,
   justify-content: center;
   border-radius: var(--radius-input-shared);
   background: var(--accent);
-  color: #101012;
+  color: var(--accent-foreground);
 }
 
 .subscription-checkout-note {
@@ -892,7 +891,7 @@ h2.screen-title,
   min-height: 44px;
   border-radius: var(--radius-compact);
   background: var(--accent);
-  color: #101012;
+  color: var(--accent-foreground);
 }
 
 /* Subscription checkout: choose the term on the page, then choose payment in
@@ -1058,24 +1057,6 @@ h2.screen-title,
   background: var(--accent-bg);
 }
 
-.payment-method-option--platega {
-  border-color: color-mix(in srgb, #ed4c5c 55%, var(--hairline));
-}
-
-.payment-method-option--platega.is-selected {
-  border-color: #ed4c5c;
-  background: color-mix(in srgb, #ed4c5c 10%, transparent);
-}
-
-.payment-method-option--platega .payment-method-option-copy strong {
-  color: #ff5262;
-}
-
-.payment-method-option--stars.is-selected {
-  border-color: #f0c51b;
-  background: color-mix(in srgb, #f0c51b 9%, transparent);
-}
-
 .payment-method-option:disabled {
   cursor: wait;
   opacity: 0.65;
@@ -1159,7 +1140,7 @@ h2.screen-title,
   place-items: center;
   width: 24px;
   height: 24px;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .payment-method-error {
@@ -1467,7 +1448,7 @@ h2.screen-title,
 }
 
 .playlist-action-icon.active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 @media (max-width: 560px) {
@@ -1686,13 +1667,13 @@ h2.screen-title,
 }
 
 .subscription-plan.is-selected {
-  border-color: var(--subscription-accent);
-  background: color-mix(in srgb, var(--surface) 88%, var(--subscription-accent) 12%);
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .subscription-plan-check,
 .app-shell--buy .dock-tab.active .dock-tab-icon {
-  color: var(--subscription-accent);
+  color: var(--accent-text);
 }
 
 .subscription-plan-duration {
@@ -1788,14 +1769,6 @@ h2.screen-title,
   border-color: var(--content-hairline);
 }
 
-.payment-method-option--platega.is-selected {
-  background: color-mix(in srgb, var(--surface) 88%, #ed4c5c 12%);
-}
-
-.payment-method-option--stars.is-selected {
-  background: color-mix(in srgb, var(--surface) 88%, #f0c51b 12%);
-}
-
 .payment-method-option-copy {
   display: grid;
   align-content: center;
@@ -1853,11 +1826,7 @@ h2.screen-title,
   inset: auto;
   width: 24px;
   height: 24px;
-  color: var(--subscription-accent);
-}
-
-.payment-method-option--stars.is-selected .payment-method-option-check {
-  color: #f0c51b;
+  color: var(--accent-text);
 }
 
 .payment-method-total {
@@ -1881,8 +1850,8 @@ h2.screen-title,
 :root[data-scheme="light"] .glass-button.primary.payment-method-submit,
 :root[data-scheme="light"] .glass-button.primary.sbp-pay-btn {
   margin-top: var(--space-4);
-  background: var(--subscription-accent);
-  color: #101012;
+  background: var(--accent);
+  color: var(--accent-foreground);
 }
 
 @media (max-width: 560px) {
@@ -1960,7 +1929,7 @@ h2.screen-title,
 
 .subscription-plan-action {
   grid-column: 1 / -1;
-  color: var(--subscription-accent);
+  color: var(--accent-text);
   font-size: var(--fs-metadata);
   font-weight: 600;
 }

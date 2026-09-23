@@ -90,7 +90,7 @@
 
 .results-extend .prompt-submit:hover,
 .results-extend .prompt-submit:focus-visible {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 @media (max-width: 390px) {

@@ -29,7 +29,7 @@
   display: inline-flex;
   flex: 0 0 auto;
   margin-top: 2px;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 .generation-status-copy {

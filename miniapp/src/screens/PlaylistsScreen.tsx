@@ -136,7 +136,7 @@ function DownloadEntry({
                   }}
                 >
                   {status === "playing" ? (
-                    <Pause size={14} weight="fill" style={{ flexShrink: 0, color: "var(--accent)" }} />
+                    <Pause size={14} weight="fill" style={{ flexShrink: 0, color: "var(--accent-text)" }} />
                   ) : (
                     <Play size={14} weight="fill" style={{ flexShrink: 0 }} />
                   )}

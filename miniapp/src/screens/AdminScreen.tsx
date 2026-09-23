@@ -1403,11 +1403,11 @@ function UserManagementPanel() {
             {hasSub(selected) && (
               confirmRevoke ? (
                 <div className="row">
-                  <button className="glass-button" style={{ color: "var(--accent)" }} onClick={revokeSub} disabled={busy}>✓ Да, отозвать</button>
+                  <button className="glass-button" style={{ color: "var(--accent-text)" }} onClick={revokeSub} disabled={busy}>✓ Да, отозвать</button>
                   <button className="glass-button" onClick={() => setConfirmRevoke(false)}>Отмена</button>
                 </div>
               ) : (
-                <button className="glass-button" style={{ color: "var(--accent)" }} onClick={() => setConfirmRevoke(true)} disabled={busy}>
+                <button className="glass-button" style={{ color: "var(--accent-text)" }} onClick={() => setConfirmRevoke(true)} disabled={busy}>
                   Отозвать подписку
                 </button>
               )

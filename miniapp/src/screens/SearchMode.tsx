@@ -227,7 +227,7 @@ export function SearchMode({
         trailing={
           <>
             {trackDownloads[track.uri]?.kind === "sent" && (
-              <CheckCircle size={16} weight="fill" style={{ color: "var(--accent)" }} />
+              <CheckCircle size={16} weight="fill" style={{ color: "var(--accent-text)" }} />
             )}
             {trackDownloads[track.uri]?.kind === "sending" && (
               <CircleNotch size={16} className="spin" style={{ color: "var(--text-muted)" }} />
