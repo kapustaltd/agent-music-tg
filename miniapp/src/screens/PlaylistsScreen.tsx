@@ -209,37 +209,47 @@ function PlaylistCover({ playlistId }: { playlistId: number }) {
 }
 
 function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
-  const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [downloads, setDownloads] = useState<DownloadRecord[] | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[] | null>(null);
+  const [historyError, setHistoryError] = useState(false);
+  const [downloadsError, setDownloadsError] = useState(false);
+  const [downloadsRetry, setDownloadsRetry] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<{ id: number; kind: "resend" | "delete" } | null>(null);
 
-  useEffect(() => {
+  function loadHistory() {
+    setHistoryError(false);
+    setHistory(null);
     api.fetchHistory()
       .then((r) => setHistory(r.history))
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
-  }, []);
+      .catch(() => setHistoryError(true));
+  }
+
+  useEffect(loadHistory, []);
 
   useEffect(() => {
     const polling = { active: true };
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let failures = 0;
 
     async function fetchAndSchedule() {
       try {
         const r = await api.downloads();
         if (!polling.active) return;
         setDownloads(r.downloads);
-        setError(null);
+        setDownloadsError(false);
+        failures = 0;
         const hasActive = r.downloads.some((d) => d.status === "pending" || d.status === "processing");
         if (hasActive && polling.active) {
           timeoutId = setTimeout(fetchAndSchedule, 5000);
         }
-      } catch (e) {
+      } catch {
         if (!polling.active) return;
-        setError(e instanceof Error ? e.message : String(e));
-        if (polling.active) {
-          timeoutId = setTimeout(fetchAndSchedule, 5000);
+        setDownloadsError(true);
+        failures++;
+        if (failures < 3) {
+          timeoutId = setTimeout(fetchAndSchedule, 5000 * 2 ** (failures - 1));
         }
       }
     }
@@ -250,7 +260,7 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
       polling.active = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [downloadsRetry]);
 
   useEffect(() => {
     function onDownloadCreated() {
@@ -280,7 +290,7 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
     setBusyId({ id: record.id, kind: "delete" });
     setError(null);
     const previous = downloads;
-    setDownloads((list) => list.filter((d) => d.id !== record.id));
+    setDownloads((list) => (list ?? []).filter((d) => d.id !== record.id));
     try {
       await api.deleteDownload(record.id);
     } catch (e) {
@@ -297,17 +307,34 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
       {notice && <p role="status" className="icon-row"><DownloadSimple size={16} /> {notice}</p>}
       <section className="library-section">
         <h2 className="screen-title">Сохранённые подборки</h2>
-        {history.length ? <ul className="plain-list plain-list--col">
+        {historyError ? (
+          <div className="library-load-error" role="alert">
+            <p>Не удалось загрузить сохранённые подборки.</p>
+            <button type="button" className="glass-button" onClick={loadHistory}>Попробовать снова</button>
+          </div>
+        ) : history === null ? (
+          <p role="status" className="text-muted">Загружаю…</p>
+        ) : history.length ? <ul className="plain-list plain-list--col">
           {history.map((entry) => <HistoryItem key={entry.id} entry={entry} onOpen={onOpen} />)}
         </ul> : <p className="text-muted">Сохранённые плейлисты появятся здесь.</p>}
       </section>
       <section className="library-section">
         <h2 className="screen-title">Загрузки</h2>
-        {downloads.length ? <ul className="plain-list plain-list--col">
+        {downloadsError && downloads === null ? (
+          <div className="library-load-error" role="alert">
+            <p>Не удалось загрузить историю загрузок.</p>
+            <button type="button" className="glass-button" onClick={() => { setDownloadsError(false); setDownloadsRetry((n) => n + 1); }}>Попробовать снова</button>
+          </div>
+        ) : downloads === null ? (
+          <p role="status" className="text-muted">Загружаю…</p>
+        ) : downloads.length ? <ul className="plain-list plain-list--col">
           {downloads.map((record) => <DownloadEntry key={record.id} record={record}
             busy={busyId?.id === record.id ? busyId.kind : null}
             onResend={() => handleResend(record)} onDelete={() => handleDelete(record)} />)}
         </ul> : <p className="text-muted">Здесь появятся треки, отправленные в чат.</p>}
+        {downloadsError && downloads !== null && (
+          <button type="button" className="glass-button" onClick={() => { setDownloadsError(false); setDownloadsRetry((n) => n + 1); }}>Обновить загрузки</button>
+        )}
       </section>
     </>
   );
@@ -316,6 +343,7 @@ function LibrarySection({ onOpen }: { onOpen: (entry: HistoryEntry) => void }) {
 /** User playlists list: create (with slot limit + Stars purchase) and open a playlist's detail. */
 function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => void; onNewPrompt: () => void }) {
   const [playlists, setPlaylists] = useState<Playlist[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [createBusy, setCreateBusy] = useState(false);
@@ -323,7 +351,9 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
   const [buyBusy, setBuyBusy] = useState(false);
 
   function load() {
-    api.playlists().then((r) => setPlaylists(r.playlists)).catch(() => setPlaylists([]));
+    setLoadError(false);
+    setPlaylists(null);
+    api.playlists().then((r) => setPlaylists(r.playlists)).catch(() => setLoadError(true));
   }
 
   useEffect(load, []);
@@ -400,7 +430,14 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
         </div>
       )}
 
-      {playlists === null && (
+      {loadError && (
+        <div className="library-load-error" role="alert">
+          <p>Не удалось загрузить плейлисты.</p>
+          <button type="button" className="glass-button" onClick={load}>Попробовать снова</button>
+        </div>
+      )}
+
+      {playlists === null && !loadError && (
         <p className="text-muted search-status mt-12">
           <CircleNotch size={16} className="spin" /> Загружаю…
         </p>
@@ -431,6 +468,7 @@ function PlaylistsSection({ onOpen, onNewPrompt }: { onOpen: (id: number) => voi
 function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) {
   const player = usePlayer();
   const [playlist, setPlaylist] = useState<PlaylistDetail | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
@@ -440,9 +478,13 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
   const [sharing, setSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
 
-  useEffect(() => {
-    api.playlist(id).then((r) => setPlaylist(r.playlist)).catch(() => setPlaylist(null));
-  }, [id]);
+  function loadPlaylist() {
+    setLoadError(false);
+    setPlaylist(null);
+    api.playlist(id).then((r) => setPlaylist(r.playlist)).catch(() => setLoadError(true));
+  }
+
+  useEffect(loadPlaylist, [id]);
 
   useEffect(() => {
     const first = playlist?.tracks[0];
@@ -592,7 +634,14 @@ function PlaylistDetailView({ id, onBack }: { id: number; onBack: () => void }) 
         </div>
       )}
 
-      {playlist === null && (
+      {loadError && (
+        <div className="library-load-error" role="alert">
+          <p>Не удалось загрузить плейлист.</p>
+          <button type="button" className="glass-button" onClick={loadPlaylist}>Попробовать снова</button>
+        </div>
+      )}
+
+      {playlist === null && !loadError && (
         <p className="text-muted search-status mt-12">
           <CircleNotch size={16} className="spin" /> Загружаю…
         </p>
@@ -700,14 +749,19 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
   // toggleSaved so every other screen's heart updates immediately instead of
   // only on this screen's next mount.
   const [tracks, setTracks] = useState<SavedTrack[] | null>(null);
+  const [tracksError, setTracksError] = useState(false);
   const [removing, setRemoving] = useState<Record<string, boolean>>({});
   const [openPlaylistId, setOpenPlaylistId] = useState<number | null>(null);
   const [trackDownloads, setTrackDownloads] = useState<Record<string, "sending" | "sent">>({});
   const { toggleSaved } = useMyMusic();
 
-  useEffect(() => {
-    api.myMusic().then((r) => setTracks(r.tracks)).catch(() => setTracks([]));
-  }, []);
+  function loadTracks() {
+    setTracksError(false);
+    setTracks(null);
+    api.myMusic().then((r) => setTracks(r.tracks)).catch(() => setTracksError(true));
+  }
+
+  useEffect(loadTracks, []);
 
   useEffect(() => {
     const first = tracks?.[0];
@@ -760,7 +814,14 @@ export default function PlaylistsScreen({ onOpenHistory, onNewPrompt }: { onOpen
       <section className="reveal library-section library-tracks">
         <h2 className="screen-title">Треки</h2>
 
-        {tracks === null && (
+        {tracksError && (
+          <div className="library-load-error" role="alert">
+            <p>Не удалось загрузить сохранённые треки.</p>
+            <button type="button" className="glass-button" onClick={loadTracks}>Попробовать снова</button>
+          </div>
+        )}
+
+        {tracks === null && !tracksError && (
           <p className="text-muted search-status">
             <CircleNotch size={16} className="spin" /> Загружаю…
           </p>

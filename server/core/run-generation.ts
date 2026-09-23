@@ -9,6 +9,7 @@ import {
   ClarifyNeededError,
   MaxIterationsExceededError,
   NoTracksResolvedError,
+  NoNewTracksResolvedError,
   generatePlaylist,
   type FinalizedPlaylist,
   type GeneratePlaylistOptions,
@@ -107,6 +108,9 @@ async function toOutcome(run: () => Promise<GeneratePlaylistResult>): Promise<Ru
     }
     if (e instanceof NoTracksResolvedError) {
       return { status: "error", message: "Музыкальный сервис сейчас недоступен, треки не нашлись. Попробуйте ещё раз чуть позже." };
+    }
+    if (e instanceof NoNewTracksResolvedError) {
+      return { status: "error", message: "Новых треков не нашлось. Уточните запрос и попробуйте ещё раз." };
     }
     if (e instanceof MissingCredentialError) {
       return { status: "error", message: e.message };

@@ -99,7 +99,7 @@ const clarifySpec: ToolSpec = {
   name: "clarify",
   description:
     "Ask the user one clarifying question with exactly 3 concrete options. " +
-    "May be called at most once per request — the harness returns the user's chosen answer " +
+    "May be called up to three times per request when genuinely needed — the harness returns the user's chosen answer " +
     "(one of the options, or their own free-text reply).",
   parameters: {
     type: "object",

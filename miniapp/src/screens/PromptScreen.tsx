@@ -177,7 +177,7 @@ export function PromptScreen({
               ref={inputRef}
               className="prompt-pill-input"
               rows={1}
-              placeholder={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
+              placeholder={mode === "ai" ? "Что хочется послушать?" : "Трек, исполнитель или альбом"}
               aria-label={mode === "ai" ? "Опиши, что хочется послушать" : "Трек, исполнитель или альбом"}
               aria-invalid={validationError ? true : undefined}
               value={prompt}

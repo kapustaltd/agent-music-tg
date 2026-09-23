@@ -1934,3 +1934,42 @@ h2.screen-title,
     height: 44px;
   }
 }
+
+/* Fixed mobile navigation has an opaque base so scrolling rows do not show
+   through the dock or the bottom safe area. Its buttons stay in place. */
+@media (max-width: 839px) {
+  .dock,
+  :root[data-scheme="light"] .dock {
+    bottom: 0;
+    padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--lg-v2-bg);
+  }
+}
+
+.subscription-plan-action {
+  grid-column: 1 / -1;
+  color: var(--subscription-accent);
+  font-size: var(--fs-metadata);
+  font-weight: 600;
+}
+
+.library-load-error {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  color: var(--text-dark);
+}
+
+.library-load-error p {
+  margin: 0;
+}
+
+.prompt-compose > .segmented .segmented-option:not(.active) {
+  opacity: 1;
+}
+
+.prompt-starters .prompt-suggestion {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

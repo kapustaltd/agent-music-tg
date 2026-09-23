@@ -27,7 +27,7 @@ const { upsertUser, addCredits, extendSubscription, getUser } = await import("..
 const { checkSubscriptionRateLimit } = await import("../access/entitlements");
 const { insertGeneration } = await import("../access/generations-store");
 const { startGeneration, resumeGeneration, extendGeneration } = await import("./run-generation");
-const { ClarifyNeededError, NoTracksResolvedError } = actualGp;
+const { ClarifyNeededError, NoTracksResolvedError, NoNewTracksResolvedError } = actualGp;
 
 const CHAT = 424242;
 // Rich prompt so the rule-based clarify gate never intercepts it.
@@ -90,6 +90,19 @@ describe("credit spend per successful generation", () => {
     const outcome = await startGeneration(db, CHAT, PROMPT);
     expect(outcome.status).toBe("error");
     expect(getUser(db, CHAT)?.credits).toBe(2);
+  });
+
+  test("no-op extension leaves credits, tracks, and free-extend count intact", async () => {
+    const db = freshDb();
+    addCredits(db, CHAT, 2);
+    const created = await startGeneration(db, CHAT, PROMPT);
+    const id = created.status === "ok" ? created.generationId : 0;
+    generateImpl = async () => { throw new NoNewTracksResolvedError(); };
+    const outcome = await extendGeneration(db, CHAT, id, "добавь похожие");
+    expect(outcome).toEqual({ status: "error", message: "Новых треков не нашлось. Уточните запрос и попробуйте ещё раз." });
+    expect(getUser(db, CHAT)?.credits).toBe(1);
+    const row = db.query("SELECT extend_count, track_count FROM generations WHERE id = ?").get(id) as { extend_count: number; track_count: number };
+    expect(row).toEqual({ extend_count: 0, track_count: 1 });
   });
 
   test("resume spends one credit; first 3 extends free, 4th charges", async () => {

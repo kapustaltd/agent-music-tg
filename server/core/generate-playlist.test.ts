@@ -6,6 +6,7 @@ import {
   DEFAULT_MAX_ITERATIONS,
   MaxIterationsExceededError,
   NoTracksResolvedError,
+  NoNewTracksResolvedError,
   generatePlaylist,
 } from "./generate-playlist";
 import { mapWithConcurrency, withTimeout } from "./concurrency";
@@ -212,6 +213,20 @@ describe("generatePlaylist", () => {
     expect(music.searchTrackCalls).toEqual(["A|One"]);
   });
 
+  test("identical search calls in one agent turn share one backend request", async () => {
+    const provider = fakeProvider([
+      { text: "", toolCalls: [
+        { id: "c1", name: "searchTrack", args: { artist: "A", title: "One" } },
+        { id: "c2", name: "searchTrack", args: { title: "One", artist: "A" } },
+      ] },
+      finalizeResult("Vibes", [{ artist: "A", title: "One" }]),
+    ]);
+    const music = fakeMusic({ remotePlaylists: false });
+    const { messages } = await generatePlaylist({ provider, music, prompt: "test" });
+    expect(music.searchTrackCalls).toEqual(["A|One"]);
+    expect(messages.filter((m) => m.role === "tool").map((m) => m.callId)).toEqual(["c1", "c2"]);
+  });
+
   test("a track already returned by searchTracks is not re-searched at finalize", async () => {
     // The fake searchTracks answers with artist "Q" and the query as the title,
     // which is exactly what the agent then finalizes — so the finalize resolve
@@ -279,12 +294,99 @@ describe("generatePlaylist", () => {
     }
     expect(caught).toBeInstanceOf(ClarifyNeededError);
     expect((caught as ClarifyNeededError).round).toBe(1);
+    expect((caught as ClarifyNeededError).messages.at(-1)).toMatchObject({ role: "tool", callId: "c1" });
+  });
+
+  test("clarify ignores simultaneous calls and resumes with a paired tool result", async () => {
+    let resumedMessages: AgentMessage[] = [];
+    let turn = 0;
+    const provider: AgentProvider = {
+      id: "fake",
+      async generateMessages(_system, messages) {
+        if (turn++ === 0) {
+          return { text: "", toolCalls: [
+            { id: "search", name: "searchTracks", args: { query: "unused" } },
+            { id: "ask", name: "clarify", args: { question: "Какое настроение?", options: ["а", "б", "в"] } },
+          ] };
+        }
+        resumedMessages = messages;
+        return finalizeResult("Test", [{ artist: "A", title: "One" }]);
+      },
+    };
+    const music = fakeMusic({ remotePlaylists: false });
+    let clarify: ClarifyNeededError | null = null;
+    try { await generatePlaylist({ provider, music, prompt: "музыка" }); }
+    catch (e) { if (e instanceof ClarifyNeededError) clarify = e; else throw e; }
+    expect(clarify).not.toBeNull();
+    expect(music.searchTracksCalls).toEqual([]);
+    expect(clarify!.messages.slice(-2)).toMatchObject([
+      { role: "assistant", toolCalls: [{ id: "ask", name: "clarify" }] },
+      { role: "tool", callId: "ask", name: "clarify" },
+    ]);
+    await generatePlaylist({ provider, music, prompt: "музыка", resumeMessages: clarify!.messages, resumeClarifyAnswer: "а", resumeClarifyRound: 1 });
+    expect(resumedMessages.at(-1)).toEqual({ role: "user", content: "а" });
+  });
+
+  test("malformed clarification stays inside the agent loop", async () => {
+    const provider = fakeProvider([
+      { text: "", toolCalls: [{ id: "bad", name: "clarify", args: { question: "Mood?", options: ["same", "same", ""] } }] },
+      finalizeResult("Test", [{ artist: "A", title: "One" }]),
+    ]);
+    const music = fakeMusic({ remotePlaylists: false });
+    const { playlist, messages } = await generatePlaylist({ provider, music, prompt: "music" });
+    expect(playlist.tracks).toHaveLength(1);
+    expect(messages).toContainEqual(expect.objectContaining({ role: "tool", callId: "bad", isError: true }));
+  });
+
+  test("extend keeps queued additions when a later turn asks for clarification", async () => {
+    const firstProvider = fakeProvider([
+      addToPlaylistResult("add", [{ artist: "B", title: "Two" }]),
+      { text: "", toolCalls: [{ id: "ask", name: "clarify", args: { question: "Ещё?", options: ["а", "б", "в"] } }] },
+    ]);
+    const music = fakeMusic({ remotePlaylists: false });
+    let clarify: ClarifyNeededError | null = null;
+    try {
+      await generatePlaylist({ provider: firstProvider, music, prompt: "добавь", mode: "extend", baseTracks: [{ artist: "A", title: "One" }] });
+    } catch (e) { if (e instanceof ClarifyNeededError) clarify = e; else throw e; }
+    expect(clarify).not.toBeNull();
+    const resumed = await generatePlaylist({
+      provider: fakeProvider([finalizeResult("", [])]), music, prompt: "добавь", mode: "extend",
+      baseTracks: [{ artist: "A", title: "One" }],
+      resumeMessages: clarify!.messages, resumeClarifyAnswer: "а", resumeClarifyRound: clarify!.round,
+    });
+    expect(resumed.playlist.tracks.map((t) => t.uri)).toEqual(["ytm:A-One", "ytm:B-Two"]);
   });
 
   const resumeMessagesAfterOneClarify: AgentMessage[] = [
     { role: "user", content: "something" },
     { role: "assistant", content: "", toolCalls: [{ id: "c1", name: "clarify", args: { question: "Which mood?", options: ["a", "b", "c"] } }] },
   ];
+
+  test("repairs a pending clarification session saved before tool results were paired", async () => {
+    let seen: AgentMessage[] = [];
+    const provider: AgentProvider = {
+      id: "fake",
+      async generateMessages(_system, messages) {
+        seen = messages;
+        return finalizeResult("Test", [{ artist: "A", title: "One" }]);
+      },
+    };
+    await generatePlaylist({ provider, music: fakeMusic({ remotePlaylists: false }), prompt: "music",
+      resumeMessages: [
+        { role: "user", content: "music" },
+        { role: "assistant", content: "", toolCalls: [
+          { id: "unused", name: "searchTracks", args: { query: "music" } },
+          { id: "ask", name: "clarify", args: { question: "Mood?", options: ["a", "b", "c"] } },
+        ] },
+      ],
+      resumeClarifyAnswer: "a", resumeClarifyRound: 1,
+    });
+    expect(seen.slice(-3)).toMatchObject([
+      { role: "assistant", toolCalls: [{ id: "ask" }] },
+      { role: "tool", callId: "ask" },
+      { role: "user", content: "a" },
+    ]);
+  });
 
   test("a second clarify call within the same run throws round 2, not rejected", async () => {
     const provider = fakeProvider([
@@ -424,23 +526,45 @@ describe("generatePlaylist", () => {
     expect(playlist.tracks.map((t) => `${t.artist}|${t.title}`).sort()).toEqual(["A|One", "B|Two"]);
   });
 
-  test("extend mode: does not throw when only the base resolves but additions fail", async () => {
+  test("extend mode: rejects a no-op when only the base resolves", async () => {
     const baseTracks = [{ artist: "A", title: "One" }];
     const provider = fakeProvider([
       addToPlaylistResult("c1", [{ artist: "Ghost", title: "Nowhere" }]),
       finalizeResult("", []),
     ]);
     const music = fakeMusic({ remotePlaylists: false, searchTrack: async (artist) => (artist === "A" ? { uri: "ytm:a", title: "One", artist: "A" } : null) });
-    const { playlist } = await generatePlaylist({
+    await expect(generatePlaylist({
       provider,
       music,
       prompt: "add a missing track",
       mode: "extend",
       baseTracks,
       baseName: "Base",
+    })).rejects.toThrow(NoNewTracksResolvedError);
+  });
+
+  test("extend keeps an existing track even when it is now disliked", async () => {
+    const provider = fakeProvider([finalizeResult("", [{ artist: "B", title: "Two" }])]);
+    const music = fakeMusic({ remotePlaylists: false });
+    const { playlist } = await generatePlaylist({
+      provider, music, prompt: "add another", mode: "extend",
+      baseTracks: [{ artist: "A", title: "One" }],
+      knownTracks: [{ uri: "ytm:A-One", artist: "A", title: "One" }],
+      dislikedUris: new Set(["ytm:A-One"]),
     });
-    expect(playlist.tracks).toHaveLength(1);
-    expect(playlist.tracks[0]!.artist).toBe("A");
+    expect(playlist.tracks.map((t) => t.uri)).toEqual(["ytm:A-One", "ytm:B-Two"]);
+  });
+
+  test("final list keeps one copy when different entries resolve to the same URI", async () => {
+    const provider = fakeProvider([finalizeResult("Test", [
+      { artist: "A", title: "One" },
+      { artist: "A", title: "One" },
+      { artist: "Alias", title: "Same recording" },
+    ])]);
+    const music = fakeMusic({ remotePlaylists: false, searchTrack: async () => ({ uri: "ytm:one", title: "One", artist: "A" }) });
+    const { playlist } = await generatePlaylist({ provider, music, prompt: "test" });
+    expect(playlist.tracks.map((t) => t.uri)).toEqual(["ytm:one"]);
+    expect(music.searchTrackCalls).toEqual(["A|One", "Alias|Same recording"]);
   });
 });
 

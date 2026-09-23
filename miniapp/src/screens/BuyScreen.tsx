@@ -253,6 +253,7 @@ export default function BuyScreen({ reason }: { reason?: string }) {
                       </span>
                     )}
                   </span>
+                  <span className="subscription-plan-action">Выбрать способ оплаты</span>
                   <span className="subscription-plan-check" aria-hidden="true">
                     {selected?.id === o.id ? <Check size={18} weight="bold" /> : null}
                   </span>

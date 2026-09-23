@@ -29,6 +29,12 @@ export class NoTracksResolvedError extends Error {
   }
 }
 
+export class NoNewTracksResolvedError extends Error {
+  constructor() {
+    super("playlist extension resolved no new tracks");
+  }
+}
+
 export class MaxIterationsExceededError extends Error {
   constructor(maxIterations: number) {
     super(`playlist generation exceeded ${maxIterations} iterations without finalizing`);
@@ -195,14 +201,39 @@ function dedupeAgainst(
   return out;
 }
 
+function normalizeResumeMessages(messages: AgentMessage[]): AgentMessage[] {
+  const normalized: AgentMessage[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i]!;
+    if (message.role !== "assistant") {
+      normalized.push(message);
+      continue;
+    }
+    const clarify = message.toolCalls?.find((call) => call.name === "clarify");
+    if (!clarify) {
+      normalized.push(message);
+      continue;
+    }
+    // Sessions written before the fix ended with an unpaired assistant tool
+    // call (sometimes alongside calls that never ran). Repair them on read.
+    normalized.push({ ...message, toolCalls: [clarify] });
+    const next = messages[i + 1];
+    if (next?.role !== "tool" || next.callId !== clarify.id) {
+      normalized.push({ role: "tool", callId: clarify.id, name: "clarify", content: "The user's answer follows in the next message." });
+    }
+  }
+  return normalized;
+}
+
 async function resolveAndFinalize(
   music: MusicProvider,
   args: FinalizeArgs,
   cache: Map<string, unknown>,
   trackIndex: Map<string, Track>,
-  opts?: { baseProvided?: boolean; dislikedUris?: Set<string> },
+  opts?: { baseProvided?: boolean; baseTrackCount?: number; dislikedUris?: Set<string> },
 ): Promise<FinalizedPlaylist> {
-  const found = await mapWithConcurrency(args.tracks, FINALIZE_CONCURRENCY, async (t) => {
+  const uniqueEntries = dedupeTracks(args.tracks);
+  const found = await mapWithConcurrency(uniqueEntries, FINALIZE_CONCURRENCY, async (t) => {
     // A track the backend already returned this run needs no second lookup —
     // and it is the exact track the agent chose, not searchTrack's fuzzy
     // re-match of the same artist and title.
@@ -217,10 +248,21 @@ async function resolveAndFinalize(
     return track;
   });
   const dislikedUris = opts?.dislikedUris;
-  const resolved = found.filter((t): t is Track => t != null && !(dislikedUris?.has(t.uri) ?? false));
+  const baseUris = new Set(found.slice(0, opts?.baseTrackCount ?? 0).filter((t): t is Track => t != null).map((t) => t.uri));
+  const seenUris = new Set<string>();
+  const resolved = found.filter((t, index): t is Track => {
+    // Existing playlist entries are read-only context in extend mode. A later
+    // dislike must not silently delete one while adding different music.
+    if (!t || (index >= (opts?.baseTrackCount ?? 0) && dislikedUris?.has(t.uri)) || seenUris.has(t.uri)) return false;
+    seenUris.add(t.uri);
+    return true;
+  });
   // In extend mode the base playlist may already contribute tracks, so an empty
   // addition is acceptable as long as the final list is non-empty.
   if (resolved.length === 0 && !opts?.baseProvided) throw new NoTracksResolvedError();
+  if ((opts?.baseTrackCount ?? 0) > 0 && !resolved.some((t) => !baseUris.has(t.uri))) {
+    throw new NoNewTracksResolvedError();
+  }
 
   if (music.capabilities.remotePlaylists && music.createPlaylist && music.addTracksToPlaylist) {
     const playlist = await music.createPlaylist(args.name);
@@ -247,8 +289,20 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
   const isExtend = opts.mode === "extend";
   const baseTracks = opts.baseTracks ?? [];
   const addedTracks: { artist: string; title: string }[] = [];
-  let messages: AgentMessage[] = opts.resumeMessages ?? [{ role: "user", content: opts.prompt }];
-  if (!opts.resumeMessages && opts.dislikedTracks && opts.dislikedTracks.length > 0) {
+  const resumeMessages = opts.resumeMessages ? normalizeResumeMessages(opts.resumeMessages) : undefined;
+  // A clarify pauses this function and the caller persists only messages.
+  // Rebuild queued additions from completed earlier turns on resume.
+  if (isExtend && resumeMessages) {
+    for (const message of resumeMessages) {
+      if (message.role !== "assistant") continue;
+      for (const call of message.toolCalls ?? []) {
+        if (call.name !== "add_to_playlist") continue;
+        addedTracks.push(...dedupeAgainst(parseAddArgs(call.args), [...baseTracks, ...addedTracks]));
+      }
+    }
+  }
+  let messages: AgentMessage[] = resumeMessages ?? [{ role: "user", content: opts.prompt }];
+  if (!resumeMessages && opts.dislikedTracks && opts.dislikedTracks.length > 0) {
     messages.push({
       role: "user",
       content: `Не предлагай эти треки — пользователю они не нравятся: ${opts.dislikedTracks.join(", ")}`,
@@ -315,6 +369,8 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
     const finalizeCall = calls.find((c) => c.name === "finalize_playlist") ?? null;
     const toolMessages: AgentMessage[] = [];
     const dispatchable: { call: (typeof calls)[number]; key: string; slot: number }[] = [];
+    const pendingByKey = new Map<string, number>();
+    const duplicates: { call: (typeof calls)[number]; slot: number; originalSlot: number }[] = [];
     // Two-phase turn: classify calls first (clarify/finalize/duplicates are
     // synchronous decisions), then run the real dispatches concurrently while
     // keeping tool messages in the original call order via slot indices.
@@ -334,12 +390,25 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
           });
           continue;
         }
-        const question = String(call.args.question ?? "");
-        const options = Array.isArray(call.args.options) ? call.args.options.map(String).slice(0, 3) : [];
+        const question = typeof call.args.question === "string" ? call.args.question.trim() : "";
+        const options = Array.isArray(call.args.options)
+          ? call.args.options.filter((value): value is string => typeof value === "string").map((value) => value.trim())
+          : [];
+        if (!question || options.length !== 3 || options.some((value) => !value) || new Set(options.map((value) => value.toLowerCase())).size !== 3) {
+          toolMessages.push({
+            role: "tool",
+            callId: call.id,
+            name: call.name,
+            content: "clarify requires a question and exactly three distinct non-empty options; continue with tools or retry with valid options.",
+            isError: true,
+          });
+          continue;
+        }
         clarifyCount++;
-        // Bubble up to the caller (bot/Mini App) to collect the user's answer;
-        // caller resumes the run with resumeMessages + resumeClarifyAnswer + resumeClarifyRound.
-        messages.push({ role: "assistant", content: result.text, toolCalls: calls });
+        // Keep a valid paired tool turn for providers that require every tool
+        // call to have a result. Ignore other calls from this turn: none ran.
+        messages.push({ role: "assistant", content: result.text, toolCalls: [call] });
+        messages.push({ role: "tool", callId: call.id, name: call.name, content: "The user's answer follows in the next message." });
         throw new ClarifyNeededError(question, options, messages, clarifyCount);
       }
 
@@ -367,7 +436,14 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
         });
         continue;
       }
+      const originalSlot = pendingByKey.get(key);
+      if (originalSlot !== undefined) {
+        slots.push(null);
+        duplicates.push({ call, slot: slots.length - 1, originalSlot });
+        continue;
+      }
       slots.push(null);
+      pendingByKey.set(key, slots.length - 1);
       dispatchable.push({ call, key, slot: slots.length - 1 });
     }
 
@@ -405,6 +481,18 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
         opts.onEvent?.({ kind: "tool_result", id: call.id, ok: false, result: message });
       }
     });
+    for (const { call, slot, originalSlot } of duplicates) {
+      const original = slots[originalSlot];
+      if (!original || original.role !== "tool") continue;
+      slots[slot] = {
+        role: "tool",
+        callId: call.id,
+        name: call.name,
+        content: original.content,
+        isError: original.isError,
+      };
+      opts.onEvent?.({ kind: "tool_result", id: call.id, ok: !original.isError, result: original.content });
+    }
     for (const m of slots) {
       if (m) toolMessages.push(m);
     }
@@ -424,13 +512,13 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
           { name, tracks: allTracks },
           seenCalls,
           trackIndex,
-          { baseProvided: isExtend && baseTracks.length > 0, dislikedUris: opts.dislikedUris },
+          { baseProvided: isExtend && baseTracks.length > 0, baseTrackCount: isExtend ? dedupeTracks(baseTracks).length : 0, dislikedUris: opts.dislikedUris },
         );
         return { playlist, messages };
       } catch (e) {
         // Backend resolved zero tracks — a retry with a different tracklist
         // won't help, so fail the run instead of feeding the error back.
-        if (e instanceof NoTracksResolvedError) throw e;
+        if (e instanceof NoTracksResolvedError || e instanceof NoNewTracksResolvedError) throw e;
         toolMessages.push({
           role: "tool",
           callId: finalizeCall.id,
@@ -465,7 +553,7 @@ export async function generatePlaylist(opts: GeneratePlaylistOptions): Promise<G
         { name: opts.baseName?.trim() || playlistNameFromPrompt(opts.prompt), tracks: fallbackTracks },
         seenCalls,
         trackIndex,
-        { baseProvided: isExtend && baseTracks.length > 0, dislikedUris: opts.dislikedUris },
+        { baseProvided: isExtend && baseTracks.length > 0, baseTrackCount: isExtend ? dedupeTracks(baseTracks).length : 0, dislikedUris: opts.dislikedUris },
       );
       return { playlist, messages };
     } catch (e) {
