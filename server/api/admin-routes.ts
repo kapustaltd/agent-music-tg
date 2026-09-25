@@ -14,7 +14,15 @@ import {
   getShopSettings, setShopSettings,
   getReferralSettings, setReferralSettings,
 } from "../lib/settings";
-import { getUser, listUsers, addCredits, extendSubscription, revokeSubscription } from "../access/users-store";
+import {
+  getUser,
+  listUsers,
+  addCredits,
+  addCreditsToAllUsers,
+  BULK_GENERATION_GRANT,
+  extendSubscription,
+  revokeSubscription,
+} from "../access/users-store";
 import {
   listOffers,
   createOffer,
@@ -295,6 +303,11 @@ export function createAdminRoutes(db: AppDb, deps: ApiDeps): Hono<AppEnv> {
 
   app.get("/admin/users", requireAdmin, (c) => {
     return c.json({ users: listUsers(db) });
+  });
+
+  app.post("/admin/users/grant-credits-all", requireAdmin, (c) => {
+    const updatedUsers = addCreditsToAllUsers(db, c.get("chatId"));
+    return c.json({ amount: BULK_GENERATION_GRANT, updatedUsers });
   });
 
   app.post("/admin/users/:chatId/credits", requireAdmin, async (c) => {

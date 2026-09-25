@@ -143,6 +143,23 @@ export function addCredits(db: AppDb, chatId: number, amount: number, grantedBy?
   }
 }
 
+export const BULK_GENERATION_GRANT = 10;
+
+/** Adds the fixed admin bulk grant to every registered user atomically. */
+export function addCreditsToAllUsers(db: AppDb, grantedBy: number): number {
+  const grant = db.transaction(() => {
+    const updated = db.query(`UPDATE users SET credits = credits + ?`).run(BULK_GENERATION_GRANT);
+    db
+      .query(
+        `INSERT INTO grant_history (chat_id, type, amount, granted_by)
+         SELECT chat_id, 'credits', ?, ? FROM users`,
+      )
+      .run(BULK_GENERATION_GRANT, grantedBy);
+    return updated.changes;
+  });
+  return grant();
+}
+
 /** Extends subscription by `days`, starting from max(now, current expiry). */
 export function extendSubscription(db: AppDb, chatId: number, days: number, grantedBy?: number): void {
   ensureUser(db, chatId);

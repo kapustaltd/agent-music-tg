@@ -684,6 +684,8 @@ export const api = {
 
   // --- Admin: user management ---
   adminUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
+  adminGrantCreditsToAll: () =>
+    request<{ amount: number; updatedUsers: number }>("/api/admin/users/grant-credits-all", { method: "POST" }),
   adminGrantCredits: (chatId: number, amount: number) =>
     request<{ credits: number }>(`/api/admin/users/${chatId}/credits`, { method: "POST", body: JSON.stringify({ amount }) }),
   adminExtendSubscription: (chatId: number, days: number) =>

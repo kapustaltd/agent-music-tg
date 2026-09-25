@@ -1248,6 +1248,8 @@ function UserManagementPanel() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [confirmBulkGrant, setConfirmBulkGrant] = useState(false);
+  const [bulkGrantStatus, setBulkGrantStatus] = useState<string | null>(null);
 
   function refreshUsers() {
     api.adminUsers().then((r) => setUsers(r.users)).catch((e) => setError(e.message));
@@ -1280,6 +1282,23 @@ function UserManagementPanel() {
       refreshHistory(selected.chatId);
     } catch (err) {
       alert(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function grantCreditsToAll() {
+    setConfirmBulkGrant(false);
+    setBulkGrantStatus(null);
+    setBusy(true);
+    try {
+      const result = await api.adminGrantCreditsToAll();
+      setBulkGrantStatus(`Выдано 10 генераций: ${result.updatedUsers} пользователям.`);
+      setSelected((current) => current ? { ...current, credits: current.credits + result.amount } : current);
+      refreshUsers();
+      if (selected) refreshHistory(selected.chatId);
+    } catch (err) {
+      setBulkGrantStatus(`Ошибка: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setBusy(false);
     }
@@ -1333,6 +1352,26 @@ function UserManagementPanel() {
   return (
     <GlassPanel className="reveal">
       <h2>Пользователи и выдачи</h2>
+
+      <div className="stack mt-12">
+        <div>
+          <strong>Массовая выдача</strong>
+          <p className="text-muted">Добавить 10 генераций всем зарегистрированным пользователям ({users.length}).</p>
+        </div>
+        {confirmBulkGrant ? (
+          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <button className="glass-button primary" onClick={() => void grantCreditsToAll()} disabled={busy || users.length === 0}>
+              Подтвердить выдачу
+            </button>
+            <button className="glass-button" onClick={() => setConfirmBulkGrant(false)} disabled={busy}>Отмена</button>
+          </div>
+        ) : (
+          <button className="glass-button primary" onClick={() => setConfirmBulkGrant(true)} disabled={busy || users.length === 0}>
+            Выдать 10 генераций всем
+          </button>
+        )}
+        {bulkGrantStatus && <p role="status">{bulkGrantStatus}</p>}
+      </div>
 
       <input
         className="glass-input"
