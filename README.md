@@ -2,7 +2,7 @@
 
 Telegram bot + Mini App that turns a mood/request into a real playlist via an AI agent. The interface is in Russian. Music comes from SoundCloud or YouTube Music (no account linking or OAuth required). Restricted to an allowlist of chat IDs; only admins can change the active AI provider / music backend.
 
-- **Bot**: `@music_agentbot`, long-polling (no public webhook route).
+- **Bot**: `@music_agentbot`, long-polling (no public webhook route). Telegram-интерфейс ограничен командами `/start` и admin-only `/stats`; `/start` открывает Mini App одной кнопкой.
 - **Mini App**: https://miniapp.xdshka.party — Liquid Glass UI, prompt entry, results, admin-only settings.
 - **Backend**: Bun + Hono (`server/`), `bun:sqlite` for allowlist/settings.
 
@@ -17,6 +17,17 @@ bun run dev
 ```
 
 Для проверки анимации подбора без Telegram-авторизации запустите `cd miniapp && bun run dev --host 127.0.0.1` и откройте `http://127.0.0.1:5173/?preview=loading`. Кнопки «Назад» и «Дальше» переключают фиктивные этапы; этот режим доступен только в dev-сборке.
+
+## Telegram bot
+
+`/start` регистрирует пользователя, сохраняет атрибуцию deep-link и отправляет
+одно сообщение с кнопкой «Открыть приложение». Для ссылки на shared playlist
+кнопка сразу открывает соответствующий экран Mini App. `/stats` доступна только
+администраторам и возвращает статистику обычным текстом без клавиатуры.
+
+Остальные команды, inline/group search, callback-меню и обработка обычного текста
+в боте отключены. Пользовательские действия выполняются в Mini App. Служебные
+апдейты Telegram Stars для покупок из Mini App сохраняются.
 
 ## Test
 
@@ -168,21 +179,11 @@ Arrivals are attributed to `share / telegram / shared-playlist` in admin statist
 
 Endpoints: `POST /api/shares`, `GET /api/shares`, `GET /api/shares/:token`, `DELETE /api/shares/:token`.
 
-## Group-chat keyword search
+## Telegram search in chats
 
-Added to any group chat (no allowlist entry needed — a group is not a user), the bot answers `найти <название трека>` — or `@bot <название трека>`, for when [privacy mode](https://core.telegram.org/bots/features#privacy-mode) is still enabled and it never sees plain text — by sending the first matching result straight into the chat. A reply to the bot's own message is deliberately *not* a trigger: it's as often conversational ("где?", "спасибо") as a new search, and a wrong-track false positive is worse than requiring the keyword or mention. **Turn privacy mode off** (`@BotFather` → `/setprivacy` → **Disable**) for the keyword to work without a mention; existing group memberships need the bot removed and re-added for the change to take effect.
-
-The first request for an uncached track uses the streaming path above; every later request for that track, in any chat, is a `file_id` re-send from `audio_cache` and lands almost instantly. Concurrent requests for the same not-yet-cached track are coalesced so only one delivery runs. A separate `groupExtractRateLimiter` (5/min per group) caps cache misses so one busy group can't starve shared audio capacity.
-
-Groups never touch the `users` table — no signup credits, no "new user" admin alert, no seat in per-user analytics or broadcast — they get their own counters in `group_chats` instead, surfaced in admin statistics as active groups / searches / tracks sent.
-
-## Inline search in any chat
-
-Typing `@<bot> <название трека>` in *any* chat — a DM with someone else, a group the bot was never added to, anywhere Telegram allows invoking an inline bot — pops up a list of tracks; tapping one sends it as playable audio from your own name. Open to everyone, same as group keyword search, guarded only by rate limits (no allowlist gate).
-
-Requires two one-time steps in `@BotFather`: **`/setinline`** (turns on the feature at all; set a placeholder like «название трека») and, optionally, **`/setinlinefeedback`** → `Enabled` (lets the bot count tracks actually sent via `chosen_inline_result`, for admin stats only — search still works without it).
-
-Telegram requires answering an inline query within a few seconds, and only accepts already-uploaded audio (`audio_file_id`) as a result — there's no way to turn a placeholder into playable audio afterward. So a query answers instantly from whatever `audio_cache` already has, while cache misses are uploaded in the background to a private **storage channel**, purely to mint a reusable `file_id`. Set `AUDIO_STORAGE_CHAT_ID` to a channel where the bot is an admin with post rights. The same low-priority queue also warms the first result after Mini App and private-bot searches; it deduplicates URIs, processes one track at a time, and starts at most ten new tracks per minute. Without the channel, search still works but background warming is disabled.
+Group keyword search and inline search are disabled. Search and track selection are
+available from the Mini App; `AUDIO_STORAGE_CHAT_ID` remains a server-side option
+for Mini App search cache warming.
 
 ## Payments (CryptoBot)
 
@@ -198,7 +199,7 @@ Playlist generation is paywalled: a user needs either generation credits or an a
 3. In the Crypto Pay app settings, set the webhook URL to `https://miniapp.xdshka.party/api/crypto/webhook` (`PUBLIC_ORIGIN` + `/api/crypto/webhook`). The route is mounted before auth and verifies the `crypto-pay-api-signature` header (HMAC-SHA256 of the raw body keyed by SHA256 of the token); unsigned or mis-signed requests are rejected.
 4. Create offers via the admin panel (below) — each offer grants either N generation credits or M days of subscription. Subscription users generate without spending credits; credit users spend one credit per *successful* generation (failed runs and clarification rounds are free).
 
-Users buy via `/buy` in the bot or the «Магазин» tab in the Mini App, and check balance/history via `/profile` or the same tab.
+Users buy and check balance/history in the «Магазин» and «Профиль» tabs Mini App.
 
 ### Payments via Platega (СБП)
 
@@ -208,7 +209,7 @@ Set `PLATEGA_MERCHANT_ID` and `PLATEGA_SECRET` from the Platega dashboard. The c
 
 Admins (`ADMIN_CHAT_IDS` or allowlist admin flag) get:
 
-- **Bot**: `/admin` inline menu — statistics (users / paid purchases / revenue), offer management, broadcast to all known users, shop settings (name, support contact, about text).
+- **Bot**: `/stats` — all-time statistics without an inline menu.
 - **Mini App**: «Админ» tab with the same stats/offers/broadcast/shop-settings, plus «Настройки» for the AI provider / music backend.
 
 ### Traffic attribution and funnel analytics

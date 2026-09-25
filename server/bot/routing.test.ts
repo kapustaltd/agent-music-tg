@@ -1,221 +1,148 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 process.env.TELEGRAM_BOT_TOKEN ??= "123456:test-token";
 process.env.CRYPTOBOT_TOKEN ??= "test-crypto-token";
-
-/**
- * Wiring tests for the bot's text and callback routing.
- *
- * grammY stops the middleware chain at the first handler that does not call
- * next(), so handler *registration order* is load-bearing and invisible to unit
- * tests of the view builders. This file drives real updates through the whole
- * stack to pin that behaviour down.
- */
-
-const searchCalls: { query: string; limit?: number }[] = [];
-mock.module("../music/registry", () => ({
-  isMusicBackend: () => true,
-  AVAILABLE_BACKENDS: ["youtube-music"],
-  createMusicProvider: () => ({
-    name: "youtube-music",
-    async searchTracks(query: string, limit?: number) {
-      searchCalls.push({ query, limit });
-      return [
-        { uri: "ytm:one", title: "Alps", artist: "Motorama", durationMs: 200_000 },
-        { uri: "ytm:two", title: "Above", artist: "Motorama", durationMs: 190_000 },
-      ];
-    },
-  }),
-}));
-
-const generateCalls: string[] = [];
-mock.module("../core/run-generation", () => ({
-  EXTEND_FREE_LIMIT: 3,
-  async startGeneration(_db: unknown, _chatId: number, prompt: string) {
-    generateCalls.push(prompt);
-    return { status: "error", message: "stub" };
-  },
-  async resumeGeneration() {
-    return { status: "error", message: "stub" };
-  },
-  async extendGeneration() {
-    return { status: "error", message: "stub" };
-  },
-  setPrewarmStreamResolver() {},
-  setVerificationExtractor() {},
-}));
+process.env.PUBLIC_ORIGIN ??= "https://miniapp.example";
 
 const { openDb } = await import("../db");
 const { createBot } = await import("./index");
-const { searchRateLimiter } = await import("../lib/rate-limit");
-const { __resetSearchSessionsForTests } = await import("./search");
-const { getPendingInput } = await import("./session");
+const { publishShare } = await import("../access/shares-store");
 
 const CHAT = 987654;
+const ADMIN_CHAT = 987655;
 
 interface ApiCall {
   method: string;
   payload: Record<string, unknown>;
 }
 
-function makeHarness() {
+function makeHarness(chatId: number, isAdmin: boolean) {
   const db = openDb(":memory:");
-  db.run("INSERT INTO allowlist (chat_id, is_admin) VALUES (?, 0)", [CHAT]);
+  db.run("INSERT INTO allowlist (chat_id, is_admin) VALUES (?, ?)", [chatId, isAdmin ? 1 : 0]);
   const bot = createBot(db);
   const calls: ApiCall[] = [];
   bot.api.config.use(async (_prev, method, payload) => {
     calls.push({ method, payload: payload as Record<string, unknown> });
     if (method === "sendMessage") {
-      return { ok: true, result: { message_id: 1, date: 0, chat: { id: CHAT, type: "private" } } } as never;
+      return { ok: true, result: { message_id: 1, date: 0, chat: { id: chatId, type: "private" } } } as never;
+    }
+    if (method === "getUserProfilePhotos") {
+      return { ok: true, result: { total_count: 0, photos: [] } } as never;
     }
     return { ok: true, result: true } as never;
   });
   return { db, bot, calls, sent: () => calls.filter((c) => c.method === "sendMessage") };
 }
 
-function textUpdate(text: string, updateId = 1) {
-  const isCommand = text.startsWith("/");
+function textUpdate(chatId: number, text: string, updateId = 1) {
   return {
     update_id: updateId,
     message: {
       message_id: updateId + 100,
       date: Math.floor(Date.now() / 1000),
-      chat: { id: CHAT, type: "private" },
-      from: { id: CHAT, is_bot: false, first_name: "T" },
+      chat: { id: chatId, type: "private" },
+      from: { id: chatId, is_bot: false, first_name: "T" },
       text,
-      ...(isCommand
-        ? { entities: [{ type: "bot_command", offset: 0, length: text.split(" ")[0]!.length }] }
-        : {}),
+      entities: text.startsWith("/")
+        ? [{ type: "bot_command", offset: 0, length: text.split(" ")[0]!.length }]
+        : undefined,
     },
   };
 }
 
-function callbackUpdate(data: string, updateId = 1) {
+function callbackUpdate(chatId: number, data: string, updateId = 1) {
   return {
     update_id: updateId,
     callback_query: {
       id: String(updateId),
-      from: { id: CHAT, is_bot: false, first_name: "T" },
+      from: { id: chatId, is_bot: false, first_name: "T" },
       chat_instance: "x",
       data,
       message: {
         message_id: 5,
         date: Math.floor(Date.now() / 1000),
-        chat: { id: CHAT, type: "private" },
+        chat: { id: chatId, type: "private" },
         text: "prev",
       },
     },
   };
 }
 
-let harness: ReturnType<typeof makeHarness>;
+function inlineUpdate(chatId: number, query = "motorama") {
+  return {
+    update_id: 1,
+    inline_query: {
+      id: "inline-1",
+      from: { id: chatId, is_bot: false, first_name: "T" },
+      query,
+      offset: "",
+    },
+  };
+}
 
-beforeEach(async () => {
-  searchCalls.length = 0;
-  generateCalls.length = 0;
-  searchRateLimiter.reset();
-  __resetSearchSessionsForTests();
-  harness = makeHarness();
-  await harness.bot.init().catch(() => {
-    // getMe is stubbed; a failure here does not affect handleUpdate.
-  });
-});
+describe("minimal Telegram entrypoint", () => {
+  let user: ReturnType<typeof makeHarness>;
+  let admin: ReturnType<typeof makeHarness>;
 
-afterEach(() => {
-  searchRateLimiter.reset();
-});
-
-describe("/search", () => {
-  test("runs the query and renders the first page of results", async () => {
-    await harness.bot.handleUpdate(textUpdate("/search мотогонки") as never);
-    expect(searchCalls[0]?.query).toBe("мотогонки");
-    const text = String(harness.sent()[0]?.payload.text ?? "");
-    expect(text).toContain("Поиск: мотогонки");
-    expect(text).toContain("<b>Alps</b>");
-    expect(text).not.toContain("1. <b>Alps</b>");
+  beforeEach(async () => {
+    user = makeHarness(CHAT, false);
+    admin = makeHarness(ADMIN_CHAT, true);
+    await user.bot.init().catch(() => {});
+    await admin.bot.init().catch(() => {});
   });
 
-  test("with no query it asks for one and arms the next message", async () => {
-    await harness.bot.handleUpdate(textUpdate("/search") as never);
-    expect(searchCalls).toHaveLength(0);
-    expect(getPendingInput(harness.db, CHAT)?.kind).toBe("awaiting_search");
+  afterEach(() => {
+    user.db.close();
+    admin.db.close();
   });
 
-  test("shares its rate-limit budget with the Mini App's /api/search", async () => {
-    // Spend the whole budget as the API surface would.
-    for (let i = 0; i < 20; i++) searchRateLimiter.check(CHAT);
-    await harness.bot.handleUpdate(textUpdate("/search инди") as never);
-    expect(searchCalls).toHaveLength(0);
-    expect(String(harness.sent()[0]?.payload.text ?? "")).toContain("Слишком много запросов");
-  });
-});
+  test("/start sends one Mini App button", async () => {
+    await user.bot.handleUpdate(textUpdate(CHAT, "/start") as never);
 
-describe("plain text routing", () => {
-  test("is ignored until an action is armed via a menu button", async () => {
-    await harness.bot.handleUpdate(textUpdate("грустный инди для дождя") as never);
-    expect(generateCalls).toHaveLength(0);
-    expect(searchCalls).toHaveLength(0);
-    expect(harness.sent()).toHaveLength(0);
+    const sent = user.sent();
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.payload.text).toBe("Откройте Mini App, чтобы продолжить.");
+    const markup = sent[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ text: string; web_app?: { url: string } }>> };
+    expect(markup.inline_keyboard).toEqual([[{ text: "Открыть приложение", web_app: { url: "https://miniapp.example/" } }]]);
   });
 
-  test("goes to generation once armed via nav:generate", async () => {
-    await harness.bot.handleUpdate(callbackUpdate("nav:generate") as never);
-    expect(getPendingInput(harness.db, CHAT)?.kind).toBe("awaiting_prompt");
+  test("/start share deep-link opens the shared playlist in the Mini App", async () => {
+    const owner = 777001;
+    user.db.run("INSERT INTO allowlist (chat_id, is_admin) VALUES (?, 0)", [owner]);
+    const share = publishShare(user.db, owner, {
+      sourceKind: "playlist",
+      sourceId: 1,
+      name: "Shared",
+      prompt: null,
+      tracks: [],
+    });
 
-    await harness.bot.handleUpdate(textUpdate("что-нибудь бодрое", 2) as never);
-    expect(generateCalls).toEqual(["что-нибудь бодрое"]);
-    expect(searchCalls).toHaveLength(0);
+    await user.bot.handleUpdate(textUpdate(CHAT, `/start pl_${share.token}`) as never);
+
+    const markup = user.sent()[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ web_app?: { url: string } }>> };
+    expect(markup.inline_keyboard).toHaveLength(1);
+    expect(markup.inline_keyboard[0]?.[0]?.web_app?.url).toBe(`https://miniapp.example/?share=${share.token}`);
   });
 
-  test("goes to search instead while the search prompt is armed", async () => {
-    await harness.bot.handleUpdate(callbackUpdate("nav:search") as never);
-    expect(getPendingInput(harness.db, CHAT)?.kind).toBe("awaiting_search");
+  test("/stats is admin-only and has no keyboard", async () => {
+    await admin.bot.handleUpdate(textUpdate(ADMIN_CHAT, "/stats") as never);
+    await user.bot.handleUpdate(textUpdate(CHAT, "/stats") as never);
 
-    await harness.bot.handleUpdate(textUpdate("motorama", 2) as never);
-    expect(searchCalls[0]?.query).toBe("motorama");
-    expect(generateCalls).toHaveLength(0);
+    expect(admin.sent()).toHaveLength(1);
+    expect(String(admin.sent()[0]?.payload.text)).toContain("Статистика");
+    expect(admin.sent()[0]?.payload.reply_markup).toBeUndefined();
+    expect(user.sent()).toHaveLength(0);
   });
 
-  test("the armed state is consumed, so a further message needs its own explicit action", async () => {
-    await harness.bot.handleUpdate(callbackUpdate("nav:search") as never);
-    await harness.bot.handleUpdate(textUpdate("motorama", 2) as never);
-    await harness.bot.handleUpdate(textUpdate("что-нибудь бодрое", 3) as never);
-    expect(generateCalls).toHaveLength(0);
-    expect(searchCalls).toEqual([{ query: "motorama", limit: 30 }]);
-  });
+  test("legacy commands, callbacks, inline queries and plain text are ignored", async () => {
+    await user.bot.handleUpdate(textUpdate(CHAT, "/admin") as never);
+    await user.bot.handleUpdate(textUpdate(CHAT, "/search моторика", 2) as never);
+    await user.bot.handleUpdate(textUpdate(CHAT, "найти музыку", 3) as never);
+    await user.bot.handleUpdate(callbackUpdate(CHAT, "nav:generate", 4) as never);
+    await user.bot.handleUpdate(inlineUpdate(CHAT) as never);
 
-  test("still ignores unknown slash commands", async () => {
-    await harness.bot.handleUpdate(textUpdate("/definitelynotacommand") as never);
-    expect(generateCalls).toHaveLength(0);
-    expect(searchCalls).toHaveLength(0);
-  });
-});
-
-describe("callback routing", () => {
-  // nav:search must reach the search module, not the generic nav:* menu switch.
-  test("nav:search is not swallowed by the generic nav router", async () => {
-    await harness.bot.handleUpdate(callbackUpdate("nav:search") as never);
-    const edited = harness.calls.find((c) => c.method === "editMessageText");
-    expect(String(edited?.payload.text ?? "")).toContain("Поиск по каталогу");
-  });
-
-  test("nav:generate arms the prompt flow", async () => {
-    await harness.bot.handleUpdate(callbackUpdate("nav:generate") as never);
-    expect(getPendingInput(harness.db, CHAT)?.kind).toBe("awaiting_prompt");
-  });
-
-  test("paging edits the same message rather than sending a new one", async () => {
-    await harness.bot.handleUpdate(textUpdate("/search инди") as never);
-    const sentBefore = harness.sent().length;
-    await harness.bot.handleUpdate(callbackUpdate("srch:p:0", 2) as never);
-    expect(harness.sent().length).toBe(sentBefore);
-    expect(harness.calls.some((c) => c.method === "editMessageText")).toBe(true);
-  });
-
-  test("a stale result button explains itself instead of failing silently", async () => {
-    __resetSearchSessionsForTests();
-    await harness.bot.handleUpdate(callbackUpdate("srch:dl:0") as never);
-    const answer = harness.calls.find((c) => c.method === "answerCallbackQuery");
-    expect(String(answer?.payload.text ?? "")).toContain("устарели");
+    expect(user.sent()).toHaveLength(0);
+    expect(user.calls.some((call) => call.method === "answerInlineQuery")).toBe(false);
+    expect(user.calls.some((call) => call.method === "answerCallbackQuery")).toBe(false);
   });
 });
