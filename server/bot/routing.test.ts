@@ -26,12 +26,24 @@ function makeHarness(chatId: number, isAdmin: boolean) {
     if (method === "sendMessage") {
       return { ok: true, result: { message_id: 1, date: 0, chat: { id: chatId, type: "private" } } } as never;
     }
+    if (method === "sendPhoto") {
+      return {
+        ok: true,
+        result: { message_id: 1, date: 0, chat: { id: chatId, type: "private" }, photo: [] },
+      } as never;
+    }
     if (method === "getUserProfilePhotos") {
       return { ok: true, result: { total_count: 0, photos: [] } } as never;
     }
     return { ok: true, result: true } as never;
   });
-  return { db, bot, calls, sent: () => calls.filter((c) => c.method === "sendMessage") };
+  return {
+    db,
+    bot,
+    calls,
+    sent: () => calls.filter((c) => c.method === "sendMessage"),
+    photos: () => calls.filter((c) => c.method === "sendPhoto"),
+  };
 }
 
 function textUpdate(chatId: number, text: string, updateId = 1) {
@@ -99,10 +111,10 @@ describe("minimal Telegram entrypoint", () => {
   test("/start sends one Mini App button", async () => {
     await user.bot.handleUpdate(textUpdate(CHAT, "/start") as never);
 
-    const sent = user.sent();
-    expect(sent).toHaveLength(1);
-    expect(sent[0]?.payload.text).toBe("Откройте Mini App, чтобы продолжить.");
-    const markup = sent[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ text: string; web_app?: { url: string } }>> };
+    const photos = user.photos();
+    expect(photos).toHaveLength(1);
+    expect(photos[0]?.payload.photo).toBe("https://miniapp.example/start-card.png");
+    const markup = photos[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ text: string; web_app?: { url: string } }>> };
     expect(markup.inline_keyboard).toEqual([[{ text: "Открыть приложение", web_app: { url: "https://miniapp.example/" } }]]);
   });
 
@@ -119,7 +131,7 @@ describe("minimal Telegram entrypoint", () => {
 
     await user.bot.handleUpdate(textUpdate(CHAT, `/start pl_${share.token}`) as never);
 
-    const markup = user.sent()[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ web_app?: { url: string } }>> };
+    const markup = user.photos()[0]?.payload.reply_markup as { inline_keyboard: Array<Array<{ web_app?: { url: string } }>> };
     expect(markup.inline_keyboard).toHaveLength(1);
     expect(markup.inline_keyboard[0]?.[0]?.web_app?.url).toBe(`https://miniapp.example/?share=${share.token}`);
   });

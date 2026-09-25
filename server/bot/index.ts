@@ -101,7 +101,7 @@ export function createBot(db: AppDb): Bot<BotContext> {
     const appUrl = new URL(env.publicOrigin);
     if (liveShare) appUrl.searchParams.set("share", liveShare.token);
     const keyboard = new InlineKeyboard().webApp("Открыть приложение", appUrl.toString());
-    await ctx.reply("Откройте Mini App, чтобы продолжить.", { reply_markup: keyboard });
+    await ctx.replyWithPhoto(`${env.publicOrigin}/start-card.png`, { reply_markup: keyboard });
   });
 
   registerAdminPanel(bot, db);
