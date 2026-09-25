@@ -15,4 +15,4 @@
   `/stats`, and ignored commands/callbacks/text/inline updates.
 - [x] 3.2 Update README and review evidence.
 - [x] 3.3 Run typecheck, isolated tests, Mini App build and dashboard build.
-- [ ] 3.4 Create functional and release-notes commits, then push; do not deploy.
+- [x] 3.4 Create functional and release-notes commits, then push; do not deploy.
